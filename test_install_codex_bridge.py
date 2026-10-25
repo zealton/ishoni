@@ -182,7 +182,10 @@ class InstallTests(unittest.TestCase):
     def test_upgrade_keeps_authorized_replies_custom_paths_tuning_and_routing(self):
         self.args.allow_replies = True
         self.install()
-        custom = {"dispatcher_instructions": str(self.root / "my instructions.md"), "codex_path": "/usr/bin/true",
+        # the installer stores the resolved path: on a runner where /usr/bin/true is a symlink (Ubuntu 26's
+        # coreutils alternatives point it at /usr/bin/gnutrue) that differs from the configured spelling
+        true = str(Path("/usr/bin/true").resolve())
+        custom = {"dispatcher_instructions": str(self.root / "my instructions.md"), "codex_path": true,
                   "poll_seconds": 5, "batch_delay_seconds": 0, "retry_seconds": 60,
                   "excluded_kinds": ["routed-kind"], "excluded_kind_adapter": ["/usr/bin/true", "--fixed"],
                   "excluded_kind_timeout_seconds": 20, "future_field": {"kept": True}}
@@ -194,9 +197,7 @@ class InstallTests(unittest.TestCase):
         with contextlib.redirect_stdout(out):
             installer.install(self.args)
         plan = json.loads(out.getvalue())
-        # the installer stores the resolved path: on a runner where /usr/bin/true is a symlink (Ubuntu 26's
-        # coreutils alternatives point it at /usr/bin/gnutrue) that differs from the configured spelling
-        self.assertEqual((True, str(Path("/usr/bin/true").resolve()), custom["dispatcher_instructions"], ["routed-kind"]),
+        self.assertEqual((True, true, custom["dispatcher_instructions"], ["routed-kind"]),
                          (plan["allow_replies"], plan["codex_path"], plan["dispatcher_instructions"], plan["excluded_kinds"]))
         self.args.dry_run = False
         self.install()
