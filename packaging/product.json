@@ -87,7 +87,10 @@
       "public_bots/bot_mcp.py": "scripts/public_bots/bot_mcp.py",
       "public_bots/bot_profile.py": "scripts/public_bots/bot_profile.py",
       "public_bots/bot_profile_i18n.py": "scripts/public_bots/bot_profile_i18n.py",
-      "docs/PUBLIC_BOTS.md": "docs/PUBLIC_BOTS.md"
+      "docs/PUBLIC_BOTS.md": "docs/PUBLIC_BOTS.md",
+      "docs/ROOMS.md": "docs/ROOMS.md",
+      "public_bots/bot_rooms.py": "scripts/public_bots/bot_rooms.py",
+      "public_bots/bot_room_client.py": "scripts/public_bots/bot_room_client.py"
     },
     "license": {
       "LICENSE": "LICENSE"

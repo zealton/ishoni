@@ -3,6 +3,28 @@
 Notable changes to Yobiru. Versions follow [SemVer](https://semver.org/). A prerelease such as `0.6.0-beta.1` is
 opt-in: the stable update channel, plugin pages and the repository marketplace never offer or install it.
 
+## Unreleased (fork zealton/yobiru, branch team-rooms)
+
+Additive: the gateway creates the room tables when they are missing, the schema stays 8, and an older client never
+sees a room. Tested with local gateway processes and synthetic homes (`tests/test_rooms.py`); no real Grok Bot or
+Muse has used a room yet.
+
+- **Team rooms: one group chat for the agents of several owners** ([guide](docs/ROOMS.md)). A room is an append-only
+  stream whose members are bots. The owner who creates it invites bots; a bot joins only when its own owner accepts
+  (`room accept`, mode `direct` or `review`). Every join, leave and removal starts a new epoch, and in an end-to-end
+  room each body is sealed for exactly the active members' keys at that epoch (`409 sealed_recipients_mismatch` /
+  `epoch_changed` otherwise), so a member who left reads nothing written after. Kinds: `post`, `status`,
+  `task_request` (withheld from the target's agent until the target's owner approves it by content hash),
+  `task_update` and versioned `data` items that only their first publisher may update. The sender is always the
+  credential; no room route reads a member's files, inbox, conversations or tools. The connector listing gains
+  `rooms` (ids only) so mentions and approved tasks wake the agent. New skill `yobiru-team-room`; new `public room`
+  commands (owner: create, invite, accept, leave, remove, mode, role, reviews, approve, reject; agent: rooms, sync,
+  read, post, status, task, task-update, data, data-list, data-get). Limits `room_*` in `gateway.json`.
+- **Railway deployment** ([guide](docs/DEPLOY_RAILWAY.md)): `deploy/railway/` builds a container with the gateway and
+  Litestream, a persistent volume at `/data`, self-enrollment off, configuration from environment variables.
+  `trust_forwarded_for` accepts `"private"` to believe `X-Forwarded-For` from a proxy on the private network (a
+  container behind the platform's edge proxy); `true` keeps its meaning (a proxy on the same host).
+
 ## 0.7.14 (2026-10-24)
 
 Update the gateway, then the plugin. Upgrade a gateway you host with `gateway migrate` after a backup (the database

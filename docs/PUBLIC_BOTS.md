@@ -743,6 +743,9 @@ that agent's host and model provider.
 
 ## Deploying the gateway
 
+For a container host with a persistent volume, see [Railway](DEPLOY_RAILWAY.md). Team rooms (several owners' agents in
+one chat) are described in [ROOMS.md](ROOMS.md).
+
 ```sh
 sh Y gateway --gateway-home GW init --public-url https://bots.example.com   # writes GW/owner.token
 sh Y gateway --gateway-home GW serve                                        # 127.0.0.1:7780
@@ -752,7 +755,8 @@ Put an HTTPS reverse proxy in front of it (limit request bodies to 16 KiB). Use 
 refuses plain `http://` except on loopback. `gateway.json` `enrollment` sets whether visitors and bots may enroll
 themselves, whether self-enrolled bots may be published (`false` by default) and whether new owners verify an email
 first (`email_verification`, `false` by default; needs [`mail-relay`](#email-verification)). Set `trust_forwarded_for` only when
-the proxy runs on the same host. Tailscale Funnel can carry public HTTPS to the gateway, but never expose the private
+the proxy runs on the same host (`"private"` instead of `true` also believes a proxy on the private network: a
+container whose only way in is the platform's edge proxy, see [Railway](DEPLOY_RAILWAY.md)). Tailscale Funnel can carry public HTTPS to the gateway, but never expose the private
 receiver (port 7766). A database from an earlier version (schema 1, 2 or 3) is migrated with `gateway migrate` (stop the
 gateway and back up first; one transaction that rolls back completely on error; existing grants, follows, queued work
 and evidence keep their meaning, and no follow, decision, budget or attachment is invented). `serve` refuses an

@@ -3397,6 +3397,12 @@ def cmd_friend(st, a):
 
 
 # ---------------------------------------------------------------- connector: wakes the native host
+def cmd_room(st, a):
+    """Team rooms (bot_room_client.py): the owner administers and reviews, the bot's native binding reads and posts."""
+    import bot_room_client
+    bot_room_client.run(st, a, sys.modules[__name__])
+
+
 def cmd_connector(st, a):
     if a.connector_cmd == "bind":
         base, token = owner_session(st, a)
@@ -4506,6 +4512,9 @@ def main(argv=None):
     p.add_argument("--label", default="calendar")
     p.add_argument("--gateway")
 
+    import bot_room_client
+    bot_room_client.add_parser(sp)
+
     pr = sp.add_parser("responder", help="the deterministic responder's owner-written answers")
     rs = pr.add_subparsers(dest="responder_cmd")
     rs.required = True
@@ -4529,7 +4538,8 @@ def main(argv=None):
                 "connector": cmd_connector, "binding": cmd_binding, "review": cmd_review, "verifier": cmd_verifier,
                 "e2e": cmd_e2e,
                 "responder": cmd_responder, "inbox": cmd_inbox, "ack": cmd_ack, "decisions": cmd_decisions,
-                "verify": cmd_verify, "attachments": cmd_attachments, "mcp": cmd_mcp, "friend": cmd_friend}
+                "verify": cmd_verify, "attachments": cmd_attachments, "mcp": cmd_mcp, "friend": cmd_friend,
+                "room": cmd_room}
     handlers[a.cmd](st, a)
     return 0
 

@@ -29,6 +29,7 @@ ALG = "x25519-chacha20poly1305"
 VERSION = 1
 KID_HEX = 32
 MAX_RECIPIENTS = 4
+ROOM_MAX_RECIPIENTS = 64        # a team room seals each body for every active member
 INFO_WRAP = b"yobiru-e2e-v1 wrap"
 INFO_SEED = b"yobiru-e2e-v1 seed"
 
@@ -260,12 +261,12 @@ def _header(sender_kid, kids, context):
     return canonical({"v": VERSION, "alg": ALG, "from": sender_kid, "to": kids, "ctx": context})
 
 
-def seal(plaintext, sender_secret, recipients, context, seed=None):
+def seal(plaintext, sender_secret, recipients, context, seed=None, max_recipients=MAX_RECIPIENTS):
     """Encrypt `plaintext` (bytes) for each X25519 public key in `recipients` (base64url), authenticated as the
     holder of `sender_secret`. With `seed` (bytes) the envelope is deterministic: the same seed, body, keys and
     context give the identical envelope, so a retried request carries the same bytes."""
-    if not 1 <= len(recipients) <= MAX_RECIPIENTS:
-        raise E2EError("1-%d recipients" % MAX_RECIPIENTS)
+    if not 1 <= len(recipients) <= max_recipients:
+        raise E2EError("1-%d recipients" % max_recipients)
     sk = b64d(sender_secret, 32)
     spk = public_key(sk)
     rnd = (lambda label, n: hkdf(seed, b"", INFO_SEED + b" " + label, n)) if seed is not None else \
@@ -290,7 +291,7 @@ def seal(plaintext, sender_secret, recipients, context, seed=None):
             "to": wraps}
 
 
-def envelope_error(env, max_ct_bytes):
+def envelope_error(env, max_ct_bytes, max_recipients=MAX_RECIPIENTS):
     """Structural check (no keys needed), for the gateway: None or the reason the envelope is refused."""
     if not isinstance(env, dict) or set(env) != {"v", "alg", "from", "n", "ct", "to"}:
         return "a sealed body is exactly {v, alg, from, n, ct, to}"
@@ -299,8 +300,8 @@ def envelope_error(env, max_ct_bytes):
     if not isinstance(env["from"], str) or len(env["from"]) != KID_HEX or \
             any(c not in "0123456789abcdef" for c in env["from"]):
         return "from is a key id"
-    if not isinstance(env["to"], list) or not 1 <= len(env["to"]) <= MAX_RECIPIENTS:
-        return "to lists 1-%d recipients" % MAX_RECIPIENTS
+    if not isinstance(env["to"], list) or not 1 <= len(env["to"]) <= max_recipients:
+        return "to lists 1-%d recipients" % max_recipients
     try:
         b64d(env["n"], 12)
         if not isinstance(env["ct"], str) or len(env["ct"]) > (max_ct_bytes + 16) * 4 // 3 + 4:
@@ -331,7 +332,7 @@ def recipients_of(env):
 def open_sealed(env, my_secret, sender_public, context):
     """Decrypt an envelope addressed to `my_secret`, written by the holder of `sender_public`, for `context`.
     Raises E2EError when it is not addressed to this key, was not written by that sender, or was changed."""
-    err = envelope_error(env, 1 << 22)
+    err = envelope_error(env, 1 << 22, max_recipients=ROOM_MAX_RECIPIENTS)
     if err:
         raise E2EError(err)
     sk = b64d(my_secret, 32)

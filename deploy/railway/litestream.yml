@@ -1,0 +1,13 @@
+# Litestream inside the gateway container (deploy/railway/entrypoint.sh): the database on the volume is replicated
+# to the S3-compatible bucket named by LITESTREAM_REPLICA_URL (s3://bucket/path) within seconds of each change.
+# Credentials and the endpoint come from the environment: LITESTREAM_ACCESS_KEY_ID, LITESTREAM_SECRET_ACCESS_KEY,
+# LITESTREAM_ENDPOINT (for R2, B2, MinIO), LITESTREAM_REGION.
+dbs:
+  - path: ${YOBIRU_GATEWAY_HOME}/gateway.sqlite3
+    replicas:
+      - url: ${LITESTREAM_REPLICA_URL}
+        endpoint: ${LITESTREAM_ENDPOINT}
+        region: ${LITESTREAM_REGION}
+        sync-interval: 5s
+        snapshot-interval: 24h
+        retention: 168h

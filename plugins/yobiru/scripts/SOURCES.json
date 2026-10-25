@@ -36,7 +36,11 @@
     },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
-      "sha256": "5b27757a60ee594b2f7a2b2492df6feeedaef7793d0a0be5ed027607a26b3a20"
+      "sha256": "dc6952bbd9e6b205fd98e62e3a8d155d413ece8b4ccdf921744b08bf710fae3d"
+    },
+    "docs/ROOMS.md": {
+      "source": "docs/ROOMS.md",
+      "sha256": "89d3c98de93aae3767ae1c33138cc2690658dc19ebf7cb3ebdc4252095d84dce"
     },
     "scripts/public_bots/bot_agents.py": {
       "source": "public_bots/bot_agents.py",
@@ -52,19 +56,19 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "cf55972595d263ee480c505a7d75ef7268f7febf0203a0f022b8b63f5fc26376"
+      "sha256": "054e362b141ee15a55150e7e406dc78492bfcc0f683f4758ee44737c242779e0"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",
-      "sha256": "f7cbdfa1a3cc2c36f8bd7551a88d06a1a8f74a554d6a2f89800fc7d23743c53c"
+      "sha256": "ddf196cda342b3bd3a826d10d303dc30a0044e4f01eedcfcd4a00dfc1ce416aa"
     },
     "scripts/public_bots/bot_e2e.py": {
       "source": "public_bots/bot_e2e.py",
-      "sha256": "a758dd54370fe2ec47c278814ef197fa17d7352e9912e4ad6fd69f6986914f7f"
+      "sha256": "fb905ffd4ed6b1774de1c3e668df15bbd3c854a7f70378799112a45f678797a1"
     },
     "scripts/public_bots/bot_gateway.py": {
       "source": "public_bots/bot_gateway.py",
-      "sha256": "fa4366e33f549909592b6e19a9691fb61727421ef0f9c7ccf4260691cbc5577f"
+      "sha256": "6fe04f16202b4af76b177dced7e14760b519552ba21cc419815dde33447ee973"
     },
     "scripts/public_bots/bot_links.py": {
       "source": "public_bots/bot_links.py",
@@ -85,6 +89,14 @@
     "scripts/public_bots/bot_resources.py": {
       "source": "public_bots/bot_resources.py",
       "sha256": "dde8708029d619441cb73f0ba1b6b2224c2558a33d0aca5fad08302279c24e1b"
+    },
+    "scripts/public_bots/bot_room_client.py": {
+      "source": "public_bots/bot_room_client.py",
+      "sha256": "f70362bad493a1fb5d0c05ff594cb16bcb10bdd30f479797ecaa4192a1cbb21c"
+    },
+    "scripts/public_bots/bot_rooms.py": {
+      "source": "public_bots/bot_rooms.py",
+      "sha256": "97b98bc2532df47d5bb2bdf0a9a8d6fbd59ac5cff4fc88331e0b1e19586679e7"
     },
     "LICENSE": {
       "source": "LICENSE",

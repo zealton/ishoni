@@ -53,6 +53,7 @@ import bot_agents as A  # noqa: E402
 import bot_blobs as B  # noqa: E402
 import bot_common as C  # noqa: E402
 import bot_e2e as E  # noqa: E402
+import bot_rooms as R  # noqa: E402
 import bot_mcp as M  # noqa: E402
 import bot_profile as P  # noqa: E402
 
@@ -157,6 +158,7 @@ LIMIT_DEFAULTS = {
     "delivery_evidence_ttl_seconds": 604800,    # older evidence is stale
     "quiet_wake_seconds": 300,                  # unused credential before a wake, for quiet-wake correlation
 }
+LIMIT_DEFAULTS.update(R.LIMIT_DEFAULTS)         # team rooms (bot_rooms.py)
 
 RESERVED_HANDLES = {
     "about", "account", "actor", "actors", "admin", "administrator", "api", "bot", "bots", "capability",
@@ -616,8 +618,10 @@ def load_config(home):
     if not limits["min_deadline_seconds"] <= limits["default_deadline_seconds"] <= limits["max_deadline_seconds"]:
         raise ValueError("gateway.json: deadlines must satisfy min <= default <= max")
     for key in ("allow_non_loopback_bind", "trust_forwarded_for", "external_checkpoints"):
+        if key == "trust_forwarded_for" and cfg.get(key) == "private":
+            continue
         if not isinstance(cfg.get(key, False), bool):
-            raise ValueError("gateway.json: %s must be true or false" % key)
+            raise ValueError("gateway.json: %s must be true or false%s" % (key, ' (or "private")' if key == "trust_forwarded_for" else ""))
     enrollment = dict(ENROLLMENT_DEFAULTS)
     raw = cfg.get("enrollment") or {}
     if not isinstance(raw, dict) or set(raw) - set(ENROLLMENT_DEFAULTS) or \
@@ -726,6 +730,7 @@ class Store(object):
             for statement in INBOX_TABLES + SWEEP_INDEXES + CHANGE_TABLES:
                 db.execute(statement)
             ensure_stats(db)
+            R.ensure_tables(db)
         finally:
             db.close()
         self._idle, self._idle_lock = [], threading.Lock()
@@ -2273,7 +2278,10 @@ def note_wake(db, worker_id, now, at, intent_ts, seen_before_ts, route, quiet_se
 
 
 # ---------------------------------------------------------------- API
-class Api(object):
+R.G = sys.modules[__name__]           # bot_rooms uses this module's helpers (Fail, fields, take, ...)
+
+
+class Api(R.RoomsMixin):
     """Each handler runs inside one transaction and returns (status, body): a GET in a read transaction (run again
     in an IMMEDIATE one if it needs to write), everything else in an IMMEDIATE one. Raising Fail rolls the
     transaction back; returning an error tuple keeps writes such as a cancellation."""
@@ -2294,6 +2302,8 @@ class Api(object):
         L = self.limits
         if name == "avatar_set":                # one small picture as base64, never the media limit
             return max(L["max_body_bytes"], P.AVATAR_MAX_BYTES * 4 // 3 + 4096)
+        if name.startswith("room_"):
+            return R.body_limit(db, L, name, params, subject) or L["max_body_bytes"]
         if name in ("message_send", "owner_reply", "owner_send"):
             row = db.execute("SELECT b.*, c.actor_id AS conv_actor FROM conversations c JOIN bots b ON "
                              "b.id=c.bot_id WHERE c.id=? AND c.deleted_ts IS NULL", (params["cid"],)).fetchone()
@@ -4649,7 +4659,7 @@ class Api(object):
         checks = db.execute("SELECT id FROM checks WHERE worker_id=? AND answered_ts IS NULL AND expires_ts>? AND "
                             "wake_state='none' ORDER BY id", (worker["id"], int(now))).fetchall()
         listing = {"jobs": jobs, "checks": [{"check_id": c["id"]} for c in checks],
-                   "replies": self.pending_replies(db, bot, now)}
+                   "replies": self.pending_replies(db, bot, now), "rooms": self.room_wakes(db, bot["id"])}
         # The cursor names this listing: a poll that sends it back with `wait` is held until the listing differs
         # (a change wakes it, a refused wake's retry time ends the wait) or the wait is over.
         cursor = hashlib.sha256(canonical(listing).encode("ascii")).hexdigest()[:32]
@@ -4889,7 +4899,7 @@ ROUTES = [(m, re.compile(p + r"\Z"), h, k) for m, p, h, k in [
     ("POST", r"/v1/connector/messages/(?P<mid>msg_[a-z2-7]{16})/wake", "connector_wake", ("connector",)),
     ("POST", r"/v1/connector/checks/(?P<chk>chk_[a-z2-7]{16})/wake", "connector_check_wake", ("connector",)),
     ("POST", r"/v1/capability/redeem", "capability_redeem", ("verifier",)),
-]]
+] + R.ROUTES]
 
 
 class Request(object):
@@ -5189,9 +5199,39 @@ class McpGateway(object):
         return self.run("check_answer", {"chk": args["check_id"]}, {})
 
 
+def _private_networks():
+    import ipaddress
+    return tuple(ipaddress.ip_network(n) for n in
+                 ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10", "169.254.0.0/16",
+                  "fc00::/7", "fe80::/10"))
+
+
+# RFC 1918, carrier-grade NAT (container platforms route through it), link-local and IPv6 unique-local: the
+# addresses a platform's internal proxy connects from. Deliberately narrower than Python's `is_private`.
+PRIVATE_NETWORKS = _private_networks()
+
+
+def proxy_peer(peer, trust):
+    """Whether X-Forwarded-For from this peer is believed: `true` for a proxy on this host (loopback), `"private"`
+    also for one on the private network, the case of a container whose only way in is the platform's edge proxy
+    (Railway: the proxy connects from a private address and the container has no public address of its own)."""
+    if not trust:
+        return False
+    if C.is_loopback_host(peer):
+        return True
+    if trust != "private":
+        return False
+    try:
+        import ipaddress
+        address = ipaddress.ip_address(peer)
+    except ValueError:
+        return False
+    return any(address in net for net in PRIVATE_NETWORKS)
+
+
 def client_ip(handler, cfg):
     peer = handler.client_address[0]
-    if cfg["trust_forwarded_for"] and C.is_loopback_host(peer):
+    if proxy_peer(peer, cfg["trust_forwarded_for"]):
         forwarded = handler.headers.get("X-Forwarded-For", "")
         last = forwarded.split(",")[-1].strip() if forwarded else ""
         try:
@@ -5711,8 +5751,8 @@ def sweep_blobs(store, now):
     if blobs is None:
         return 0
     with store.tx() as db:
-        raw = db.execute("SELECT content, result, draft FROM messages WHERE content LIKE 'blob:%' OR "
-                         "result LIKE 'blob:%' OR draft LIKE 'blob:%'")
+        raw = list(db.execute("SELECT content, result, draft FROM messages WHERE content LIKE 'blob:%' OR "
+                              "result LIKE 'blob:%' OR draft LIKE 'blob:%'")) + list(R.live_blob_columns(db))
         live = set()
         for row in raw:
             for value in tuple(row):
@@ -5875,6 +5915,7 @@ def maintenance(store):
                    (int(now),))
         db.execute("DELETE FROM mail_outbox WHERE expires_ts<?", (int(now) - 86400,))
         db.execute("DELETE FROM email_challenges WHERE expires_ts<?", (int(now) - 86400,))
+        R.room_sweep(db, store.limits, now)
 
 
 # ---------------------------------------------------------------- commands
