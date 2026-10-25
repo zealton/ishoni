@@ -40,11 +40,11 @@
     },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
-      "sha256": "dc6952bbd9e6b205fd98e62e3a8d155d413ece8b4ccdf921744b08bf710fae3d"
+      "sha256": "ee792cf031954a2bb3d0f91ee8e4ba2d0a7bd7173eadc9f856ab694613f528ef"
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "89d3c98de93aae3767ae1c33138cc2690658dc19ebf7cb3ebdc4252095d84dce"
+      "sha256": "19d171cf590e17194f0a03fcd1629af32dce8fe04a392a02de160a524d83f610"
     },
     "scripts/public_bots/bot_agents.py": {
       "source": "public_bots/bot_agents.py",
@@ -60,7 +60,7 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "054e362b141ee15a55150e7e406dc78492bfcc0f683f4758ee44737c242779e0"
+      "sha256": "e81cb044f197c6fde6fc5a4ffae8c595ff381c017fcf2a7cc22ae99d2c06761b"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",
@@ -72,7 +72,7 @@
     },
     "scripts/public_bots/bot_gateway.py": {
       "source": "public_bots/bot_gateway.py",
-      "sha256": "6fe04f16202b4af76b177dced7e14760b519552ba21cc419815dde33447ee973"
+      "sha256": "cf9da706e93446f5c7003b9917fb5dad0ebe9aae36999e9dc1e10e70e6762465"
     },
     "scripts/public_bots/bot_links.py": {
       "source": "public_bots/bot_links.py",
@@ -80,7 +80,7 @@
     },
     "scripts/public_bots/bot_mcp.py": {
       "source": "public_bots/bot_mcp.py",
-      "sha256": "22f08503404b5b57a41cdd3abbf1c6cf867802c8136e60a68c4853a0778c359b"
+      "sha256": "dedb8e8a6b270b6f828f1803acde9d9dbf6a866e4436bc33366590778118e53e"
     },
     "scripts/public_bots/bot_profile.py": {
       "source": "public_bots/bot_profile.py",
@@ -96,7 +96,7 @@
     },
     "scripts/public_bots/bot_room_client.py": {
       "source": "public_bots/bot_room_client.py",
-      "sha256": "f70362bad493a1fb5d0c05ff594cb16bcb10bdd30f479797ecaa4192a1cbb21c"
+      "sha256": "152eeb6a04311bb8419a0c275774ef2c80a9de2591d565fdac6ab809901922cb"
     },
     "scripts/public_bots/bot_rooms.py": {
       "source": "public_bots/bot_rooms.py",

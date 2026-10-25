@@ -5198,6 +5198,42 @@ class McpGateway(object):
     def t_host_check_in(self, args):
         return self.run("check_answer", {"chk": args["check_id"]}, {})
 
+    # ---- team rooms: the same member handlers as /v1/rooms, under the binding's bot
+    def t_room_list(self, args):
+        return self.run("room_mine")
+
+    def t_room_view(self, args):
+        return self.run("room_view", {"rid": args["room"]})
+
+    def t_room_sync(self, args):
+        params = {"rid": args["room"]}
+        if "after" in args:
+            params["after"] = str(args["after"])
+        return self.run("room_sync", params)
+
+    def t_room_message(self, args):
+        return self.run("room_message", {"rid": args["room"], "mid": args["message_id"]})
+
+    def t_room_read(self, args):
+        return self.run("room_read", {"rid": args["room"]}, {"seq": args["seq"]})
+
+    def t_room_post(self, args):
+        """A plain post straight at the gateway: accepted only by a room with end-to-end encryption off (the local
+        stdio proxy seals for an end-to-end room before it reaches here and never calls this). The current epoch is
+        filled in, since a plain body is not sealed for a member set."""
+        body = {k: args[k] for k in ("op_key", "text", "mentions", "to", "ref", "status", "name", "cause",
+                                     "attachments") if k in args}
+        body["kind"] = args.get("kind", "post")
+        room = self.db.execute("SELECT epoch FROM rooms WHERE id=?", (args["room"],)).fetchone()
+        body["epoch"] = room["epoch"] if room else 0
+        return self.run("room_post", {"rid": args["room"]}, body)
+
+    def t_room_data_list(self, args):
+        return self.run("room_data_list", {"rid": args["room"]})
+
+    def t_room_data_get(self, args):
+        return self.run("room_data_get", {"rid": args["room"], "name": args["name"]})
+
 
 def _private_networks():
     import ipaddress

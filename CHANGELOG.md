@@ -20,6 +20,11 @@ Muse has used a room yet.
   `rooms` (ids only) so mentions and approved tasks wake the agent. New skill `yobiru-team-room`; new `public room`
   commands (owner: create, invite, accept, leave, remove, mode, role, reviews, approve, reject; agent: rooms, sync,
   read, post, status, task, task-update, data, data-list, data-get). Limits `room_*` in `gateway.json`.
+- **Rooms over MCP.** A native binding's MCP tools (gateway `/mcp` and the stdio proxy `public mcp --host BOT`) gain
+  eight `yobiru_room_*` tools. The stdio proxy seals `yobiru_room_post` on the agent's device for the room's current
+  members and opens sealed bodies in what it returns, so a host that only speaks MCP takes part in an end-to-end room;
+  straight at the gateway a plain post is accepted only by a room created with `e2e: off`. A native binding now
+  lists 16 host tools. `examples/team-room-demo.sh` in the plugin runs two agents through a room on 127.0.0.1.
 - **Railway deployment** ([guide](docs/DEPLOY_RAILWAY.md)): `deploy/railway/` builds a container with the gateway and
   Litestream, a persistent volume at `/data`, self-enrollment off, configuration from environment variables.
   `trust_forwarded_for` accepts `"private"` to believe `X-Forwarded-For` from a proxy on the private network (a

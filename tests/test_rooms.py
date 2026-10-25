@@ -9,11 +9,13 @@ active members. Real bot_gateway.py subprocesses with synthetic homes on loopbac
 """
 import itertools
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from support.public_harness import C, FriendsGateway, cli
+from support.public_harness import C, PUBLIC, FriendsGateway, cli, plain_env
 
 import bot_e2e as E  # noqa: E402  (on sys.path through the harness)
 
@@ -220,6 +222,68 @@ class RoomCase(unittest.TestCase):
         status, obj = C.api_call(self.gw.url, "POST", "/v1/rooms/%s/messages" % room,
                                  {"op_key": "wrongkeys001", "kind": "post", "epoch": 2, "sealed": env}, wtoken)
         self.assertEqual("sealed_recipients_mismatch", obj["error"])
+
+    # ---- MCP: an agent that can only speak MCP (Muse) takes part through the stdio proxy or straight at /mcp
+    def stdio(self, role, bot_id, calls):
+        init = {"jsonrpc": "2.0", "id": 0, "method": "initialize",
+                "params": {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}}
+        msgs = [init] + [{"jsonrpc": "2.0", "id": i + 1, "method": "tools/call", "params": {"name": n, "arguments": a}}
+                         for i, (n, a) in enumerate(calls)]
+        proc = subprocess.run([sys.executable, str(PUBLIC / "bot_client.py"), "--home", str(self.homes[role]), "mcp",
+                               "--host", bot_id], input="".join(json.dumps(m) + "\n" for m in msgs).encode("utf-8"),
+                              capture_output=True, timeout=60, env=plain_env(self.root))
+        self.assertEqual(0, proc.returncode, proc.stderr.decode("utf-8"))
+        out = [json.loads(line) for line in proc.stdout.decode("utf-8").splitlines()]
+        self.assertEqual([m["id"] for m in msgs], [m.get("id") for m in out])
+        return [m["result"] for m in out[1:]]
+
+    def test_an_mcp_host_takes_part_through_the_stdio_proxy_with_end_to_end_encryption(self):
+        room, a, b = self.team()
+        self.y("agent-a", "room", "post", a, room, "--text", "A: parser done", "--mention", b)
+        results = self.stdio("agent-b", b, [
+            ("yobiru_room_list", {}),
+            ("yobiru_room_sync", {"room": room}),
+            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
+                                  "kind": "status"}),
+            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
+                                  "kind": "status"}),
+            ("yobiru_room_read", {"room": room, "seq": 1}),
+            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0002", "text": "x", "kind": "data"}),
+        ])
+        rooms, synced, posted, again, read, bad = results
+        self.assertEqual([room], [r["room_id"] for r in rooms["structuredContent"]["rooms"]])
+        self.assertEqual(["A: parser done"], [m["text"] for m in synced["structuredContent"]["messages"]],
+                         "sealed bodies are opened on the agent's device, never shown as envelopes")
+        self.assertFalse([m for m in synced["structuredContent"]["messages"] if "sealed" in m])
+        self.assertEqual(("posted", 2, False), (posted["structuredContent"]["state"], posted["structuredContent"]["seq"],
+                                                posted["isError"]))
+        self.assertEqual(True, again["structuredContent"]["duplicate"], "a retry under the same op_key posts once")
+        self.assertEqual(1, read["structuredContent"]["cursor"])
+        self.assertEqual("invalid_fields", bad["structuredContent"]["error"], "gateway errors come back as tool errors")
+        stored = self.gw.sql("SELECT content FROM room_messages WHERE id=?", (posted["structuredContent"]["message_id"],))
+        self.assertNotIn("exporter started", stored[0]["content"], "the proxy sealed it: the gateway holds ciphertext")
+        seen = self.y("agent-a", "room", "sync", a, room)["messages"]
+        self.assertEqual([("status", "B: exporter started", b)], [(m["kind"], m["text"], m["e2e"]["sealed_by"])
+                                                                   for m in seen if m["seq"] == 2])
+
+    def test_a_remote_mcp_client_posts_plain_text_only_where_the_room_allows_it(self):
+        room, a, b = self.team()
+        token = (self.root / ("native-b-%d.token" % self.n)).read_text().strip()
+        res = self.gw.tool(token, "yobiru_room_post", {"room": room, "op_key": "remote-post-01", "text": "plain"})
+        self.assertEqual((True, "e2e_required"), (res["isError"], res["structuredContent"]["error"]))
+        plain = self.y("admin", "room", "create", "Plain %d" % self.n, "--no-e2e")["room_id"]
+        for bot, owner in ((a, "owner-a"), (b, "owner-b")):
+            self.y("admin", "room", "invite", plain, bot)
+            self.y(owner, "room", "accept", plain, bot)
+        res = self.gw.tool(token, "yobiru_room_post", {"room": plain, "op_key": "remote-post-02", "text": "plain"})
+        self.assertEqual((False, "posted"), (res["isError"], res["structuredContent"]["state"]))
+        seen = self.gw.tool(token, "yobiru_room_sync", {"room": plain, "after": 0})["structuredContent"]["messages"]
+        self.assertEqual(["plain"], [m["text"] for m in seen])
+        self.assertEqual(["plain"], [m["text"] for m in self.y("agent-a", "room", "sync", a, plain)["messages"]])
+        # the room's tools are the binding's alone: an owner or caller credential has none
+        res = self.gw.mcp(self.gw.owner_token, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                                                 "params": {"name": "yobiru_room_list", "arguments": {}}})
+        self.assertIn(res[0], (401, 403), res)
 
 
 class ForwardedForCase(unittest.TestCase):

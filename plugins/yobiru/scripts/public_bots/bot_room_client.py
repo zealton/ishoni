@@ -23,6 +23,15 @@ ROOM_CTX = "yobiru-room/1"
 MAX_MEMBERS = 64
 
 
+class RoomClientError(Exception):
+    """A post this device cannot make (no key, a member's key changed): the CLI dies with it, the MCP proxy
+    answers a tool error."""
+
+    def __init__(self, code, detail):
+        Exception.__init__(self, detail)
+        self.code, self.detail = code, detail
+
+
 def run(st, a, bc):
     """Entry from bot_client.main: `bc` is the bot_client module (its sessions, sealing and attachment helpers)."""
     owner_cmds = {"create", "list", "show", "invite", "accept", "leave", "remove", "mode", "role", "reviews",
@@ -114,34 +123,86 @@ def member_command(st, a, bc):
         bc.die("--text or --text-file is required")
     attachments = bc.attachments_from(st, a.attach) if getattr(a, "attach", None) else None
     view = bc.call(base, "GET", "/v1/rooms/%s" % a.room, None, token)
-    if (view.get("me") or {}).get("state") == "invited":
-        bc.die("your owner has not accepted this room's invitation yet")
-    body = {"op_key": a.op_key or bc.new_op(), "kind": kind, "epoch": view["epoch"]}
+    fields = {}
     if getattr(a, "mention", None):
-        body["mentions"] = a.mention
+        fields["mentions"] = a.mention
     if getattr(a, "cause", None):
-        body["cause"] = a.cause
+        fields["cause"] = a.cause
     if kind == "task_request":
-        body["to"] = a.to
+        fields["to"] = a.to
     if kind == "task_update":
-        body["ref"], body["status"] = a.ref, a.status
+        fields["ref"], fields["status"] = a.ref, a.status
     if kind == "data":
-        body["name"] = a.name
-    bind = {"room_id": a.room, "epoch": view["epoch"], "bot_id": bot_id}
+        fields["name"] = a.name
+    try:
+        body = compose_post(st, base, bot_id, a.room, view, kind, text, attachments, fields, a.op_key or bc.new_op())
+    except RoomClientError as e:
+        bc.die(e.detail)
+    res = bc.call(base, "POST", "/v1/rooms/%s/messages" % a.room, body, token)
+    bc.out(dict(res, op_key=body["op_key"]))
+
+
+def compose_post(st, base, bot_id, room_id, view, kind, text, attachments, fields, op_key):
+    """The body of a post: sealed on this device for exactly the current members of an end-to-end room (the
+    `bind` names room, epoch and sender), plain otherwise. `view` is the room as the gateway shows it now."""
+    import bot_client as bc
+    if (view.get("me") or {}).get("state") == "invited":
+        raise RoomClientError("not_accepted", "your owner has not accepted this room's invitation yet")
+    body = dict(fields, op_key=op_key, kind=kind, epoch=view["epoch"])
+    bind = {"room_id": room_id, "epoch": view["epoch"], "bot_id": bot_id}
     if view["e2e"] == "required":
         recipients = member_keys(st, base, view)
         mine = bc.current_key(st.creds(), base, bot_id)
         if not mine:
-            bc.die("this device holds no end-to-end key of %s (the owner exports it: yobiru public e2e export %s)"
-                   % (bot_id, bot_id))
-        seed = E.seed_for(mine["secret"], "room", a.room, body["op_key"], bc.payload_hash(a.room, {"text": text}))
+            raise RoomClientError("no_e2e_key", "this device holds no end-to-end key of %s (the owner exports it: "
+                                                "yobiru public e2e export %s)" % (bot_id, bot_id))
+        seed = E.seed_for(mine["secret"], "room", room_id, op_key, bc.payload_hash(room_id, {"text": text}))
         body.update(seal_body(text, attachments, mine["secret"], recipients, bind, seed))
     else:
         body["text"] = text
         if attachments:
             body["attachments"] = attachments
-    res = bc.call(base, "POST", "/v1/rooms/%s/messages" % a.room, body, token)
-    bc.out(dict(res, op_key=body["op_key"]))
+    return body
+
+
+# ---------------------------------------------------------------- the stdio MCP proxy (`yobiru public mcp --host BOT`)
+def mcp_post(st, base, bot_id, token, args):
+    """yobiru_room_post made on the agent's device: the body is sealed here with the bot's key, so an end-to-end
+    room works for an MCP host too. -> (status, body) as the gateway answers."""
+    import bot_client as bc
+    status, view = C.api_call(base, "GET", "/v1/rooms/%s" % args["room"], None, token)
+    if status >= 400 or view.get("ok") is not True:
+        return status, view
+    kind = args.get("kind", "post")
+    attachments = None
+    if args.get("attachments"):
+        items, _, err = C.attachments_error(args["attachments"], bc.ATTACHMENT_LIMITS["files"],
+                                            bc.ATTACHMENT_LIMITS["bytes"], bc.ATTACHMENT_LIMITS["total"],
+                                            bc.ATTACHMENT_LIMITS["media_bytes"])
+        if err:
+            return 400, {"ok": False, "error": "invalid_attachments", "detail": err}
+        attachments = items
+    fields = {k: args[k] for k in ("mentions", "to", "ref", "status", "name", "cause") if k in args}
+    try:
+        body = compose_post(st, base, bot_id, args["room"], view, kind, args["text"], attachments, fields,
+                            args["op_key"])
+    except RoomClientError as e:
+        return 409, {"ok": False, "error": e.code, "detail": e.detail}
+    status, res = C.api_call(base, "POST", "/v1/rooms/%s/messages" % args["room"], body, token)
+    if status < 400 and res.get("ok") is True:
+        res["op_key"] = body["op_key"]
+    return status, res
+
+
+def mcp_open(st, base, name, args, data):
+    """Open the sealed bodies in a room tool's result on this device, in place."""
+    room_id = args.get("room")
+    if name == "yobiru_room_sync":
+        for item in data.get("messages") or []:
+            open_body(st, base, item, room_id)
+    elif name in ("yobiru_room_message", "yobiru_room_data_get"):
+        open_body(st, base, data, room_id)
+    return data
 
 
 def member_keys(st, base, view):
@@ -150,14 +211,16 @@ def member_keys(st, base, view):
     for m in view.get("recipients") or []:
         key = m.get("e2e_key")
         if not key:
-            bc_die("member %s has no end-to-end key: the room cannot seal for it" % m["bot_id"])
+            raise RoomClientError("member_without_key", "member %s has no end-to-end key: the room cannot seal for "
+                                                        "it" % m["bot_id"])
         state = bc_pin(st, base, m["bot_id"], key)
         if state == "changed":
-            bc_die("%s now shows another key than the one pinned here; compare fingerprints with its owner, then "
-                   "`yobiru public e2e trust %s`" % (m["bot_id"], m["bot_id"]))
+            raise RoomClientError("key_changed", "%s now shows another key than the one pinned here; compare "
+                                                 "fingerprints with its owner, then `yobiru public e2e trust %s`"
+                                  % (m["bot_id"], m["bot_id"]))
         keys.append(key)
     if not keys:
-        bc_die("the room lists no recipients")
+        raise RoomClientError("no_recipients", "the room lists no recipients")
     return keys
 
 
@@ -170,11 +233,6 @@ def pin_members(st, base, room):
 def bc_pin(st, base, principal, key):
     import bot_client
     return bot_client.pin_peer(st, base, principal, key)
-
-
-def bc_die(msg):
-    import bot_client
-    bot_client.die(msg)
 
 
 def seal_body(text, attachments, secret, recipients, bind, seed):
