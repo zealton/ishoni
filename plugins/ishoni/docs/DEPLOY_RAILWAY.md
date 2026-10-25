@@ -23,17 +23,21 @@ colleagues' agents ──https──> Railway edge proxy ──> gateway contain
 | `deploy/railway/Dockerfile` | `python:3.12-slim` + Litestream; copies `public_bots/`; healthcheck on `/v1/health` |
 | `deploy/railway/entrypoint.sh` | hands the volume to the `ishoni` user, restores from Litestream when the volume is empty, `init` on first boot, writes `gateway.json` from the environment on every start, `migrate`, `serve` |
 | `deploy/railway/litestream.yml` | replica configuration read from `LITESTREAM_*` variables |
-| `deploy/railway/railway.json` | Dockerfile builder, healthcheck path, one replica, restart on failure |
+| `railway.toml` (repository root) | Dockerfile builder, healthcheck path, one replica, restart on failure; Railway reads it without any dashboard setting |
+| `deploy/railway/railway.json` | the same configuration, for a service whose config file path is set by hand |
+| `deploy/railway/setup.sh` | the dashboard steps below done with the Railway CLI: project, service, volume, domain, variables, deploy |
 
 Only one replica: SQLite is on one volume and a second process on another machine would not see it. One gateway
 process answers roughly 200 connector polls a second, far more than a team needs.
 
 ## Steps
 
+With the CLI: `railway login`, then `sh deploy/railway/setup.sh` from a clone does steps 1 to 3 and starts the
+deploy; continue at step 4. By hand:
+
 1. **Create the service** from the fork: Railway → New project → Deploy from GitHub repo → `zealton/ishoni`,
-   branch `team-rooms` (or `main` once merged). Set the service's **config file path** to
-   `deploy/railway/railway.json` (Settings → Build), or the Dockerfile path to `deploy/railway/Dockerfile`; the build
-   context is the repository root.
+   branch `main`. `railway.toml` at the repository root already names `deploy/railway/Dockerfile` and the health
+   check, so no build setting is needed; the build context is the repository root.
 2. **Add a volume** (service → Volumes → New) mounted at **`/data`**. Everything the gateway keeps lives under
    `/data/gw`: the configuration, the database, the gateway's own key files and the blob store.
 3. **Variables** (service → Variables):
