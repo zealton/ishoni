@@ -41,7 +41,7 @@ class Base(unittest.TestCase):
     def config(self, home=None):
         return json.loads(((home or self.home) / "config.json").read_text())
 
-    def yobiru(self, *args, **kw):
+    def ishoni(self, *args, **kw):
         return PKG.run(list(args), self.user, **kw)
 
 
@@ -61,7 +61,7 @@ class LocateTests(Base):
     def test_launcher_works_through_a_symlink_and_from_any_directory(self):
         link_dir = PKG.root / "my bin dir"
         link_dir.mkdir(exist_ok=True)
-        link = link_dir / "yobiru"
+        link = link_dir / "ishoni"
         if not link.exists():
             os.symlink(str(PKG.launcher), str(link))
         r, d = PKG.run_json(["paths"], self.user, launcher=link, cwd=PKG.root / "Plugin Cache")
@@ -80,7 +80,7 @@ class LocateTests(Base):
 
     def test_documented_skill_relative_path_reaches_the_command(self):
         for skill in sorted((PKG.plugin / "skills").iterdir()):
-            self.assertTrue((skill / ".." / ".." / "scripts" / "yobiru").resolve().is_file(), skill.name)
+            self.assertTrue((skill / ".." / ".." / "scripts" / "ishoni").resolve().is_file(), skill.name)
 
     def test_missing_python_fails_clearly(self):
         import subprocess
@@ -99,10 +99,10 @@ class ReadOnlyTests(Base):
     def test_packaged_request_queries_need_no_network_and_create_no_ledger(self):
         self.write_config({})
         plugin_before, user_before = snapshot(PKG.plugin), snapshot(self.user)
-        r = self.yobiru("request", "list", "--json")
+        r = self.ishoni("request", "list", "--json")
         self.assertEqual(0, r.returncode, r.stderr)
         self.assertEqual([], json.loads(r.stdout))
-        r = self.yobiru("request", "status", "0011223344556677", "--json")
+        r = self.ishoni("request", "status", "0011223344556677", "--json")
         self.assertNotEqual(0, r.returncode)
         self.assertIn("no tracked outgoing request", r.stderr)
         self.assertEqual(user_before, snapshot(self.user))
@@ -113,7 +113,7 @@ class ReadOnlyTests(Base):
         state = PKG.fake_state("ro", calls=str(PKG.root / "ro-calls.log"))
         for args in (["paths"], ["--help"], ["version"], ["status"], ["status", "--json"], ["doctor"],
                      ["doctor", "--json"], ["service-template", "systemd"], ["codex-bridge", "status"]):
-            self.yobiru(*args, tailscale=True, extra={"FAKE_TS_STATE": str(state)})
+            self.ishoni(*args, tailscale=True, extra={"FAKE_TS_STATE": str(state)})
         self.assertEqual(user_before, snapshot(self.user))
         self.assertEqual(plugin_before, snapshot(PKG.plugin))      # no __pycache__ or state in the plugin
         calls = [json.loads(x) for x in (PKG.root / "ro-calls.log").read_text().splitlines()]
@@ -122,7 +122,7 @@ class ReadOnlyTests(Base):
 
     def test_messaging_commands_refuse_without_config(self):
         for args in (["inbox"], ["send", "peer", "hi"], ["serve"]):
-            r = self.yobiru(*args)
+            r = self.ishoni(*args)
             self.assertEqual(2, r.returncode)
             self.assertIn("not set up", r.stderr)
         self.assertFalse(self.home.exists())
@@ -166,11 +166,11 @@ class ReadOnlyTests(Base):
 class SetupTests(Base):
     def test_fresh_setup_is_a_dry_run_until_apply(self):
         args = ["setup", "--allow", "laptop", "--agent", "codex", "--self-agent", "codex", "--default-agent", "codex"]
-        r = self.yobiru(*args)
+        r = self.ishoni(*args)
         self.assertEqual(0, r.returncode, r.stderr)
         self.assertIn("dry run", r.stdout)
         self.assertFalse(self.home.exists())
-        r = self.yobiru(*(args + ["--apply", "--json"]))
+        r = self.ishoni(*(args + ["--apply", "--json"]))
         res = json.loads(r.stdout)
         self.assertTrue(res["written"])
         self.assertEqual({"port": 7766, "access_policy": "allowlist", "allow": ["laptop"], "deny": [],
@@ -180,11 +180,11 @@ class SetupTests(Base):
         self.assertEqual(["config.json"], sorted(p.name for p in self.home.iterdir()))
 
     def test_fresh_setup_defaults_to_tailnet_and_still_requires_apply(self):
-        r = self.yobiru("setup", "--agent", "codex")
+        r = self.ishoni("setup", "--agent", "codex")
         self.assertEqual(0, r.returncode, r.stderr)
         self.assertIn("tailnet", r.stdout)
         self.assertFalse(self.home.exists())
-        r = self.yobiru("setup", "--agent", "codex", "--apply")
+        r = self.ishoni("setup", "--agent", "codex", "--apply")
         self.assertEqual(0, r.returncode, r.stderr)
         self.assertEqual("tailnet", self.config()["access_policy"])
         self.assertEqual([], self.config()["deny"])
@@ -197,7 +197,7 @@ class SetupTests(Base):
         path = self.write_config(original)
         before = path.read_bytes()
         os.chmod(str(path), 0o640)
-        r = self.yobiru("setup", "--allow", "dev-server", "--allow", "LAPTOP", "--agent", "codex", "--apply", "--json")
+        r = self.ishoni("setup", "--allow", "dev-server", "--allow", "LAPTOP", "--agent", "codex", "--apply", "--json")
         res = json.loads(r.stdout)
         self.assertTrue(res["written"], r.stdout)
         after = self.config()
@@ -211,18 +211,18 @@ class SetupTests(Base):
     def test_identity_change_needs_replace(self):
         path = self.write_config({"allow": ["laptop"], "self_agent": "grok"})
         before = path.read_bytes()
-        r = self.yobiru("setup", "--self-agent", "codex", "--apply")
+        r = self.ishoni("setup", "--self-agent", "codex", "--apply")
         self.assertEqual(1, r.returncode)
         self.assertIn("--replace self_agent", r.stdout)
         self.assertEqual(before, path.read_bytes())
-        r = self.yobiru("setup", "--self-agent", "codex", "--replace", "self_agent", "--apply")
+        r = self.ishoni("setup", "--self-agent", "codex", "--replace", "self_agent", "--apply")
         self.assertEqual(0, r.returncode, r.stdout)
         self.assertEqual("codex", self.config()["self_agent"])
 
     def test_equivalent_unicode_names_are_the_same_agent(self):
         decomposed = "café"
         self.write_config({"allow": ["laptop"], "self_agent": decomposed, "agents": {decomposed: {"wake_max": "batch"}}})
-        r = self.yobiru("setup", "--agent", "café", "--self-agent", "café", "--apply", "--json")
+        r = self.ishoni("setup", "--agent", "café", "--self-agent", "café", "--apply", "--json")
         res = json.loads(r.stdout)
         self.assertEqual("none", res["action"], r.stdout)
         self.assertEqual([decomposed], list(self.config()["agents"]))
@@ -230,7 +230,7 @@ class SetupTests(Base):
     def test_unsafe_names_are_rejected_before_any_write(self):
         for args in (["--agent", "a/b"], ["--agent", "x\ny"], ["--agent", " lead"], ["--allow", "evil peer"],
                      ["--allow", "../x"], ["--allow", "*"], ["--self-agent", ""]):
-            r = self.yobiru(*(["setup", "--allow", "laptop"] + args + ["--apply"]))
+            r = self.ishoni(*(["setup", "--allow", "laptop"] + args + ["--apply"]))
             self.assertEqual(2, r.returncode, args)
         self.assertFalse(self.home.exists())
 
@@ -249,7 +249,7 @@ class WakeConfigTests(Base):
                            "agents": {"codex": {"wake_adapter": {"type": "exec", "argv": ["/bin/true"]}},
                                       "grok": {}}})
         url, key = self.secret_file("url"), self.secret_file("key")
-        r = self.yobiru("wake-config", "--agent", "grok", "--webhook", "--url-file", str(url), "--secret-file", str(key),
+        r = self.ishoni("wake-config", "--agent", "grok", "--webhook", "--url-file", str(url), "--secret-file", str(key),
                         "--apply", "--json")
         res = json.loads(r.stdout)
         self.assertTrue(res["written"], r.stdout)
@@ -262,25 +262,25 @@ class WakeConfigTests(Base):
         self.write_config({"allow": ["laptop"]})
         before = (self.home / "config.json").read_bytes()
         loose = self.secret_file("loose", 0o644)
-        r = self.yobiru("wake-config", "--agent", "grok", "--webhook", "--url-file", str(loose), "--apply")
+        r = self.ishoni("wake-config", "--agent", "grok", "--webhook", "--url-file", str(loose), "--apply")
         self.assertEqual(1, r.returncode)
         self.assertIn("0600", r.stdout)
-        r = self.yobiru("wake-config", "--agent", "grok", "--webhook", "--url-file", str(self.user / "missing"), "--apply")
+        r = self.ishoni("wake-config", "--agent", "grok", "--webhook", "--url-file", str(self.user / "missing"), "--apply")
         self.assertEqual(1, r.returncode)
         self.assertIn("does not exist", r.stdout)
         for raw in (["--url", "https://example.com/hook"], ["--secret", "s3cret"]):
-            r = self.yobiru(*(["wake-config", "--agent", "grok", "--webhook"] + raw))
+            r = self.ishoni(*(["wake-config", "--agent", "grok", "--webhook"] + raw))
             self.assertEqual(2, r.returncode)                     # no way to pass a raw URL or key
         self.assertEqual(before, (self.home / "config.json").read_bytes())
 
     def test_inherited_top_level_adapter_is_not_replaced_silently(self):
         path = self.write_config({"allow": ["peer"], "default_agent": "codex", "on_message": ["/bin/true"]})
         before = path.read_bytes()
-        r = self.yobiru("wake-config", "--agent", "codex", "--exec", FALSE, "--apply")
+        r = self.ishoni("wake-config", "--agent", "codex", "--exec", FALSE, "--apply")
         self.assertEqual(1, r.returncode)
         self.assertIn("inherited top-level", r.stdout)
         self.assertEqual(before, path.read_bytes())
-        r = self.yobiru("wake-config", "--agent", "codex", "--exec", FALSE, "--replace", "--apply")
+        r = self.ishoni("wake-config", "--agent", "codex", "--exec", FALSE, "--replace", "--apply")
         self.assertEqual(0, r.returncode, r.stdout)
         cfg = self.config()
         self.assertEqual({"type": "exec", "argv": [FALSE]}, cfg["agents"]["codex"]["wake_adapter"])
@@ -291,10 +291,10 @@ class WakeConfigTests(Base):
         path = self.write_config({"allow": ["peer"], "agents": {decomposed: {
             "wake_adapter": {"type": "exec", "argv": ["/bin/true"]}, "wake_max": "batch"}}})
         before = path.read_bytes()
-        r = self.yobiru("wake-config", "--agent", "café", "--exec", FALSE, "--wake-max", "now", "--apply")
+        r = self.ishoni("wake-config", "--agent", "café", "--exec", FALSE, "--wake-max", "now", "--apply")
         self.assertEqual(1, r.returncode)
         self.assertEqual(before, path.read_bytes())
-        r = self.yobiru("wake-config", "--agent", "café", "--exec", FALSE, "--wake-max", "now",
+        r = self.ishoni("wake-config", "--agent", "café", "--exec", FALSE, "--wake-max", "now",
                         "--replace", "--apply")
         self.assertEqual(0, r.returncode, r.stdout)
         agents = self.config()["agents"]
@@ -314,9 +314,9 @@ class WakeConfigTests(Base):
 
     def test_policy_changes_need_replace_for_existing_values(self):
         self.write_config({"allow": ["peer"], "wake_policy": {"default_max": "batch", "peers": {"Laptop": "batch"}}})
-        r = self.yobiru("wake-config", "--peer-max", "laptop=now", "--apply")
+        r = self.ishoni("wake-config", "--peer-max", "laptop=now", "--apply")
         self.assertEqual(1, r.returncode)
-        r = self.yobiru("wake-config", "--peer-max", "laptop=now", "--quiet-hours", "23:00-08:00", "--tz", "UTC",
+        r = self.ishoni("wake-config", "--peer-max", "laptop=now", "--quiet-hours", "23:00-08:00", "--tz", "UTC",
                         "--rate", "3", "--replace", "--apply")
         self.assertEqual(0, r.returncode, r.stdout)
         cfg = self.config()
@@ -326,21 +326,21 @@ class WakeConfigTests(Base):
 
     def test_exec_adapter_needs_an_absolute_executable(self):
         self.write_config({"allow": ["peer"]})
-        self.assertEqual(2, self.yobiru("wake-config", "--agent", "a", "--exec", "relative/notify").returncode)
-        self.assertEqual(1, self.yobiru("wake-config", "--agent", "a", "--exec", "/nonexistent/notify").returncode)
+        self.assertEqual(2, self.ishoni("wake-config", "--agent", "a", "--exec", "relative/notify").returncode)
+        self.assertEqual(1, self.ishoni("wake-config", "--agent", "a", "--exec", "/nonexistent/notify").returncode)
 
 
 class RuntimeAndServiceTests(Base):
     def test_install_runtime_never_replaces_a_different_copy_by_default(self):
         self.write_config({"allow": ["peer"]})
         target = self.home / "tailmsg.py"
-        r = self.yobiru("install-runtime")
+        r = self.ishoni("install-runtime")
         self.assertEqual(0, r.returncode)
         self.assertFalse(target.exists())
-        self.yobiru("install-runtime", "--apply")
+        self.ishoni("install-runtime", "--apply")
         self.assertEqual(PKG.core.read_bytes(), target.read_bytes())
         target.write_text("# a different running receiver\n")
-        r = self.yobiru("install-runtime", "--apply")
+        r = self.ishoni("install-runtime", "--apply")
         self.assertEqual(1, r.returncode)
         self.assertEqual("# a different running receiver\n", target.read_text())
         r, res = PKG.run_json(["install-runtime", "--upgrade", "--apply", "--json"], self.user)
@@ -371,7 +371,7 @@ class RuntimeAndServiceTests(Base):
 
     def test_launchd_template_is_a_valid_plist(self):
         home = self.user / "data home"
-        r = self.yobiru("--home", str(home), "service-template", "launchd")
+        r = self.ishoni("--home", str(home), "service-template", "launchd")
         self.assertEqual(0, r.returncode)
         plist = plistlib.loads(r.stdout.encode("utf-8"))
         self.assertEqual("dev.tailmsg", plist["Label"])
@@ -385,25 +385,25 @@ class RuntimeAndServiceTests(Base):
     def test_launchd_template_adds_the_tailscale_directory_to_path(self):
         # launchd runs jobs with PATH=/usr/bin:/bin:/usr/sbin:/sbin; a bare `tailscale` found elsewhere
         # (the standalone macOS app installs /usr/local/bin/tailscale) must stay reachable from the service.
-        r = self.yobiru("service-template", "launchd", tailscale=True)
+        r = self.ishoni("service-template", "launchd", tailscale=True)
         self.assertEqual(0, r.returncode, r.stderr)
         env = plistlib.loads(r.stdout.encode("utf-8"))["EnvironmentVariables"]
         self.assertEqual("/usr/bin:/bin:/usr/sbin:/sbin:" + str(PKG.fakebin), env["PATH"])
         self.write_config({"tailscale_cmd": ["/Applications/Tailscale.app/Contents/MacOS/Tailscale"]})
-        r = self.yobiru("service-template", "launchd", tailscale=True)
+        r = self.ishoni("service-template", "launchd", tailscale=True)
         self.assertNotIn("EnvironmentVariables", plistlib.loads(r.stdout.encode("utf-8")),
                          "an absolute tailscale_cmd needs no PATH")
 
     def test_systemd_template_quotes_paths(self):
         home = self.user / "100% data $HOME"
-        r = self.yobiru("--home", str(home), "service-template", "systemd-user")
+        r = self.ishoni("--home", str(home), "service-template", "systemd-user")
         line = [x for x in r.stdout.splitlines() if x.startswith("ExecStart=")][0]
         self.assertIn('"%s"' % str(home / "tailmsg.py").replace("%", "%%").replace("$", "$$"), line)
         self.assertTrue(line.endswith(' "serve"'), line)
 
     def test_codex_bridge_needs_a_supported_host_and_an_explicit_socket(self):
         self.write_config({"allow": ["peer"]})
-        r = self.yobiru("codex-bridge", "install", "--thread-id", str(uuid.uuid4()), "--dry-run")
+        r = self.ishoni("codex-bridge", "install", "--thread-id", str(uuid.uuid4()), "--dry-run")
         if sys.platform == "linux":
             self.assertEqual(2, r.returncode)
             self.assertIn("--codex-remote", r.stderr)
@@ -437,7 +437,7 @@ class LinuxCodexBridgeTests(Base):
             (self.fakes / name).chmod(0o755)
         self.codex_home = self.user / "codex home"
         self.codex_home.mkdir()
-        sock_dir = Path(tempfile.mkdtemp(prefix="yobiru-cli-")).resolve()
+        sock_dir = Path(tempfile.mkdtemp(prefix="ishoni-cli-")).resolve()
         self.addCleanup(shutil.rmtree, str(sock_dir), True)
         os.chmod(str(sock_dir), 0o700)
         self.socket_path = sock_dir / "app.sock"
@@ -449,7 +449,7 @@ class LinuxCodexBridgeTests(Base):
         self.extra = {"PATH": "%s:%s" % (PKG.bin, self.fakes)}
 
     def bridge(self, *args):
-        return self.yobiru("--home", str(self.home), "codex-bridge", *args, extra=self.extra)
+        return self.ishoni("--home", str(self.home), "codex-bridge", *args, extra=self.extra)
 
     def install_args(self):
         return ["install", "--thread-id", self.thread, "--codex-remote", "unix://" + str(self.socket_path),
@@ -530,7 +530,7 @@ class UnsafeInputTests(Base):
         for cmd in ("show", "ack", "fetch", "wake", "reply"):
             for bad in ("../config", "*", "", "a\nb", "/etc/passwd"):
                 args = [cmd, bad] + (["text"] if cmd == "reply" else [])
-                r = self.yobiru(*args)
+                r = self.ishoni(*args)
                 self.assertNotEqual(0, r.returncode, (cmd, bad))
         self.assertEqual(before, path.read_bytes())
         self.assertEqual([], list((self.home / "inbox").iterdir()))

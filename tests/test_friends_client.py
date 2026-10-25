@@ -49,7 +49,7 @@ def cli(home, *args):
 
 class FriendsClientCase(unittest.TestCase):
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru friends client ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni friends client ")
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.gw = FriendsGateway(self.root, limits=LIMITS).start()
@@ -274,13 +274,13 @@ class TransportTests(unittest.TestCase):
                 C.wake_url(bad)
 
     def test_an_exec_route_is_uncertain_once_the_command_ran(self):
-        body = {"type": "yobiru.job", "bot_id": "bot_aaaaaaaaaaaaaaaa", "handle": "@x", "wake_id": "w" * 12,
+        body = {"type": "ishoni.job", "bot_id": "bot_aaaaaaaaaaaaaaaa", "handle": "@x", "wake_id": "w" * 12,
                 "gateway": "http://127.0.0.1:1", "job_id": "msg_aaaaaaaaaaaaaaaa", "phase": "ready"}
         for code, expected in ((0, "accepted"), (1, "uncertain"), (75, "uncertain"), (2, "uncertain")):
             route = {"type": "exec", "argv": [sys.executable, "-c", "import sys; sys.exit(%d)" % code]}
             self.assertEqual(expected, P.perform_wake(route, body)[0], code)
-        self.assertEqual("refused", P.perform_wake({"type": "exec", "argv": ["/nonexistent/yobiru-wake"]}, body)[0])
-        with tempfile.TemporaryDirectory(prefix="yobiru exec ") as tmp:
+        self.assertEqual("refused", P.perform_wake({"type": "exec", "argv": ["/nonexistent/ishoni-wake"]}, body)[0])
+        with tempfile.TemporaryDirectory(prefix="ishoni exec ") as tmp:
             target = os.path.join(tmp, "argv.json")
             route = {"type": "exec", "argv": [sys.executable, "-c", "import sys, json; open(sys.argv[1], 'w').write("
                                               "json.dumps(sys.argv[2:]))", target, "{job_id}", "{handle}", "{phase}"]}
@@ -362,7 +362,7 @@ class ExportReleaseOrderTests(unittest.TestCase):
 
     def service(self, through_link=False):
         import bot_resources as R
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru exports ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni exports ")
         self.addCleanup(tmp.cleanup)
         d = Path(tmp.name) / "svc"
         if through_link:            # like macOS, where /var and /tmp are links to /private/...

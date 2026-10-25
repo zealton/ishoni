@@ -1,14 +1,14 @@
 {
-  "name": "yobiru",
+  "name": "ishoni",
   "interface": {
-    "displayName": "Yobiru"
+    "displayName": "Ishoni"
   },
   "plugins": [
     {
-      "name": "yobiru",
+      "name": "ishoni",
       "source": {
         "source": "local",
-        "path": "./plugins/yobiru"
+        "path": "./plugins/ishoni"
       },
       "policy": {
         "installation": "AVAILABLE",

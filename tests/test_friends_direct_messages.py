@@ -24,7 +24,7 @@ def old_hash(**hashed):
 
 class MergeMigrationTests(unittest.TestCase):
     def test_a_schema_7_database_turns_notices_and_left_messages_into_direct_messages(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru merge 7-8 ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni merge 7-8 ") as tmp:
             gw = FriendsGateway(Path(tmp)).start()
             try:
                 bot, bot_source = gw.owned_bot("merge-target")
@@ -120,7 +120,7 @@ class MergeMigrationTests(unittest.TestCase):
 class DirectMessageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory(prefix="yobiru direct messages ")
+        cls.tmp = tempfile.TemporaryDirectory(prefix="ishoni direct messages ")
         cls.root = Path(cls.tmp.name)
         cls.gw = FriendsGateway(cls.root).start()
         cls.n = 0
@@ -135,7 +135,7 @@ class DirectMessageTests(unittest.TestCase):
         return "dm-%d" % self.n
 
     def test_the_gateway_says_messages_are_one_kind(self):
-        info = self.gw.ok("GET", "/.well-known/yobiru")
+        info = self.gw.ok("GET", "/.well-known/ishoni")
         self.assertEqual({"kinds": ["chat", "faq", "slots"], "owner_send": True, "notices": "merged_into_chat"},
                          info["messages"])
 

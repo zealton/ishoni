@@ -1,13 +1,13 @@
-# Yobiru for Grok Bot
+# Ishoni for Grok Bot
 
 Use Grok Bot's existing conversation to exchange requests, results and files with agents on your
-home computer or cloud server. Yobiru runs on the computer attached to that conversation, not on
+home computer or cloud server. Ishoni runs on the computer attached to that conversation, not on
 the phone displaying it. It uses the same plugin and tailmsg protocol as Codex and Cursor.
 
 ## Install and locate the plugin
 
 The repository contains a portable `plugin.json`, a Cursor manifest and the shared `skills/` and
-`scripts/` directories under `plugins/yobiru`. It does not need a separate Grok protocol or an MCP
+`scripts/` directories under `plugins/ishoni`. It does not need a separate Grok protocol or an MCP
 server. (The public bots of 0.6.0 offer an optional MCP endpoint and stdio proxy; neither has been
 tested inside Grok Bot, and a Remote HTTPS setup that requires OAuth cannot use their bearer
 credential.) The [official submission page](https://x.ai/bot/marketplace/submit-a-plugin) accepts public
@@ -15,25 +15,25 @@ repository submissions for Grok Bot and Cursor; Grok itself is marked coming soo
 review, public listing and installation are separate steps. See the current
 [submission record](MARKETPLACE_SUBMISSION.md) before claiming a listing.
 
-If Yobiru is available to your account, open **Connect apps** in the sidebar (mobile: avatar →
+If Ishoni is available to your account, open **Connect apps** in the sidebar (mobile: avatar →
 **Connect apps**), add it and confirm it under **Installed**. For an account that supports
-Cursor team repository marketplaces, import `https://github.com/chekusu/yobiru` using the team's
+Cursor team repository marketplaces, import `https://github.com/zealton/ishoni` using the team's
 **Plugins & MCPs** settings, then check whether Grok Bot actually exposes the plugin's skills.
 Account and team policy can limit this route. See the host's
 [plugin instructions](https://cursor.com/help/grok-bot/connect-plugins).
 
-Ask: **“Use yobiru-grok-bot to connect this conversation's computer to my other agents.”**
+Ask: **“Use ishoni-grok-bot to connect this conversation's computer to my other agents.”**
 The skill first identifies this conversation's computer, existing installation and data home.
-It then uses `yobiru-setup` for ordinary setup. If the host exposes only skill text, the agent can
+It then uses `ishoni-setup` for ordinary setup. If the host exposes only skill text, the agent can
 download the official plugin archive and its checksum, verify them, and unpack into a new directory
 under `/workspace`. That is a manual installation fallback, not proof of a marketplace install.
 
 For a release archive, choose a published version from
-[Chekusu's releases](https://github.com/chekusu/yobiru/releases). Download
-`yobiru-<version>-plugin.zip` and `SHA256SUMS` from that same release. Compare the archive's SHA-256
+[Chekusu's releases](https://github.com/zealton/ishoni/releases). Download
+`ishoni-<version>-plugin.zip` and `SHA256SUMS` from that same release. Compare the archive's SHA-256
 with the exact filename's checksum entry before extraction. Extract into an empty directory such
-as `/workspace/yobiru-<version>/`; keep runtime data elsewhere. Run the extracted
-`yobiru/scripts/yobiru` with `sh`, so ZIP extraction need not preserve executable modes.
+as `/workspace/ishoni-<version>/`; keep runtime data elsewhere. Run the extracted
+`ishoni/scripts/ishoni` with `sh`, so ZIP extraction need not preserve executable modes.
 
 ## Prepare the conversation's computer
 
@@ -51,7 +51,7 @@ sh "$Y" --home /workspace/.tailmsg doctor
 
 `/workspace/.tailmsg` is a suggested new data home; preserve an existing installation's actual
 home. These checks identify missing Python, Tailscale, sign-in, receiver or delivery configuration.
-They do not install software or change permissions. Yobiru needs a usable Tailscale interface,
+They do not install software or change permissions. Ishoni needs a usable Tailscale interface,
 not just a userspace proxy. If the computer lacks the required privileges or `/dev/net/tun`, follow
 the reported administrator action instead of bypassing the host's restrictions.
 
@@ -63,7 +63,7 @@ existing agents, webhook files, access policy, session bindings and reply permis
 ## Connect incoming messages to a routine
 
 A running receiver stores incoming messages; Grok Bot also needs an authorized routine or other
-adapter to process them. Follow `yobiru-wake` to configure the account's routine webhook. Keep its
+adapter to process them. Follow `ishoni-wake` to configure the account's routine webhook. Keep its
 URL and bearer key in private files or environment variables, not in the plugin or an issue.
 The routine should read only this agent's authenticated inbox, report `running` and one final
 outcome for an authorized request, then acknowledge it. Notifications need no reply.
@@ -75,13 +75,13 @@ restrictions: a request may finish `blocked` when the owner has not authorized t
 ## Answering a public bot's chat (Friends)
 
 With [public bots and Friends](PUBLIC_BOTS.md) from 0.6.0, a Grok Bot can answer chat sent to one of your
-published bots: it holds only that bot's native binding credential and uses the `yobiru-friends-host` skill
+published bots: it holds only that bot's native binding credential and uses the `ishoni-friends-host` skill
 (`job list`, `job claim`, `job reply`), and a connector can wake it through a routine webhook with a job id only.
 It works like direct messages on X: people your bot follows and people you accepted reach the Grok Bot directly and
 get its replies; everyone else's message waits in your message requests, which you accept, ignore or block (with
 the owner credential, kept off the Grok computer where you can). Grok bots of one account share
 files, installed tools, browser logins, connected apps and shared memory, and one bot has one conversation, so a
-dedicated bot is neither a privacy boundary nor a per-caller thread; Yobiru keeps each caller's conversation and
+dedicated bot is neither a privacy boundary nor a per-caller thread; Ishoni keeps each caller's conversation and
 hands the bot its transcript. Automatic answering is not available. Not yet tested on a Grok Bot: in a first
 attempt the selected bot waited for its owner's approval in the Grok main chat before running the candidate CLI.
 
@@ -91,7 +91,7 @@ Files stored durably and running processes are different things. A rebuild may r
 while removing installed packages or stopping the receiver. Start with `onboard`, `doctor` and
 `update status` against the existing home. Inspect the daemon's existing state and startup definition
 before reinstalling or signing in again. Restore missing prerequisites through the host's normal
-setup path; any needed sign-in remains the owner's action. Then restore the intended Yobiru receiver.
+setup path; any needed sign-in remains the owner's action. Then restore the intended Ishoni receiver.
 
 Keep the owner's chosen stable Tailscale hostname. New messages addressed as `HOST/AGENT` resolve
 the current address, so a changed IP need not require editing every sender. If the node also lost
@@ -121,9 +121,9 @@ Keep these four layers distinct:
 
 | Layer | What must survive or be restored |
 | --- | --- |
-| Software | Verified Tailscale and Yobiru packages; reinstalling binaries does not restore identity. |
+| Software | Verified Tailscale and Ishoni packages; reinstalling binaries does not restore identity. |
 | Tailscale identity | The complete actual daemon state and any separately configured state backend. |
-| Yobiru data | The original data home, including all agents, webhook files, sessions, permissions and request records. |
+| Ishoni data | The original data home, including all agents, webhook files, sessions, permissions and request records. |
 | Startup | A supported recovery/service definition that reuses those same paths and starts the intended processes. |
 
 `tailscaled --statedir` selects a directory containing configuration, keys and other state.
@@ -140,7 +140,7 @@ replacement for configuring an arbitrary Linux daemon.
 
 For a new setup, choose storage that this host confirms survives the relevant image update and is
 suitable for private daemon state. `/home/box` may be used only with that confirmation for the current
-installation; the cited official guidance does not guarantee it. Existing Yobiru data homes remain
+installation; the cited official guidance does not guarantee it. Existing Ishoni data homes remain
 unchanged: `--home DIR` overrides `$TAILMSG_HOME`, otherwise the default is `~/.tailmsg`. Always pass
 the selected absolute home in recovery commands; a different shell user can have a different default.
 
@@ -148,7 +148,7 @@ For an existing installation, use this sequence only within the owner's migratio
 
 1. Read the actual daemon/service/supervisor configuration, state paths and socket. Record the current
    node identity, startup definition and a rollback plan locally. Do not print key/state contents or
-   copy them into a plugin, repository, issue or message. Inventory the original Yobiru home and all
+   copy them into a plugin, repository, issue or message. Inventory the original Ishoni home and all
    agents' bindings and webhook references without exposing their secrets.
 2. Confirm destination persistence, access restrictions and how the same logical machine is restored.
    Coordinate the network interruption using a working local recovery path. Stop the existing daemon
@@ -164,7 +164,7 @@ For an existing installation, use this sequence only within the owner's migratio
    do not clone another host, force logout, supply a new auth key, disable expiry or bypass ACLs.
    [Key expiry](https://tailscale.com/docs/features/access-control/key-expiry) can still require owner
    reauthentication even when files survive.
-5. Restore only the intended receiver using the original explicit Yobiru home and unchanged bindings.
+5. Restore only the intended receiver using the original explicit Ishoni home and unchanged bindings.
    Compare its `/info` identity with current Tailscale identity; restart that receiver if it retained a
    stale name after a change. Verify receiver version, session and all agent adapters, then a harmless
    tracked request and final result with an owner-selected peer. For push transport, verify both
@@ -173,7 +173,7 @@ For an existing installation, use this sequence only within the owner's migratio
    or reverse connection is required. See [one-way sharing](SHARING.md). Reconcile existing uncertain
    requests instead of rerunning them.
 
-The skills provide this procedure; Yobiru does not automatically migrate Tailscale state or install
+The skills provide this procedure; Ishoni does not automatically migrate Tailscale state or install
 a host recovery script. Report separately what was configured, whether identity was retained and
 whether a real image rebuild was observed. Do not reboot merely to test it. A successful manual
 package command, native skill discovery and successful rebuild recovery remain separate evidence.
@@ -182,12 +182,12 @@ package command, native skill discovery and successful rebuild recovery remain s
 
 Record the installed version and execution path, without exposing private device names or keys:
 
-1. Confirm the host lists the plugin's skills for this conversation, including `yobiru-grok-bot`.
+1. Confirm the host lists the plugin's skills for this conversation, including `ishoni-grok-bot`.
    Ask the host to invoke the skill; opening a Markdown file manually proves only file access.
 2. Confirm the invoked skill finds its bundled command and runs `paths`, `version`, `onboard` and
    `doctor`. State whether scripts came from the native plugin or the manual archive fallback.
-3. With the owner's chosen peer, use `yobiru-send` for a harmless tracked request, then verify
-   `received`, a final result and `request status ID --refresh --json`. Use `yobiru-inbox` for the
+3. With the owner's chosen peer, use `ishoni-send` for a harmless tracked request, then verify
+   `received`, a final result and `request status ID --refresh --json`. Use `ishoni-inbox` for the
    reverse direction. Keep the challenge and any shared test file free of private data.
 4. If testing routine delivery, verify both the wake record and the resulting agent response.
    A queue entry alone is not completion. If credentials or app access block a step, record it.

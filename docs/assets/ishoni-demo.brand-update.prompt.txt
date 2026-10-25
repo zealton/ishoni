@@ -1,0 +1,9 @@
+Brand-only edit, 2026-10-12. Method: built-in Image Generation.
+Input 1: previous docs/assets/ishoni-demo.png, the demonstration to preserve.
+Input 2: plugins/ishoni/assets/icon.png, the approved icon to insert.
+This revision supersedes the original prompt's instruction to omit a separate icon.
+
+Use case: precise-object-edit / compositing.
+Image 1 is the edit target: an existing wide ishoni README demonstration with two phones (Grok Bot and DOTS) and a laptop running Codex. Image 2 is the EXACT approved ishoni icon to insert, not a style suggestion.
+Change ONLY the top-left branding lockup of image 1 to add image 2 beside the lowercase wordmark 'ishoni'. Put a modest square icon to the left of the wordmark in the clear area above the phones, reflowing only that small branding area as necessary. Preserve the icon's charcoal rounded tile, original cream background, THREE curved swirling petals (two white, one upper-right orange) and precisely TWO BLACK DOT EYES in the FAT ROUNDED LOWER END of the orange petal. The rounded lower part is the head, never the narrow upper tip. Do not redraw this into a speech bubble, change its shape, remove an eye, or add a face anywhere else. Keep the original lowercase clean wordmark and tagline 'Let your agents talk.'
+Preserve every other aspect of image 1 faithfully: landscape framing, person, hands, desk, both phones, laptop, all device positions and native UI layout, every existing message and readable text, the bottom line 'Messages, data and files over Tailscale', and 'Concept demo'. Do not add send-to buttons or put Codex on a phone. No new labels or extra decoration. This is just a subtle brand icon addition to the existing demonstration.

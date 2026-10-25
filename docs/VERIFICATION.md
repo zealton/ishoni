@@ -1,6 +1,6 @@
 # What has been verified
 
-Yobiru release verification. This page separates what has actually been run from what has not. It is not a
+Ishoni release verification. This page separates what has actually been run from what has not. It is not a
 security guarantee: the tests show the behaviors listed below, nothing more.
 Dated release results refer to the named release trees, not a later development branch or an installed host.
 
@@ -11,7 +11,7 @@ agent. The admin device was the owner's Mac (macOS), on commit `fbcbd33` of this
 to `v0.6.0-beta.1`. Its gateway and resource service were temporary and reached over two Tailscale Serve HTTPS routes
 (tailnet only). The native binding of the test bot was held by one owner-controlled Grok Bot cloud computer (Linux)
 with the 0.6.0-beta.1 plugin from the release. That agent followed `RUNBOOK.md` through the CLI after its owner
-approved in the Grok main chat. The token files reached it as Yobiru attachments, never in message text. The callers
+approved in the Grok main chat. The token files reached it as Ishoni attachments, never in message text. The callers
 were CLI homes on the Mac, not other people's agents.
 
 - First run, 11:04 to 11:18 UTC: **13 of 14 checks** passed. Item 4 failed because every resource read returned
@@ -24,7 +24,7 @@ were CLI homes on the Mac, not other people's agents.
 
 Not shown by these runs: the resource fix on macOS (the second run avoided the link instead), a Grok Bot reached by
 someone else's agent or through a public URL, waking the agent through a route (it was told when to act), a
-restart during a run, the Yobiru skill instead of the CLI, host isolation, Muse, Dots and Windows.
+restart during a run, the Ishoni skill instead of the CLI, host isolation, Muse, Dots and Windows.
 
 ## Acceptance checklist driver (after 0.6.0-beta.1)
 
@@ -32,7 +32,7 @@ On 2026-10-21, on a branch based on the `v0.6.0-beta.1` tag (a new maintainer to
 plugin or gateway change; nothing released), on Python 3.13 on Linux, with synthetic homes and data and loopback HTTP:
 
 - `python3 tools/friends_acceptance.py` (its scripted host) passed **43 checks** covering all twelve items of the
-  Beta guide's acceptance checklist, through the plugin's own `scripts/yobiru` launcher. A run whose scripted host
+  Beta guide's acceptance checklist, through the plugin's own `scripts/ishoni` launcher. A run whose scripted host
   put the friend's export into the follower's reply failed item 4 and still cleaned up completely.
 - `python3 -m unittest test_friends_acceptance` passed **2 tests**: the whole checklist with the scripted host, and
   a remote host that never acts, which ends as a timeout (exit 3) after a complete cleanup that leaves only
@@ -58,8 +58,8 @@ synthetic homes and data, injected release metadata, loopback HTTP and subproces
   `v0.6.0-beta.1` tag as a relative path. The check now accepts tag-pinned links and checks their anchors.
 - `python3 -m unittest test_codex_bridge test_codex_queue_client test_codex_resident test_install_codex_bridge
   test_install_codex_bridge_linux` passed **194 tests** on the same tree.
-- `python3 tools/build_plugin.py sync` and `check` passed; `release` wrote `yobiru-0.6.0-beta.1-plugin.zip`,
-  `yobiru-0.6.0-beta.1-marketplace.zip` and `SHA256SUMS`, and every manifest in them carries `0.6.0-beta.1`.
+- `python3 tools/build_plugin.py sync` and `check` passed; `release` wrote `ishoni-0.6.0-beta.1-plugin.zip`,
+  `ishoni-0.6.0-beta.1-marketplace.zip` and `SHA256SUMS`, and every manifest in them carries `0.6.0-beta.1`.
 - The Beta guide's archive commands ran as written against the built plugin archive (the `SHA256SUMS` line,
   extraction, `version`), and the unpacked launcher's `install-runtime --upgrade --apply` refused to replace a
   `0.6.0-dev.1` runtime.
@@ -195,7 +195,7 @@ processes on loopback ports, synthetic homes and data; where a native agent is n
 
 Separately, a maintainers' test drove a real local Codex agent through an earlier snapshot of this branch: two
 original freeform chat turns over a temporary public HTTPS staging route, a scoped native binding, inbound and
-exact-draft reply approval and one Yobiru conversation, read back by the caller CLI; the second turn used the
+exact-draft reply approval and one Ishoni conversation, read back by the caller CLI; the second turn used the
 first through the transcript. Later fixes (enrollment retries, wake classification, ordering, owner-message
 generations, resource checks) are covered by the automated tests above, not by that run. No Grok Bot dialogue
 has completed: the selected bot waited for its owner's approval in the Grok main chat before running the
@@ -256,7 +256,7 @@ public-file hygiene, `git diff --check` and Python 3.8 syntax parsing passed.
 Syntax parsing is not execution on a Python 3.8 interpreter.
 
 The package includes updated setup/Grok Bot skills for inspecting and preserving Tailscale
-identity state, keeping existing Yobiru data, and configuring supported startup recovery.
+identity state, keeping existing Ishoni data, and configuring supported startup recovery.
 The runtime changes only its reported product version. No automatic state migration,
 startup installer, discovery fix or live receiver identity refresh was added.
 
@@ -315,7 +315,7 @@ and clean ChatGPT desktop installation are not established merely by valid metad
 
 On 2026-10-15, the actual Grok Bot returned a new authenticated tracked result with the requested
 challenge and `19 + 23 = 42`, and reported its installed CLI as 0.5.0. Its conversation's plugin
-catalog did not expose Yobiru; release skill files existed on the computer but were not injected as
+catalog did not expose Ishoni; release skill files existed on the computer but were not injected as
 native skills. No supported install/import route was established through that conversation's tools.
 This reconfirms manual runtime execution, while native in-app plugin testing remains **unverified**.
 Do not use this observation to satisfy a declaration that native plugin installation was tested.
@@ -426,7 +426,7 @@ does not establish execution on a Python 3.8 interpreter.
   The 0.4.3 plugin suite had 172 tests. These cases inject Tailscale snapshots and HTTP responses;
   they do not claim that a real Grok Bot VM was rebuilt or exchanged messages after a live IP change.
 - A rebuild still needs a Tailscale login, its chosen stable hostname, and a running receiver.
-  Yobiru cannot rediscover a machine that lost both its name and its identity without a new target.
+  Ishoni cannot rediscover a machine that lost both its name and its identity without a new target.
 
 ## Maintenance fixes (0.4.2, historical validation)
 
@@ -443,7 +443,7 @@ and unchanged session permissions without running a model task. A subprocess reg
 checks that tilde-prefixed state paths work for both the daemon and status command.
 
 Upgrading the plugin alone does not update the running receiver or bridge. Follow the
-[yobiru-upgrade skill](../plugins/yobiru/skills/yobiru-upgrade/SKILL.md), reinstalling the Linux
+[ishoni-upgrade skill](../plugins/ishoni/skills/ishoni-upgrade/SKILL.md), reinstalling the Linux
 bridge with the same thread UUID, socket and Codex home. The resident connection preserves the
 session's existing permissions. See [CODEX_SANDBOX.md](CODEX_SANDBOX.md) to verify those permissions;
 `resident.state: connected` means subscription, not task completion.
@@ -454,7 +454,7 @@ The 0.4.1 release updated the shared icon, Codex brand color, Cursor logo refere
 Its only runtime change was the reported product version; protocol and behavior remained at 0.4.0.
 `tools/build_plugin.py check` and all 16 existing packaging tests passed, including the installed
 Codex manifest validator and reproducible archive checks. Both release archives carry the same
-approved icon as yobiru.com. README image paths and the updated demonstration were inspected.
+approved icon as github.com/zealton/ishoni. README image paths and the updated demonstration were inspected.
 The runtime and real-network test results below are retained from 0.4.0, not claimed as new runs.
 
 ## Historical policy and maintenance validation (0.4.0)
@@ -481,7 +481,7 @@ The real-Tailscale self-test result remains historical and was not rerun for 0.5
 | Check | How to run | What it shows |
 |---|---|---|
 | Package consistency and hygiene | `python3 tools/build_plugin.py check` | Generated manifests and bundled copies are current; `plugin.json` fits the closed Agent Plugins 1.0.0 schema; the Codex and Cursor manifests and both marketplace files follow the documented fields; skills are well formed; no symlinks; no runtime state, tailnet names, Tailscale addresses, home paths, emails, UUIDs or token-like strings in the plugin or docs. |
-| Codex manifest | `python3 <codex skills>/plugin-creator/scripts/validate_plugin.py plugins/yobiru` | Passes the Codex plugin-creator validator (run by `tests/test_build.py` when the validator is installed). |
+| Codex manifest | `python3 <codex skills>/plugin-creator/scripts/validate_plugin.py plugins/ishoni` | Passes the Codex plugin-creator validator (run by `tests/test_build.py` when the validator is installed). |
 | Plugin tests | `python3 -m unittest discover -s tests` (220 tests in 0.5.0) | Reproducible archives that contain every skill. The unpacked archive, outside the source tree, in a path with spaces, works from any directory and through a symlinked launcher. Read-only commands create nothing. Setup and wake-config keep existing agents, adapters and keys and refuse silent replacements. Unsafe names and message ids are rejected. The launchd plist parses. On Linux, `codex-bridge install` forwards to the Linux installer without writing into the plugin cache, the installed bridge keeps working after the plugin cache is moved away, `status` reports a listening or stale socket, and file-only install and rollback make no systemctl calls. An addressed message with a file wakes only the named agent; the file is fetched and verified, the reply goes back to the sender's agent, and ack stays local. Receivers run on loopback with a fake Tailscale CLI. |
 | Codex bridge, resident and installers (macOS and Linux) | `python3 -m unittest -v test_codex_bridge test_codex_queue_client test_codex_resident test_install_codex_bridge test_install_codex_bridge_linux` (146 tests in 0.5.0) | Queue, official-CLI interface, macOS install, rollback and dry run, all offline. Kind routing (0.2.1): excluded kinds are routed only after path, sender, allow list, target agent, wake and ack checks; only an unacked effective-`now` direct wake runs the local handler, with only the canonical inbox path appended, no shell and empty stdin; none, batch, acked and unverified records never run it; scans and dispatch never queue or forward excluded kinds, including rows queued earlier; malformed routing config fails before any side effect; failing, slow and missing handlers give fixed outcomes, the handler budget ends before the receiver's `hook_timeout_s`, and a receiver-length outer timeout leaves no handler or child process behind. Both installers validate routing in dry runs and keep it, tuned timing, custom dispatcher instructions (path and the bytes of the local file, also after rollback), the recorded Codex CLI and authorized replies on upgrade; the whole existing queue suite also runs again with routing enabled. Linux: a real temporary AF_UNIX socket and a fake `codex` executable run as a subprocess receive the exact `queue --thread UUID --message ... --remote unix:///...` argv and the pinned `CODEX_HOME`; missing, stale, foreign or non-socket endpoints and probe failures are known-unsent retries without running the CLI; failed, timed-out and receipt-less attempts stay uncertain and are never resent; reconciliation reads only the pinned Codex home, without the socket. The installer runs with an isolated HOME and a fake stateful `systemctl`: dry run writes and runs nothing, `--no-start` never calls systemctl, invalid input and unsafe targets are refused before writes, the fixed thread, queue and per-user unit are guarded, paths with spaces, `%` and `$` are escaped, pinned settings survive an upgrade from another ambient account, and upgrade and rollback restore files and service state while keeping inbox and queue (rollback fails closed when the service cannot be confirmed stopped). |
 | Onboarding, discovery and updates (0.3.0) | `python3 -m unittest -v test_onboarding test_discovery test_update` in `tests/` | Onboarding per platform with injected facts: missing Tailscale (official Linux script with root/sudo; blocked without privileges or `/dev/net/tun`; native app on macOS/Windows, PowerShell-safe Windows paths), daemon unavailable, permission denied, logged out and device approval, separate delivery and session steps; `onboard` and `doctor` create nothing. `/info`: 403 for peers not on the allow list before any title lookup; projection without paths, argv, URLs, previews or unbound sessions; truncation flag; Codex binding cannot override the bridge. Native names: cache keyed by source, unsupported results never cached, rename seen after the TTL, cold lookups answer `pending`/stale within the wait, timeouts kill the whole process group, bounded output. Clients: legacy 404, 403, unreachable, malformed, hostile escape characters, non-UUID Codex ids, and slow peers (keep-alive, HTTP/1.0 close, slow headers) bounded by a total deadline. Updates: SemVer with prereleases (invalid leading zeros rejected), release parsing that ignores text and foreign URLs, stable/preview channels, no stable release, bounded fetch errors. Notices: dry run writes nothing, verified local upgrade and published release required, 202 receipt with matching id, invalid receipt and interrupted dispatch are uncertain and never resent (reconciliation reuses the identical envelope), 403/400 definite, refused connections stay pending, explicit and remembered offline peers persist without fabricated addresses, legacy receivers keep the explicit agent, stale plans cannot downgrade uncertain state, lock contention refused. Bridge: metadata-only `thread/read` (includeTurns false, never preview), `session-name` creates no queue, macOS and Linux upgrades keep session names. Plus an end-to-end loopback `agents`/`peers` run between two real 0.3.0 receivers. No real Tailscale, GitHub, Codex runtime or peer is contacted. |
@@ -489,14 +489,14 @@ The real-Tailscale self-test result remains historical and was not rerun for 0.5
 
 ## Hosts (historical 0.1.0 observations)
 
-The Codex results below were observed with Yobiru 0.1.0 and were not repeated for 0.2.x. The 0.2.x
-changes (the Codex bridge, its installers and `codex-bridge` in `yobiru.py`) are covered only by the
+The Codex results below were observed with Ishoni 0.1.0 and were not repeated for 0.2.x. The 0.2.x
+changes (the Codex bridge, its installers and `codex-bridge` in `ishoni.py`) are covered only by the
 offline and extracted-package tests above.
 
 | | Codex | Cursor | Grok Bot | Other agent apps (for example DOTS) |
 |---|---|---|---|---|
-| Install from the repository marketplace | Passed locally: `codex plugin marketplace add` + `codex plugin add yobiru@yobiru` (codex-cli 0.162.1, Linux); installed copy identical to the source files | Not tested | Not tested | Not tested |
-| Skills discovered | Passed: app-server `skills/list` shows `yobiru:yobiru-inbox`, `-send`, `-setup` and `-wake` | Not tested | Not tested | Not tested |
+| Install from the repository marketplace | Passed locally: `codex plugin marketplace add` + `codex plugin add ishoni@ishoni` (codex-cli 0.162.1, Linux); installed copy identical to the source files | Not tested | Not tested | Not tested |
+| Skills discovered | Passed: app-server `skills/list` shows `ishoni:ishoni-inbox`, `-send`, `-setup` and `-wake` | Not tested | Not tested | Not tested |
 | Bundled command from the install location | Passed: `paths`, and `doctor` against an existing tailmsg setup (no errors, nothing changed) | Not tested | Not tested: whether the plugin's scripts reach the Bot's computer is unknown | Not tested |
 | A real conversation using the skills | Not tested | Not tested | Not tested | Not tested |
 | Marketplace listing or review | Not submitted | Not submitted | Not submitted | — |
@@ -505,7 +505,7 @@ The following acceptance areas were not exercised by the isolated 0.5.0 release 
 The later live acceptance section records the limited Linux/Grok runtime checks separately:
 
 - Two real machines exchanging messages, files and wake-ups over one tailnet.
-- macOS and Windows runs of the `yobiru` command, and installing the printed service definitions.
+- macOS and Windows runs of the `ishoni` command, and installing the printed service definitions.
 - The Codex desktop bridge against a running Codex desktop app in this release.
 - A 0.5.0 Linux bridge upgrade against a real Codex app-server and a real user systemd manager;
   the release suites use fakes. The limited live 0.4.2 probes described above remain historical.
@@ -527,7 +527,7 @@ the importing program's streams. These pipe tests run on Linux; they are not a W
 
 ## Reproducing the release archives
 
-`python3 tools/build_plugin.py release` writes `dist/yobiru-<version>-plugin.zip`,
-`dist/yobiru-<version>-marketplace.zip` and `dist/SHA256SUMS`. The archives are byte-for-byte
+`python3 tools/build_plugin.py release` writes `dist/ishoni-<version>-plugin.zip`,
+`dist/ishoni-<version>-marketplace.zip` and `dist/SHA256SUMS`. The archives are byte-for-byte
 reproducible from the same source tree (see [RELEASING.md](RELEASING.md)), so a published checksum can
 be checked by rebuilding.

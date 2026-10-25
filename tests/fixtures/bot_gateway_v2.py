@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Fixture: the schema-2 public bot gateway exactly as committed at 961f065 (Friends and dispatch reliability, before schema 3),
 # kept to build real schema-2 databases for the schema 2 -> 3 migration tests. Do not edit.
-"""Yobiru public bot gateway: a small self-hostable mailbox for published bots and their Friends.
+"""Ishoni public bot gateway: a small self-hostable mailbox for published bots and their Friends.
 
 Separate from the private tailmsg receiver (port 7766): its own process, port (default 7780, loopback),
 data directory and credentials. Callers outside Tailscale reach a *bot* by its immutable id or public
@@ -45,8 +45,8 @@ if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 import bot_common as C  # noqa: E402
 
-HOME_ENV = "YOBIRU_GATEWAY_HOME"
-DEFAULT_HOME = "~/.yobiru-gateway"
+HOME_ENV = "ISHONI_GATEWAY_HOME"
+DEFAULT_HOME = "~/.ishoni-gateway"
 DEFAULT_PORT = 7780
 SCHEMA_VERSION = "2"
 CONFIG_KEYS = {"v", "bind", "port", "public_base_url", "allow_non_loopback_bind", "trust_forwarded_for", "limits",
@@ -102,7 +102,7 @@ RESERVED_HANDLES = {
     "about", "account", "actor", "actors", "admin", "administrator", "api", "bot", "bots", "capability",
     "contact", "contacts", "enroll", "follow", "friends", "gateway", "health", "help", "info", "login", "me", "mod",
     "moderator", "msg", "null", "official", "owner", "owners", "root", "security", "source", "staff", "support",
-    "system", "undefined", "verifier", "well-known", "worker", "workers", "yobiru"}
+    "system", "undefined", "verifier", "well-known", "worker", "workers", "ishoni"}
 CAPABILITIES = ("faq", "leave_message", "calendar_slots", "chat")
 RESOURCE_RE = re.compile(r"^resource:[a-z0-9][a-z0-9_-]{0,31}\Z")
 MAX_POLICY_ITEMS = 40
@@ -126,7 +126,7 @@ ADAPTERS = ("deterministic", "native")
 AUTOMATIC_BLOCKERS = [
     "the host does not enforce a per-agent boundary for files, installed tools, browser logins or connected apps",
     "the host's agent memory is shared across conversations, so callers are not isolated from each other",
-    "Yobiru cannot verify a host's isolation from a declaration or local probes",
+    "Ishoni cannot verify a host's isolation from a declaration or local probes",
 ]
 MAX_SLOTS = 5
 STATE_TEXT = {
@@ -689,7 +689,7 @@ def bot_card(cfg, db, bot):
     pol, base = policy_of(bot), cfg["public_base_url"]
     enroll = cfg["enrollment"]
     agent = native_binding(db, bot["id"])
-    return {"type": "yobiru.bot", "card_version": 1, "issuer": base, "bot_id": bot["id"],
+    return {"type": "ishoni.bot", "card_version": 1, "issuer": base, "bot_id": bot["id"],
             "handle": "@" + bot["handle"], "address": "%s/@%s" % (base, bot["handle"]),
             "id_address": "%s/@%s" % (base, bot["id"]), "display_name": bot["display_name"],
             "description": bot["description"], "capabilities": public_levels(pol),
@@ -706,7 +706,7 @@ def bot_card(cfg, db, bot):
                     "enroll_bot": "POST /v1/enroll" if enroll["bots"] else None,
                     "follow": "POST /v1/bots/%s/follow" % bot["id"],
                     "conversations": "POST /v1/bots/%s/conversations" % bot["id"]},
-            "connect": "yobiru public connect %s/@%s" % (base, bot["handle"])}
+            "connect": "ishoni public connect %s/@%s" % (base, bot["handle"])}
 
 
 def relationship_view(db, bot, contact, pid):
@@ -821,8 +821,8 @@ def worker_view(w, bot):
                          "proves": ("check_acknowledged: the binding credential's holder answered a check. "
                                     "wake_tested: a wake the connector recorded for a check was followed by that "
                                     "acknowledgement. Neither proves which host or thread answered, nor isolation.")}
-        v["isolation"] = {"per_caller_context": "yobiru_transcript_only", "host_memory": "shared_unknown",
-                          "files_tools_apps": "not_enforced_by_yobiru", "inbound_review": "gateway_enforced",
+        v["isolation"] = {"per_caller_context": "ishoni_transcript_only", "host_memory": "shared_unknown",
+                          "files_tools_apps": "not_enforced_by_ishoni", "inbound_review": "gateway_enforced",
                           "reply_review": "gateway_enforced"}
         v["automatic_mode"] = {"available": False, "blockers": AUTOMATIC_BLOCKERS}
     return v
@@ -1115,7 +1115,7 @@ class Api(object):
 
     def well_known(self, db, r):
         base = self.cfg["public_base_url"]
-        return 200, {"ok": True, "type": "yobiru.gateway", "service": C.SERVICE, "api": C.API_VERSION,
+        return 200, {"ok": True, "type": "ishoni.gateway", "service": C.SERVICE, "api": C.API_VERSION,
                      "issuer": base, "api_base": base + "/v1", "share_link": base + "/@{handle}",
                      "enrollment": {"visitors": self.enrollment["visitors"], "bots": self.enrollment["bots"]},
                      "federation": "none: identities are scoped to this gateway",
@@ -2575,7 +2575,7 @@ PRINCIPAL = r"(?:act|bot)_[a-z2-7]{16}"
 CALLER = ("actor", "source")
 ROUTES = [(m, re.compile(p + r"\Z"), h, k) for m, p, h, k in [
     ("GET", r"/v1/health", "health", None),
-    ("GET", r"/\.well-known/yobiru", "well_known", None),
+    ("GET", r"/\.well-known/ishoni", "well_known", None),
     ("GET", r"/@(?P<ref>[^/]{1,64})", "share_card", None),
     ("POST", r"/v1/actors", "enroll", None),
     ("POST", r"/v1/enroll", "enroll_bot", None),
@@ -2665,7 +2665,7 @@ def make_handler(api):
     cfg, limits = api.cfg, api.limits
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "yobiru-gateway"
+        server_version = "ishoni-gateway"
         sys_version = ""
         timeout = limits["read_timeout_seconds"]
 
@@ -3122,7 +3122,7 @@ def cmd_status(home, a):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="bot_gateway", description="Yobiru public bot gateway (self-hosted mailbox)")
+    ap = argparse.ArgumentParser(prog="bot_gateway", description="Ishoni public bot gateway (self-hosted mailbox)")
     ap.add_argument("--gateway-home", help="data directory (default: $%s or %s)" % (HOME_ENV, DEFAULT_HOME))
     sp = ap.add_subparsers(dest="cmd")
     sp.required = True

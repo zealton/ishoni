@@ -2,7 +2,7 @@
 
 Separate synthetic homes stand for the gateway host, the owner's admin device, two callers and two worker
 devices; the gateway and the private calendar capability service run as their own subprocesses on
-ephemeral loopback ports. Every step is a real `yobiru ...` command or real HTTP. Nothing reads the
+ephemeral loopback ports. Every step is a real `ishoni ...` command or real HTTP. Nothing reads the
 user's ~/.tailmsg, a real calendar, Tailscale or a non-loopback address, and port 7766 is never used.
 """
 import datetime as dt
@@ -318,7 +318,7 @@ class PublicWorkflowTests(unittest.TestCase):
             "self_agent": "codex", "agents": {"codex": {"wake_adapter": {"type": "exec", "argv": [str(adapter)]}}},
             "wake_policy": {"default_max": "now"}, "tailscale_cmd": [sys.executable, str(SUPPORT / "fake_tailscale.py"),
                                                                      "--state", str(state)]}))
-        extra = {"YOBIRU_PYTHON": str(shim), "TM_TEST_REAL_PYTHON": sys.executable,
+        extra = {"ISHONI_PYTHON": str(shim), "TM_TEST_REAL_PYTHON": sys.executable,
                  "TM_TEST_HARNESS": str(SUPPORT / "loopback_harness.py")}
         log = (self.users["worker one"] / "receiver.log").open("w")
         receiver = subprocess.Popen(["/bin/sh", str(PKG.launcher), "serve"], env=PKG.env(self.users["worker one"],

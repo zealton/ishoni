@@ -1,32 +1,32 @@
-# Yobiru plugin privacy policy
+# Ishoni plugin privacy policy
 
 Effective date: October 24, 2026. This revision describes the optional continuous
 database backups for the official gateway, including data retained after deletion
-from the live database. The October 22, 2026 notice, with Yobiru 0.7.3, added where
+from the live database. The October 22, 2026 notice, with Ishoni 0.7.3, added where
 a gateway may keep large message bodies (a blob store; for the official gateway, Cloudflare R2).
 The 0.7.0 version added end-to-end encryption of public bot messages: from 0.7.0 a gateway,
 including the official one, stores message text, attachments and replies only as
-ciphertext it cannot read whenever both sides use the Yobiru client (see
+ciphertext it cannot read whenever both sides use the Ishoni client (see
 [End-to-end encryption](#end-to-end-encryption-070-and-later)). The 0.6.0 version
 added the optional public bot gateway, the official gateway that Chekusu
-operates at `bots.yobiru.com`, and the local maintenance heartbeats. Yobiru 0.5.3 and earlier have neither; the
-[earlier version of this file](https://github.com/chekusu/yobiru/blob/v0.5.3/docs/PRIVACY.md) (effective
+operates at `bots.example.com`, and the local maintenance heartbeats. Ishoni 0.5.3 and earlier have neither; the
+[earlier version of this file](https://github.com/zealton/ishoni/blob/v0.5.3/docs/PRIVACY.md) (effective
 October 15, 2026) covers them.
 
-This policy describes the open-source Yobiru plugin published by Chekusu at
-[chekusu/yobiru](https://github.com/chekusu/yobiru). It covers the plugin and its
+This policy describes the open-source Ishoni plugin published by Chekusu at
+[zealton/ishoni](https://github.com/zealton/ishoni). It covers the plugin and its
 bundled command-line receiver, not the separate privacy practices of a plugin
-marketplace, an AI provider, Tailscale, GitHub, or the Yobiru website.
+marketplace, an AI provider, Tailscale, GitHub, or the Ishoni website.
 
 ## What the plugin does with data
 
-Yobiru connects agents on computers that you choose over your Tailscale network.
+Ishoni connects agents on computers that you choose over your Tailscale network.
 Private Tailscale messaging has no Chekusu-operated messaging account, message
 relay, or central file store, and the plugin does not send usage analytics or
 message contents to Chekusu. The public bots and Friends feature of
 0.6.0 adds an optional gateway, a central message store for public
 bots, described in its own section below. You can host that gateway yourself, or
-use the [official gateway](#the-official-gateway-botsyobirucom) that Chekusu
+use the [official gateway](#the-official-gateway-botsexamplecom) that Chekusu
 operates; only then does Chekusu receive and store your Friends data (from
 0.7.0 the message content end-to-end encrypted, so that Chekusu cannot read it).
 
@@ -51,19 +51,19 @@ These files are not uploaded to Chekusu by the plugin.
 
 Messages and attachments go to the peers you address. Tailscale provides the
 network identity and encrypted network transport; its own infrastructure and
-privacy terms apply, including when it relays encrypted traffic. Yobiru's receiver
+privacy terms apply, including when it relays encrypted traffic. Ishoni's receiver
 policy and your Tailscale rules determine which peers may contact the receiver.
 
 If you enable an agent bridge or wake webhook, incoming content and associated
 metadata can be passed to that configured agent or endpoint. The AI application
 may send it to its model provider under that application's settings and policies.
-Installing Yobiru does not change the provider's retention or training settings.
+Installing Ishoni does not change the provider's retention or training settings.
 Only configure destinations you intend to receive this information.
 
 Installation and update checks contact the selected plugin host and/or GitHub to
 retrieve public package or release information. Those services receive ordinary
 network request information. An installed update-check timer performs these
-checks on its configured schedule. Yobiru does not include inbox contents or
+checks on its configured schedule. Ishoni does not include inbox contents or
 attachments in its GitHub release checks.
 
 ## Optional public bot gateway
@@ -75,7 +75,7 @@ private Tailscale messaging.
 
 | Data | Where and why it is processed |
 | --- | --- |
-| Public message bodies, bot results and owner replies | Stored in the gateway's SQLite database so that callers and your worker can exchange them while either side is offline; from 0.7.3 a gateway configured with a blob store keeps large bodies (such as those with pictures or other attachments) in that store instead, compressed, with only a reference and its hash in the database. From 0.7.0 they are stored **end-to-end encrypted** (sealed on the sender's device for the bot's key and the caller's key) whenever the bot has a key and the sender uses the Yobiru client: whoever operates the gateway host cannot read them. They are stored in plaintext, readable by the operator, only when the bot has no key (bots created before 0.7.0 until their owner runs `e2e enable`), when a caller talks to the gateway through an MCP client connected straight to it (such a client holds no key), or when a caller's client is older than 0.7.0. A bot's owner can refuse plaintext messages (`require_e2e`). |
+| Public message bodies, bot results and owner replies | Stored in the gateway's SQLite database so that callers and your worker can exchange them while either side is offline; from 0.7.3 a gateway configured with a blob store keeps large bodies (such as those with pictures or other attachments) in that store instead, compressed, with only a reference and its hash in the database. From 0.7.0 they are stored **end-to-end encrypted** (sealed on the sender's device for the bot's key and the caller's key) whenever the bot has a key and the sender uses the Ishoni client: whoever operates the gateway host cannot read them. They are stored in plaintext, readable by the operator, only when the bot has no key (bots created before 0.7.0 until their owner runs `e2e enable`), when a caller talks to the gateway through an MCP client connected straight to it (such a client holds no key), or when a caller's client is older than 0.7.0. A bot's owner can refuse plaintext messages (`require_e2e`). |
 | Metadata the gateway still sees with end-to-end encryption | Who talks to whom, when, the message kind, sizes, attachment counts and byte totals, review and delivery states, decision receipts, relationships and follows. Stored meeting-slot queries and suggested slot times stay plaintext (they are structured times the gateway checks), as do the gateway's own fixed status texts. |
 | End-to-end keys | The gateway stores the public half of each bot's and caller's key and shows a bot's on its card. Secret keys stay on your devices in `0600` files (`public/credentials.json`, and `.e2e` key files the owner hands to the bot's own agent or worker devices); the gateway never receives them. |
 | Caller display names, contact requests with their notes, follows between bots, relationships, grants, ceilings and conversation membership | Stored by the gateway to authorize each request. Display names are self-asserted and unverified. |
@@ -124,9 +124,9 @@ On owner, agent and caller devices:
   of folders `--attach` may read is `public/attachments.json`. Revoking a grant
   stops later gateway reads but cannot erase copies already saved.
 
-## The official gateway (bots.yobiru.com)
+## The official gateway (bots.example.com)
 
-If you enroll on, connect to or message a bot on `https://bots.yobiru.com`, Chekusu
+If you enroll on, connect to or message a bot on `https://bots.example.com`, Chekusu
 is the operator of that gateway, and everything in the section above applies with
 Chekusu as "whoever operates the gateway host":
 
@@ -147,7 +147,7 @@ Chekusu as "whoever operates the gateway host":
   email addresses and codes present in the mail outbox. End-to-end encrypted
   content stays ciphertext in these backups; plaintext fields remain readable
   by those with access to the backups.
-- **Who can read it.** With end-to-end encryption (the Yobiru client 0.7.0 or
+- **Who can read it.** With end-to-end encryption (the Ishoni client 0.7.0 or
   later on both sides, talking to a bot with a key), message bodies, drafts,
   results, owner messages and attachments reach the gateway and Cloudflare only
   as ciphertext: neither Chekusu nor Cloudflare can read them, and Chekusu cannot
@@ -196,7 +196,7 @@ Chekusu as "whoever operates the gateway host":
 
 ## End-to-end encryption (0.7.0 and later)
 
-The Yobiru client makes an X25519 key for every new bot (on the owner's device)
+The Ishoni client makes an X25519 key for every new bot (on the owner's device)
 and every new visitor identity, registers only its public half with the gateway,
 and seals each body with ChaCha20-Poly1305 for the bot's key and the caller's key.
 The bot's owner device, its own agent and its deterministic worker hold the bot's
@@ -204,7 +204,7 @@ key; the caller's device holds the caller's. Text is decrypted only on those
 devices: the owner reads a message during review there, the agent after the owner
 admits it, and the caller reads the reply. A caller pins a bot's key the first
 time it sees it, so a key the gateway swapped would be reported, not used; you
-can compare key fingerprints (`yobiru public e2e status`) over another channel.
+can compare key fingerprints (`ishoni public e2e status`) over another channel.
 Decrypted text is then handled by your agent and its host and model provider as
 before. Losing every device that holds a bot's key makes its stored encrypted
 messages unreadable; the owner can make a new key (`e2e enable --rotate`), and
@@ -238,7 +238,7 @@ Network access does not by itself authorize an agent to perform a requested
 task. Avoid sending secrets or unrelated private information in messages.
 
 For a question about this policy or the plugin's data handling, open a
-[GitHub issue](https://github.com/chekusu/yobiru/issues). Issues are public: do not
+[GitHub issue](https://github.com/zealton/ishoni/issues). Issues are public: do not
 post private messages, credentials, webhook URLs, device addresses or logs that
 contain them. Ask the maintainer for a private channel before sharing sensitive
 details. Chekusu cannot retrieve or delete message history that exists only on

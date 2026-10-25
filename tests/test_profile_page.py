@@ -42,7 +42,7 @@ def visible(page):
 class ProfilePageCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru profile page ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni profile page ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS).start()
 
     @classmethod
@@ -66,7 +66,7 @@ class AgentCommentTests(unittest.TestCase):
     def card(self, gateway):
         address = gateway + "/@alice"
         return {"display_name": "Alice", "handle": "@alice", "bot_id": "bot_profile_comment",
-                "address": address, "connect": "yobiru public connect " + address,
+                "address": address, "connect": "ishoni public connect " + address,
                 "api": {"mcp": gateway + "/mcp"}}
 
     def comments(self, page):
@@ -168,22 +168,22 @@ class AudienceTests(ProfilePageCase):
         self.assertTrue(hdrs["content-type"].startswith("text/html"))
         self.assertIn("User-Agent", hdrs["vary"])
         seen = visible(text)
-        for agent_only in ("yobiru public connect", bot_id, "/mcp", "AI agents", "bot_id"):
+        for agent_only in ("ishoni public connect", bot_id, "/mcp", "AI agents", "bot_id"):
             self.assertNotIn(agent_only, seen, agent_only)
-        self.assertIn('data-copy="Use Yobiru to contact %s at %s"' % (card["handle"], card["address"]), text)
+        self.assertIn('data-copy="Use Ishoni to contact %s at %s"' % (card["handle"], card["address"]), text)
         self.assertIn("Have your agent reach out", seen)
         self.assertIn('class="acts"', text)
-        self.assertIn("yobiru public connect " + card["address"], text.split("<!--", 1)[1].split("-->", 1)[0])
+        self.assertIn("ishoni public connect " + card["address"], text.split("<!--", 1)[1].split("-->", 1)[0])
 
         status, hdrs, agent = self.page("/@" + h, user_agent=CLAUDE)
         self.assertEqual(200, status)
         self.assertTrue(hdrs["content-type"].startswith("text/html"))
         self.assertIn("This version of the page is for AI agents", agent)
-        self.assertIn("yobiru public connect " + card["address"], visible(agent))
+        self.assertIn("ishoni public connect " + card["address"], visible(agent))
         self.assertIn("followers: 0", agent)
         self.assertNotIn("<style", agent)
         self.assertNotIn('class="acts"', agent)
-        self.assertIn('<script type="application/json" id="yobiru-card">', agent)
+        self.assertIn('<script type="application/json" id="ishoni-card">', agent)
 
         self.assertIn('class="acts"', self.page("/@%s?format=html" % h, user_agent=CLAUDE)[2],
                       "an explicit format=html is the page for people")
@@ -199,11 +199,11 @@ class AudienceTests(ProfilePageCase):
                    "Slackbot-LinkExpanding 1.0", "Twitterbot/1.0", None, ""):
             self.assertFalse(P.is_agent(ua), ua)
 
-    def test_the_top_corner_shows_the_yobiru_mark(self):
+    def test_the_top_corner_shows_the_ishoni_mark(self):
         h = self.handle("x")
         self.gw.owned_bot(h)
-        wordmark = ('<a class="wordmark" href="%s" dir="ltr" aria-label="Yobiru"><img src="%s" width="24" height="24" '
-                    'alt=""><span>yobiru</span></a>' % (P.SITE, P.BRAND_MARK))
+        wordmark = ('<a class="wordmark" href="%s" dir="ltr" aria-label="Ishoni"><img src="%s" width="24" height="24" '
+                    'alt=""><span>ishoni</span></a>' % (P.SITE, P.BRAND_MARK))
         status, hdrs, text = self.page("/@" + h)
         self.assertIn(wordmark, text)
         self.assertIn("img-src 'self' data:", hdrs["content-security-policy"])
@@ -402,7 +402,7 @@ class LinkTests(ProfilePageCase):
                          "youtube"), ("https://music.youtube.com/a", "youtubemusic"), ("https://v.douyin.com/a",
                          "douyin"), ("https://mp.weixin.qq.com/s/a", "wechat_official"), ("https://qq.com/", "website"),
                          ("https://mastodon.example/@a", "mastodon"), ("https://notx.com/a", "website"),
-                         ("https://x.com.evil.example/", "website"), ("https://bots.yobiru.com/@a", "yobiru")):
+                         ("https://x.com.evil.example/", "website"), ("https://bots.example.com/@a", "website")):
             self.assertEqual(pid, L.platform_of(url), url)
         self.assertEqual(["X", "抖音", "me@example.com", "example.org"],
                          [L.default_label(u) for u in ("https://x.com/a", "https://douyin.com/a",

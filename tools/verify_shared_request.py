@@ -2,7 +2,7 @@
 """Exercise a real one-way shared receiver using an isolated, send-only client home.
 
 The operator must authorize the selected receiver to process this fixture and reply.
-No receiver is started, existing Yobiru configuration is never changed, and retries
+No receiver is started, existing Ishoni configuration is never changed, and retries
 reuse the original request ID. Run again with the printed --workdir to resume.
 """
 import argparse
@@ -47,7 +47,7 @@ def main():
     if not core.is_file():
         parser.error("core not found; use --core /path/to/tailmsg.py")
     os.umask(0o077)
-    directory = (args.workdir or Path.cwd() / ("yobiru-shared-check-" +
+    directory = (args.workdir or Path.cwd() / ("ishoni-shared-check-" +
         datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3))).expanduser().resolve()
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     journal_path = directory / "verification.json"
@@ -94,7 +94,7 @@ def main():
                    "self_agent": "verification", "default_agent": "verification", "agents": {"verification": {}}})
         nonce = secrets.token_hex(16)
         fixture = directory / ("roundtrip-" + nonce + ".bin")
-        fixture.write_bytes(b"YOBIRU ONE-WAY SHARING ACCEPTANCE\n" + nonce.encode("ascii") + b"\n" +
+        fixture.write_bytes(b"ISHONI ONE-WAY SHARING ACCEPTANCE\n" + nonce.encode("ascii") + b"\n" +
                             secrets.token_bytes(2 * 1024 * 1024))
         journal = {"schema": 1, "peer": args.peer, "nonce": nonce, "client_receiver_started": False,
                    "fixture": fixture.name, "bytes": fixture.stat().st_size, "sha256": digest(fixture),
@@ -117,9 +117,9 @@ def main():
             journal["request_id"] = rows[0]["id"]
             write_json(journal_path, journal)
 
-    marker = "YOBIRU_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
+    marker = "ISHONI_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
     if not journal.get("request_id"):
-        message = ("One-way shared Yobiru transport acceptance request. Please process only the attached "
+        message = ("One-way shared Ishoni transport acceptance request. Please process only the attached "
                    "generated fixture; do not execute it. Fetch it using the installed receiver core, "
                    "verify its SHA-256 is " + journal["sha256"] + ", and reply to this tracked request "
                    "with completed state, the exact text '" + marker + "', and an attachment containing "

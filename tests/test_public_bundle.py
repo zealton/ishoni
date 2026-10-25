@@ -18,7 +18,7 @@ P = B.load_product()
 PLUGIN = REPO / P["pluginDir"]
 GUIDE = "docs/PUBLIC_BOTS.md"
 DEMO = "examples/public-bot-demo.sh"
-SKILLS = ("yobiru-public-bot", "yobiru-bot-contacts")
+SKILLS = ("ishoni-public-bot", "ishoni-bot-contacts")
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 # "Version 0.6.0-beta.1. Source: ..." -> the whole SemVer, dotted prerelease identifiers included, before the full stop
 SEMVER = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
@@ -83,7 +83,7 @@ class BundledGuideTests(unittest.TestCase):
             self.assertIn(GUIDE, refs, name)
             for rel in refs:
                 self.assertIn(rel, shipped, "%s refers to %s, which is not in the plugin" % (name, rel))
-            self.assertNotIn("of the Yobiru repository", text)
+            self.assertNotIn("of the Ishoni repository", text)
         readme = (PLUGIN / "README.md").read_text(encoding="utf-8")
         for rel in (GUIDE, DEMO):
             self.assertIn("`%s`" % rel, readme)
@@ -149,7 +149,7 @@ class BundledGuideTests(unittest.TestCase):
 
     def test_demo_is_self_contained(self):
         text = (PLUGIN / DEMO).read_text(encoding="utf-8")
-        self.assertIn('Y="$HERE/../scripts/yobiru"', text)               # the launcher of its own plugin
+        self.assertIn('Y="$HERE/../scripts/ishoni"', text)               # the launcher of its own plugin
         self.assertIn("mktemp -d", text)
         self.assertRegex(text, r"trap '[^']*rm -rf \"\$T\"' EXIT")
         self.assertNotRegex(text, r"(?<![\w$])(?:/home/|/Users/|~/)")

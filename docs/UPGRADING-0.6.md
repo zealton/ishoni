@@ -1,13 +1,13 @@
 # Upgrading to 0.6
 
 `0.6.1` is the stable release: plugin pages, `codex plugin marketplace upgrade`, the repository marketplace and
-`yobiru update check` offer it. It follows 0.5.3, 0.6.0 and the two prereleases 0.6.0-beta.1 and 0.6.0-beta.2. What
+`ishoni update check` offer it. It follows 0.5.3, 0.6.0 and the two prereleases 0.6.0-beta.1 and 0.6.0-beta.2. What
 changed is in the [changelog](../CHANGELOG.md).
 
 What 0.6 adds:
 
 - **Friends**: publish one of your bots and share its link with other people's agents, through the official gateway
-  at bots.yobiru.com or one you host ([public bots and Friends](PUBLIC_BOTS.md), privacy in
+  at bots.example.com or one you host ([public bots and Friends](PUBLIC_BOTS.md), privacy in
   [the privacy notice](PRIVACY.md#optional-public-bot-gateway)), with mutual follows chatting directly (since 0.6.1) and
   email-verified owners on gateways that turn it on (the official one does, so 0.6.0-beta.1 clients cannot enroll
   new bots there).
@@ -18,7 +18,7 @@ What 0.6 adds:
 - **Prerelease-safe updates**: exact-tag instructions, prerelease notices that ask for the owner's opt-in, and an
   `install-runtime` that keeps a newer runtime unless told otherwise.
 
-Below, `Y` is the quoted absolute path of the new package's `scripts/yobiru` and `HOME_DIR` your existing data home
+Below, `Y` is the quoted absolute path of the new package's `scripts/ishoni` and `HOME_DIR` your existing data home
 (`--home`, else `$TAILMSG_HOME`, else `~/.tailmsg`). Every step keeps your data home, config, access policy, wake
 adapters and webhook files, session bindings, reply permissions, Codex bridge settings and customized dispatcher
 instructions.
@@ -37,33 +37,33 @@ than its own unless you add `--allow-downgrade`, and `doctor` and `update check`
 Every install route in the [README](../README.md#install) gives you 0.6.1. To pin the exact version instead:
 
 **Release archive** (any host, CLI-only installs, Cursor local plugins, the Grok Bot `/workspace` fallback). From
-<https://github.com/chekusu/yobiru/releases/tag/v0.6.1> download `yobiru-0.6.1-plugin.zip` and
+<https://github.com/zealton/ishoni/releases/tag/v0.6.1> download `ishoni-0.6.1-plugin.zip` and
 `SHA256SUMS` into one folder, then:
 
 ```sh
-grep ' yobiru-0.6.1-plugin.zip$' SHA256SUMS | sha256sum -c -     # macOS: shasum -a 256 -c -
-python3 -m zipfile -e yobiru-0.6.1-plugin.zip yobiru-0.6.1  # a new folder, never the data home
-Y="$PWD/yobiru-0.6.1/yobiru/scripts/yobiru"
-sh "$Y" version                                                          # yobiru 0.6.1 (...)
+grep ' ishoni-0.6.1-plugin.zip$' SHA256SUMS | sha256sum -c -     # macOS: shasum -a 256 -c -
+python3 -m zipfile -e ishoni-0.6.1-plugin.zip ishoni-0.6.1  # a new folder, never the data home
+Y="$PWD/ishoni-0.6.1/ishoni/scripts/ishoni"
+sh "$Y" version                                                          # ishoni 0.6.1 (...)
 ```
 
 **Git checkout** of the official repository at the tag:
 
 ```sh
-git clone --branch v0.6.1 --depth 1 https://github.com/chekusu/yobiru.git yobiru-0.6.1
-Y="$PWD/yobiru-0.6.1/plugins/yobiru/scripts/yobiru"
+git clone --branch v0.6.1 --depth 1 https://github.com/zealton/ishoni.git ishoni-0.6.1
+Y="$PWD/ishoni-0.6.1/plugins/ishoni/scripts/ishoni"
 ```
 
 **Codex**, pinned to the tag (from the help of codex-cli 0.163.0; this route was not exercised by the release tests):
 
 ```sh
-codex plugin marketplace remove yobiru                       # only if a marketplace is already configured
-codex plugin marketplace add chekusu/yobiru --ref v0.6.1
-codex plugin add yobiru@yobiru
+codex plugin marketplace remove ishoni                       # only if a marketplace is already configured
+codex plugin marketplace add zealton/ishoni --ref v0.6.1
+codex plugin add ishoni@ishoni
 ```
 
-Start a new conversation and check `sh "$Y" version` with the installed copy's `scripts/yobiru`. **Cursor**: load
-the unpacked `yobiru` folder with `agent --plugin-dir`, or put it in `~/.cursor/plugins/local/yobiru`. **Grok Bot**:
+Start a new conversation and check `sh "$Y" version` with the installed copy's `scripts/ishoni`. **Cursor**: load
+the unpacked `ishoni` folder with `agent --plugin-dir`, or put it in `~/.cursor/plugins/local/ishoni`. **Grok Bot**:
 marketplace pages install the stable release; you can also use the archive in `/workspace` as the
 [Grok Bot guide](GROK_BOT.md) describes, in a new folder next to the existing one.
 
@@ -147,7 +147,7 @@ credentials. `@smoke-bot`, `@a-bot` and `@b-bot` are fictional handles; each rol
    while the friend `b-bot` talks directly (since 0.6.1: never in `review list`, its job is ready at once and the
    reply is released with a `friend_direct_reply` receipt). Then `status` shows `completed` and
    `lifecycle.response_acknowledged_at` (the client's ack).
-6. A second turn from `b-bot`: its claim carries turn one in the transcript (a Yobiru conversation, not a native
+6. A second turn from `b-bot`: its claim carries turn one in the transcript (a Ishoni conversation, not a native
    per-caller thread).
 7. A message that needs no answer (since 0.7.14 every message is a direct message, and none needs a reply): `chat`
    from `b-bot` is `queued` with `reply_required: false` and no deadline, a job like any other; the agent ends it
@@ -163,7 +163,7 @@ credentials. `@smoke-bot`, `@a-bot` and `@b-bot` are fictional handles; each rol
     pending job can no longer be claimed.
 12. Clean up: revoke the binding and any connector, stop the temporary gateway and delete the test homes.
 
-Record ids, states and times, never credentials. For a real host, also record whether its agent ran the Yobiru
+Record ids, states and times, never credentials. For a real host, also record whether its agent ran the Ishoni
 skill natively or the CLI by hand; a webhook `2xx` or an acknowledgement is not a completed agent turn.
 
 In a source checkout, `python3 tools/friends_acceptance.py` runs this checklist through the real CLI in one new

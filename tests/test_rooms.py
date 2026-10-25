@@ -28,7 +28,7 @@ COUNTER = itertools.count(1)
 class RoomCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru rooms ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni rooms ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
 
@@ -218,7 +218,7 @@ class RoomCase(unittest.TestCase):
                                  {"op_key": "plainop00001", "kind": "post", "epoch": 2, "text": "x"}, wtoken)
         self.assertEqual("e2e_required", obj["error"])
         mine = agent_creds["gateways"][self.gw.url]["bot_keys"][a][-1]
-        env = E.seal(b"x", mine["secret"], [mine["public"]], "yobiru-room/1")
+        env = E.seal(b"x", mine["secret"], [mine["public"]], "ishoni-room/1")
         status, obj = C.api_call(self.gw.url, "POST", "/v1/rooms/%s/messages" % room,
                                  {"op_key": "wrongkeys001", "kind": "post", "epoch": 2, "sealed": env}, wtoken)
         self.assertEqual("sealed_recipients_mismatch", obj["error"])
@@ -241,14 +241,14 @@ class RoomCase(unittest.TestCase):
         room, a, b = self.team()
         self.y("agent-a", "room", "post", a, room, "--text", "A: parser done", "--mention", b)
         results = self.stdio("agent-b", b, [
-            ("yobiru_room_list", {}),
-            ("yobiru_room_sync", {"room": room}),
-            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
+            ("ishoni_room_list", {}),
+            ("ishoni_room_sync", {"room": room}),
+            ("ishoni_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
                                   "kind": "status"}),
-            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
+            ("ishoni_room_post", {"room": room, "op_key": "mcp-post-0001", "text": "B: exporter started",
                                   "kind": "status"}),
-            ("yobiru_room_read", {"room": room, "seq": 1}),
-            ("yobiru_room_post", {"room": room, "op_key": "mcp-post-0002", "text": "x", "kind": "data"}),
+            ("ishoni_room_read", {"room": room, "seq": 1}),
+            ("ishoni_room_post", {"room": room, "op_key": "mcp-post-0002", "text": "x", "kind": "data"}),
         ])
         rooms, synced, posted, again, read, bad = results
         self.assertEqual([room], [r["room_id"] for r in rooms["structuredContent"]["rooms"]])
@@ -269,20 +269,20 @@ class RoomCase(unittest.TestCase):
     def test_a_remote_mcp_client_posts_plain_text_only_where_the_room_allows_it(self):
         room, a, b = self.team()
         token = (self.root / ("native-b-%d.token" % self.n)).read_text().strip()
-        res = self.gw.tool(token, "yobiru_room_post", {"room": room, "op_key": "remote-post-01", "text": "plain"})
+        res = self.gw.tool(token, "ishoni_room_post", {"room": room, "op_key": "remote-post-01", "text": "plain"})
         self.assertEqual((True, "e2e_required"), (res["isError"], res["structuredContent"]["error"]))
         plain = self.y("admin", "room", "create", "Plain %d" % self.n, "--no-e2e")["room_id"]
         for bot, owner in ((a, "owner-a"), (b, "owner-b")):
             self.y("admin", "room", "invite", plain, bot)
             self.y(owner, "room", "accept", plain, bot)
-        res = self.gw.tool(token, "yobiru_room_post", {"room": plain, "op_key": "remote-post-02", "text": "plain"})
+        res = self.gw.tool(token, "ishoni_room_post", {"room": plain, "op_key": "remote-post-02", "text": "plain"})
         self.assertEqual((False, "posted"), (res["isError"], res["structuredContent"]["state"]))
-        seen = self.gw.tool(token, "yobiru_room_sync", {"room": plain, "after": 0})["structuredContent"]["messages"]
+        seen = self.gw.tool(token, "ishoni_room_sync", {"room": plain, "after": 0})["structuredContent"]["messages"]
         self.assertEqual(["plain"], [m["text"] for m in seen])
         self.assertEqual(["plain"], [m["text"] for m in self.y("agent-a", "room", "sync", a, plain)["messages"]])
         # the room's tools are the binding's alone: an owner or caller credential has none
         res = self.gw.mcp(self.gw.owner_token, {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
-                                                 "params": {"name": "yobiru_room_list", "arguments": {}}})
+                                                 "params": {"name": "ishoni_room_list", "arguments": {}}})
         self.assertIn(res[0], (401, 403), res)
 
 

@@ -1,6 +1,6 @@
-"""`yobiru public room ...`: the client side of team rooms (bot_rooms.py on the gateway). Stdlib only.
+"""`ishoni public room ...`: the client side of team rooms (bot_rooms.py on the gateway). Stdlib only.
 
-Two credentials take part, and they live on different devices as everywhere else in Yobiru:
+Two credentials take part, and they live on different devices as everywhere else in Ishoni:
 
 - the owner credential (admin device): create a room, invite bots, accept an invitation for your own bot, set its
   posting mode, review drafts and task requests addressed to your bots;
@@ -9,7 +9,7 @@ Two credentials take part, and they live on different devices as everywhere else
 
 In an end-to-end room every body is sealed on the agent's device for exactly the active members' keys that the
 gateway lists for the current epoch; each member's key is pinned on first sight, and a key that changes later is
-refused until `yobiru public e2e trust BOT`. The gateway stores ciphertext and refuses a body that is not sealed for
+refused until `ishoni public e2e trust BOT`. The gateway stores ciphertext and refuses a body that is not sealed for
 exactly the current members.
 """
 import json
@@ -19,7 +19,7 @@ from pathlib import Path
 import bot_common as C
 import bot_e2e as E
 
-ROOM_CTX = "yobiru-room/1"
+ROOM_CTX = "ishoni-room/1"
 MAX_MEMBERS = 64
 
 
@@ -155,7 +155,7 @@ def compose_post(st, base, bot_id, room_id, view, kind, text, attachments, field
         mine = bc.current_key(st.creds(), base, bot_id)
         if not mine:
             raise RoomClientError("no_e2e_key", "this device holds no end-to-end key of %s (the owner exports it: "
-                                                "yobiru public e2e export %s)" % (bot_id, bot_id))
+                                                "ishoni public e2e export %s)" % (bot_id, bot_id))
         seed = E.seed_for(mine["secret"], "room", room_id, op_key, bc.payload_hash(room_id, {"text": text}))
         body.update(seal_body(text, attachments, mine["secret"], recipients, bind, seed))
     else:
@@ -165,9 +165,9 @@ def compose_post(st, base, bot_id, room_id, view, kind, text, attachments, field
     return body
 
 
-# ---------------------------------------------------------------- the stdio MCP proxy (`yobiru public mcp --host BOT`)
+# ---------------------------------------------------------------- the stdio MCP proxy (`ishoni public mcp --host BOT`)
 def mcp_post(st, base, bot_id, token, args):
-    """yobiru_room_post made on the agent's device: the body is sealed here with the bot's key, so an end-to-end
+    """ishoni_room_post made on the agent's device: the body is sealed here with the bot's key, so an end-to-end
     room works for an MCP host too. -> (status, body) as the gateway answers."""
     import bot_client as bc
     status, view = C.api_call(base, "GET", "/v1/rooms/%s" % args["room"], None, token)
@@ -197,10 +197,10 @@ def mcp_post(st, base, bot_id, token, args):
 def mcp_open(st, base, name, args, data):
     """Open the sealed bodies in a room tool's result on this device, in place."""
     room_id = args.get("room")
-    if name == "yobiru_room_sync":
+    if name == "ishoni_room_sync":
         for item in data.get("messages") or []:
             open_body(st, base, item, room_id)
-    elif name in ("yobiru_room_message", "yobiru_room_data_get"):
+    elif name in ("ishoni_room_message", "ishoni_room_data_get"):
         open_body(st, base, data, room_id)
     return data
 
@@ -216,7 +216,7 @@ def member_keys(st, base, view):
         state = bc_pin(st, base, m["bot_id"], key)
         if state == "changed":
             raise RoomClientError("key_changed", "%s now shows another key than the one pinned here; compare "
-                                                 "fingerprints with its owner, then `yobiru public e2e trust %s`"
+                                                 "fingerprints with its owner, then `ishoni public e2e trust %s`"
                                   % (m["bot_id"], m["bot_id"]))
         keys.append(key)
     if not keys:
@@ -273,7 +273,7 @@ def open_body(st, base, item, room_id):
         if sender_key is None:
             raise E.E2EError("no key known for the sender %s" % sender)
         if shown and shown != sender_key:
-            raise E.E2EError("%s now shows another key than the one pinned here: confirm it with `yobiru public e2e "
+            raise E.E2EError("%s now shows another key than the one pinned here: confirm it with `ishoni public e2e "
                              "trust %s`" % (sender, sender))
         plain = C.strict_loads(E.open_sealed(env, mine[0]["secret"], sender_key, ROOM_CTX))
         bind = plain.get("bind") or {}

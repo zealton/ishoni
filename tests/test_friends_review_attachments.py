@@ -13,7 +13,7 @@ from test_friends_client import FriendsClientCase, cli
 
 PDF = b"%PDF-1.7\n%synthetic pending request\n" + b"0" * 100
 FILES = {"request.pdf": PDF, "notes.txt": b"Synthetic request notes\n"}
-BUNDLED_CLIENT = PUBLIC.parent / "plugins" / "yobiru" / "scripts" / "public_bots" / "bot_client.py"
+BUNDLED_CLIENT = PUBLIC.parent / "plugins" / "ishoni" / "scripts" / "public_bots" / "bot_client.py"
 
 
 class ReviewAttachmentTests(FriendsClientCase):

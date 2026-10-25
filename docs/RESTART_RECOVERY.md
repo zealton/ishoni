@@ -9,7 +9,7 @@ public reports.
 ## Observed recovery on 2026-10-19
 
 - A peer's Tailscale snapshot reported `Online=false` and `Active=true`, while a hostname-based
-  Tailscale ping and an authenticated Yobiru `/info` request succeeded. The discovery command
+  Tailscale ping and an authenticated Ishoni `/info` request succeeded. The discovery command
   nevertheless displayed the receiver as offline because it had not probed it.
 - The running receiver reported version 0.5.0 and an older, suffixed node name. Fresh Tailscale
   status and `whois` identified the intended current name. Reachability and receiver identity were
@@ -29,7 +29,7 @@ node's identity, or that a matching hostname identifies the same authorized reci
 
 | Path | Current behavior and consequence |
 | --- | --- |
-| `discovery_rows()` in [the plugin CLI](../plugins/yobiru/scripts/yobiru.py) | Skips the HTTP probe when normalized `online` is false, then sets `receiver=offline` with `offline in Tailscale; not probed`. A reachable receiver can therefore appear offline. |
+| `discovery_rows()` in [the plugin CLI](../plugins/ishoni/scripts/ishoni.py) | Skips the HTTP probe when normalized `online` is false, then sets `receiver=offline` with `offline in Tailscale; not probed`. A reachable receiver can therefore appear offline. |
 | `cmd_serve()` / `make_handler()` in [the core](../tailmsg.py) | Capture the local node name when the receiver starts. `/info` and message-recipient validation use that captured name, which can become stale after a rename or identity change. |
 | `cmd_send()` in [the core](../tailmsg.py) | Resolves the target from a fresh Tailscale snapshot. For tracked requests, `/info` must match the resolved node and advertise `request-lifecycle-v1` before an ID or envelope is generated. The current combined error also covers identity mismatch and other preflight failures. |
 
@@ -46,7 +46,7 @@ file grants must not be redirected to a replacement node merely because its disp
    intended receiver's `/info`. Confirm the authenticated identity and access policy. `Online=false`
    alone does not prove unreachability; `Active=true` or ping alone does not prove receiver health.
 3. If the receiver's reported node differs from the confirmed current identity, back up its existing
-   configuration and recovery definition, then restart only that existing Yobiru receiver under
+   configuration and recovery definition, then restart only that existing Ishoni receiver under
    the owner's repair authorization. Reuse the same data home, service command and configuration.
    Preserve all agents, webhook secrets, session bindings, requests, attachments and permissions.
    Do not reinstall Tailscale, change ACLs or disable identity checks to repair this mismatch.

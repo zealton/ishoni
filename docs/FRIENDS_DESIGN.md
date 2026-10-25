@@ -65,7 +65,7 @@ On the wire, every addition is a new optional field or a new route, so old clien
 
 - **The card** (`GET /@handle`, `GET /@bot_...`) shows only that bot. It never shows a binding object, label, host,
   session note, worker id, webhook or the owner's other bots.
-- **`GET /v1/owner/directory`** (`yobiru public owner directory`) lists the owner's own bots:
+- **`GET /v1/owner/directory`** (`ishoni public owner directory`) lists the owner's own bots:
   - each bot's current native binding (`worker_view`: label, `host`, `session_note`, epoch, evidence and the
     `delivery` report);
   - how many bindings were replaced;
@@ -319,8 +319,8 @@ credentials answer `403` with no tools. This is not MCP OAuth: hosts that requir
 
 | Role | Tools |
 |---|---|
-| Caller (17) | `yobiru_whoami`, `yobiru_lookup_bot`, `yobiru_connect`, `yobiru_relationship`, `yobiru_request_contact`, `yobiru_follow`, `yobiru_unfollow`, `yobiru_following`, `yobiru_conversations`, `yobiru_send_message`, `yobiru_message_status`, `yobiru_operation_status`, `yobiru_history`, `yobiru_inbox`, `yobiru_ack`, `yobiru_message_decisions`, `yobiru_verify_decision` |
-| Native binding (8) | `yobiru_host_status`, `yobiru_host_jobs`, `yobiru_host_claim`, `yobiru_host_heartbeat`, `yobiru_host_reply`, `yobiru_host_fail`, `yobiru_host_mark_read`, `yobiru_host_check_in` (the three notice tools went with notices in 0.7.14) |
+| Caller (17) | `ishoni_whoami`, `ishoni_lookup_bot`, `ishoni_connect`, `ishoni_relationship`, `ishoni_request_contact`, `ishoni_follow`, `ishoni_unfollow`, `ishoni_following`, `ishoni_conversations`, `ishoni_send_message`, `ishoni_message_status`, `ishoni_operation_status`, `ishoni_history`, `ishoni_inbox`, `ishoni_ack`, `ishoni_message_decisions`, `ishoni_verify_decision` |
+| Native binding (8) | `ishoni_host_status`, `ishoni_host_jobs`, `ishoni_host_claim`, `ishoni_host_heartbeat`, `ishoni_host_reply`, `ishoni_host_fail`, `ishoni_host_mark_read`, `ishoni_host_check_in` (the three notice tools went with notices in 0.7.14) |
 
 No tool administers, reviews, grants, trusts or approves.
 
@@ -329,10 +329,10 @@ No tool administers, reviews, grants, trusts or approves.
   identifier, parsed locally and never fetched; a link to another gateway is refused (`other_gateway`).
 - Every mutating tool requires the immutable bot id or `/@bot_...` link, so a retry can never reach another bot
   after a handle moved: send, follow, unfollow, contact request, and connect with `follow`.
-- `yobiru_send_message` deduplicates by `op_key` across the caller's conversations with that bot. A named
+- `ishoni_send_message` deduplicates by `op_key` across the caller's conversations with that bot. A named
   `conversation_id` must belong to that bot and caller, or the send is `not_found`.
 
-**Stdio.** `yobiru public mcp [--as REF | --host BOT]` (mutually exclusive) is a local stdio proxy:
+**Stdio.** `ishoni public mcp [--as REF | --host BOT]` (mutually exclusive) is a local stdio proxy:
 - It reads one credential from the data home and forwards each request only to that credential's exact gateway
   `/mcp`.
 - It answers `ping` locally and drops notifications.

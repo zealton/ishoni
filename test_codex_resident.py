@@ -150,7 +150,7 @@ class FakeServer:
 
 class ResidentTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru-resident-")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni-resident-")
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.thread_id = str(uuid.uuid4())
@@ -256,7 +256,7 @@ class ResidentTests(unittest.TestCase):
         resident = ResidentDispatcher(self.config)
         resident._status("connected")
         (self.root / "codex-bridge.json").write_text(json.dumps(self.config))
-        script = Path(__file__).parent / "plugins/yobiru/scripts/yobiru.py"
+        script = Path(__file__).parent / "plugins/ishoni/scripts/ishoni.py"
         result = subprocess.run([sys.executable, str(script), "--home", str(self.root), "codex-bridge", "status"],
                                 capture_output=True, text=True, timeout=5)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -307,7 +307,7 @@ class ResidentTests(unittest.TestCase):
             state = self.root / "bridge state"
             self.assertTrue((state / "bridge.sqlite3").is_file())
             self.assertEqual("connected", resident_status(state, self.thread_id)["state"])
-            script = Path(__file__).parent / "plugins/yobiru/scripts/yobiru.py"
+            script = Path(__file__).parent / "plugins/ishoni/scripts/ishoni.py"
             status = subprocess.run([sys.executable, str(script), "--home", str(self.root),
                                      "codex-bridge", "status"], env=environment,
                                     capture_output=True, text=True, timeout=5)

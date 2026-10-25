@@ -35,7 +35,7 @@ def counter(db, key="synthetic", expires=1):
 
 class ReadTransactionTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru read tx ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni read tx ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name))
         self.store = G.Store(self.gw.home, G.load_config(self.gw.home))
@@ -162,7 +162,7 @@ class ReadTransactionTests(unittest.TestCase):
 
 class ConnectorPollTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru connector poll ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni connector poll ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name)).start()
         self.addCleanup(self.gw.stop)
@@ -238,7 +238,7 @@ def alive(pid):
 @unittest.skipUnless(LINUX, "reads process trees from /proc")
 class MultiProcessTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru processes ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni processes ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name))
         cfg = json.loads((self.gw.home / "gateway.json").read_text())
@@ -286,7 +286,7 @@ class MultiProcessTests(unittest.TestCase):
 
 class ProcessesSettingTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru processes setting ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni processes setting ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name))
         self.path = self.gw.home / "gateway.json"
@@ -391,7 +391,7 @@ class BenchmarkToolTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, "fork"), "the multi-process gateway needs fork")
     def test_the_benchmark_runs_against_a_multi_process_gateway(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru bench ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni bench ") as tmp:
             r = subprocess.run([sys.executable, str(ROOT / "tools" / "bench_gateway.py"), "--bots", "4",
                                 "--messages", "300", "--chats", "2", "--processes", "2", "--clients", "1",
                                 "--concurrency", "4", "--seconds", "1", "--keep", tmp, "--quiet"],
@@ -404,7 +404,7 @@ class BenchmarkToolTests(unittest.TestCase):
 
     @unittest.skipUnless(hasattr(os, "fork"), "the multi-process gateway needs fork")
     def test_the_benchmark_holds_waiting_connectors(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru bench hold ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni bench hold ") as tmp:
             r = subprocess.run([sys.executable, str(ROOT / "tools" / "bench_gateway.py"), "--bots", "6",
                                 "--messages", "60", "--chats", "2", "--processes", "2", "--hold", "6", "--probes",
                                 "2", "--wait-seconds", "6", "--keep", tmp, "--quiet"],

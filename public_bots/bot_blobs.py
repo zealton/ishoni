@@ -1,4 +1,4 @@
-"""Blob store for large message bodies on a Yobiru gateway (stdlib only).
+"""Blob store for large message bodies on a Ishoni gateway (stdlib only).
 
 A gateway keeps every message body in SQLite. With a blob store configured (`<home>/blobs.json`), a body at or
 over `limits.blob_spill_bytes` (pictures, PDFs, sealed envelopes) is written gzip-compressed to the store instead,
@@ -11,7 +11,7 @@ Stores:
   s3     any S3-compatible object store, such as Cloudflare R2, signed with AWS Signature Version 4
 
 blobs.json for Cloudflare R2:
-  {"kind": "s3", "endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com", "bucket": "yobiru-gateway-files",
+  {"kind": "s3", "endpoint": "https://<ACCOUNT_ID>.r2.cloudflarestorage.com", "bucket": "ishoni-gateway-files",
    "access_key_id": "...", "secret_access_key_file": "r2.secret"}
 """
 

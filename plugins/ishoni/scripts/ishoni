@@ -1,0 +1,32 @@
+#!/bin/sh
+# Ishoni launcher: runs ishoni.py from the directory this file really lives in (symlinks and spaces
+# in the install path are fine; the current working directory does not matter). Works when invoked as
+# `sh /path/to/scripts/ishoni ...`, so it does not depend on the executable bit surviving unpacking.
+# Interpreter: $ISHONI_PYTHON, else python3, else python. Needs Python 3.8+.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self") || break
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname -- "$self")/$link ;;
+  esac
+done
+here=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd -P) || {
+  echo "ishoni: error: cannot resolve the plugin scripts directory from $0" >&2
+  exit 2
+}
+if [ -n "${ISHONI_PYTHON:-}" ]; then
+  py=$ISHONI_PYTHON
+elif command -v python3 >/dev/null 2>&1; then
+  py=python3
+elif command -v python >/dev/null 2>&1; then
+  py=python
+else
+  echo "ishoni: error: Python 3.8+ is required, but neither python3 nor python is on PATH" >&2
+  exit 127
+fi
+if ! "$py" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)' >/dev/null 2>&1; then
+  echo "ishoni: error: $py is not Python 3.8 or newer (set ISHONI_PYTHON to a suitable interpreter)" >&2
+  exit 127
+fi
+exec "$py" "$here/ishoni.py" "$@"

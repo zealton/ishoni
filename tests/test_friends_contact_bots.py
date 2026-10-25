@@ -36,11 +36,11 @@ COUNTER = itertools.count(1)
 class ContactBotCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru contact bots ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni contact bots ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS)
         cfg = json.loads((cls.gw.home / "gateway.json").read_text())
-        cfg.setdefault("enrollment", {})["self_enrolled_publish"] = True     # as on bots.yobiru.com
+        cfg.setdefault("enrollment", {})["self_enrolled_publish"] = True     # as on bots.example.com
         (cls.gw.home / "gateway.json").write_text(json.dumps(cfg))
         blobs = cls.gw.home / "blobs.json"                                   # bodies with pictures live in a store
         blobs.write_text(json.dumps({"kind": "local"}))
@@ -228,7 +228,7 @@ class HeldQuestionOrderTests(unittest.TestCase):
     """Use deliberately reversed IDs to make the same-second ordering regression deterministic."""
 
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru held questions ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni held questions ")
         self.addCleanup(tmp.cleanup)
         self.source, self.agent = P.State(Path(tmp.name) / "source"), P.State(Path(tmp.name) / "agent")
         self.ids = ["msg_" + c * 16 for c in "zyx"]

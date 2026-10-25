@@ -303,7 +303,7 @@ def main(argv=None):
     def say(text):
         if not a.quiet:
             print(text, file=sys.stderr, flush=True)
-    root = Path(a.keep) if a.keep else Path(tempfile.mkdtemp(prefix="yobiru-bench-"))
+    root = Path(a.keep) if a.keep else Path(tempfile.mkdtemp(prefix="ishoni-bench-"))
     root.mkdir(parents=True, exist_ok=True)
     gw = FriendsGateway(root, limits=limits(a.concurrency)).start()
     try:

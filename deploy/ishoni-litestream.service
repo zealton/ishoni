@@ -1,0 +1,31 @@
+# Litestream for the official gateway: copies every change of gateway.sqlite3 to R2 within seconds. Install as
+# /etc/systemd/system/ishoni-litestream.service and `systemctl enable --now ishoni-litestream`. It runs as the
+# gateway's user (files it creates next to the database must stay writable by the gateway), starts whenever the
+# gateway starts, and stops or restarts with it, so a deploy or rollback that replaces gateway.sqlite3 never runs
+# while it holds the write-ahead log open. /etc/ishoni-litestream.env (root, 0600) holds ISHONI_R2_ENDPOINT,
+# LITESTREAM_ACCESS_KEY_ID and LITESTREAM_SECRET_ACCESS_KEY; gateway.json needs "external_checkpoints": true.
+[Unit]
+Description=Litestream replication of the ishoni gateway database
+# Stop Litestream before the gateway: deploy/rollback waits on the gateway's stop
+# job before replacing its database. PartOf alone does not order these stop jobs.
+After=network-online.target ishoni-gateway.service
+Wants=network-online.target
+PartOf=ishoni-gateway.service
+
+[Service]
+User=ishoni-gw
+Group=ishoni-gw
+EnvironmentFile=/etc/ishoni-litestream.env
+ExecStart=/usr/local/bin/litestream replicate -config /etc/ishoni-litestream.yml
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/ishoni-gateway/gw
+CPUWeight=50
+MemoryMax=1G
+
+[Install]
+WantedBy=ishoni-gateway.service

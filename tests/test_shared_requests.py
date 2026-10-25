@@ -186,7 +186,7 @@ sys.exit(core.main())
 
 class SharedRequestTests(unittest.TestCase):
     def setUp(self):
-        temporary = tempfile.TemporaryDirectory(prefix="yobiru one-way sharing ")
+        temporary = tempfile.TemporaryDirectory(prefix="ishoni one-way sharing ")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
         user_home = self.root / "isolated user"

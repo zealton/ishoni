@@ -1,7 +1,7 @@
 """Addressed messaging between two isolated homes through the unpacked plugin, loopback only.
 
 Two receivers (alpha, bravo) run the bundled tailmsg.py on 127.0.0.1 with free ports, a fake tailscale
-CLI per home, and the YOBIRU_PYTHON interpreter override pointing at a shim that treats 127.0.0.0/8 as
+CLI per home, and the ISHONI_PYTHON interpreter override pointing at a shim that treats 127.0.0.0/8 as
 tailnet addresses. Nothing here touches the real Tailscale, port 7766, ~/.tailmsg or another machine.
 """
 import http.client
@@ -68,7 +68,7 @@ class LoopbackWorkflowTests(unittest.TestCase):
         shim = root / "loopback python"
         shim.write_text(SHIM)
         shim.chmod(0o755)
-        cls.extra = {"YOBIRU_PYTHON": str(shim), "TM_TEST_REAL_PYTHON": sys.executable,
+        cls.extra = {"ISHONI_PYTHON": str(shim), "TM_TEST_REAL_PYTHON": sys.executable,
                      "TM_TEST_HARNESS": str(SUPPORT / "loopback_harness.py")}
         adapters = root / "adapter scripts"
         adapters.mkdir()

@@ -50,16 +50,16 @@ already-writable root is similarly unprotected. Review resolved paths and symlin
 
 ## Prepare the directories outside the sandbox
 
-After normal Yobiru setup and bridge installation, run this in a trusted local setup terminal,
+After normal Ishoni setup and bridge installation, run this in a trusted local setup terminal,
 using your actual paths. These are example defaults; read your bridge configuration first:
 
 ```sh
-YOBIRU_DATA="$HOME/.tailmsg"
-YOBIRU_BRIDGE="$YOBIRU_DATA/codex-bridge"
-test -f "$YOBIRU_DATA/config.json" && test -f "$YOBIRU_DATA/codex-bridge.json" || exit 1
+ISHONI_DATA="$HOME/.tailmsg"
+ISHONI_BRIDGE="$ISHONI_DATA/codex-bridge"
+test -f "$ISHONI_DATA/config.json" && test -f "$ISHONI_DATA/codex-bridge.json" || exit 1
 umask 077
-mkdir -p "$YOBIRU_DATA/inbox" "$YOBIRU_DATA/outbox" "$YOBIRU_DATA/requests" "$YOBIRU_BRIDGE/handled"
-mkdir -p "$HOME/yobiru-dispatcher"
+mkdir -p "$ISHONI_DATA/inbox" "$ISHONI_DATA/outbox" "$ISHONI_DATA/requests" "$ISHONI_BRIDGE/handled"
+mkdir -p "$HOME/ishoni-dispatcher"
 ```
 
 Pre-create **all four** directories, even when outbox will remain read-only. The Tailmsg CLI
@@ -76,8 +76,8 @@ paths** for your installation. Do not put `~` or `$HOME` inside the TOML array a
 expansion. Keep your existing account, model, socket and thread UUID.
 
 ```sh
-cd /home/you/yobiru-dispatcher
-codex app-server --listen unix:///home/you/.codex/yobiru.sock \
+cd /home/you/ishoni-dispatcher
+codex app-server --listen unix:///home/you/.codex/ishoni.sock \
   -c 'sandbox_mode="workspace-write"' \
   -c 'approval_policy="never"' \
   -c 'sandbox_workspace_write.writable_roots=["/home/you/.tailmsg/inbox","/home/you/.tailmsg/requests","/home/you/.tailmsg/codex-bridge/handled"]' \

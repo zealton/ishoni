@@ -16,7 +16,7 @@ from support.public_harness import PUBLIC, FriendsGateway, plain_env
 
 class MigrationTests(unittest.TestCase):
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru migration 2-3 ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni migration 2-3 ")
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.v2dir = self.root / "v2code"

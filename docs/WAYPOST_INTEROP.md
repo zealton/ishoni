@@ -1,24 +1,24 @@
-# Waypost beside Yobiru: durable mail, direct delivery
+# Waypost beside Ishoni: durable mail, direct delivery
 
-**Status:** opt-in text bridge. Neither protocol nor Yobiru's default delivery path changes. Attachments and remote task-lifecycle synchronization are outside this implementation.
+**Status:** opt-in text bridge. Neither protocol nor Ishoni's default delivery path changes. Attachments and remote task-lifecycle synchronization are outside this implementation.
 
 [简体中文](WAYPOST_INTEROP.zh-CN.md)
 
-Yobiru delivers directly between machines and handles wake policy. [Waypost](https://github.com/mainline-org/waypost) keeps a durable mailbox and versioned source files for assistants over HTTP/MCP. Use them together when a report should survive an offline machine or be collected by a primary assistant. Either works alone.
+Ishoni delivers directly between machines and handles wake policy. [Waypost](https://github.com/mainline-org/waypost) keeps a durable mailbox and versioned source files for assistants over HTTP/MCP. Use them together when a report should survive an offline machine or be collected by a primary assistant. Either works alone.
 
 | Need | Use |
 |---|---|
-| Direct delivery, wake, quiet hours, machine policy | Yobiru |
+| Direct delivery, wake, quiet hours, machine policy | Ishoni |
 | Durable reports, a primary assistant's inbox, offline reading | Waypost |
-| Files fetched from a peer | Yobiru `fetch` |
+| Files fetched from a peer | Ishoni `fetch` |
 | Files cited at a fixed version | Waypost blobs and memory revisions, separately authorized |
 
 The bridge runs on a machine the operator trusts with plaintext. It uses an ordinary, scoped Waypost assistant connection. It never needs a user login credential or deployment administrator key.
 
 ## What the text bridge does
 
-- Imports a received Yobiru text record into a configured Waypost recipient's inbox.
-- Sends a Waypost message from an explicitly mapped producer to a configured Yobiru peer/agent as a `notice`, with `wake: none`.
+- Imports a received Ishoni text record into a configured Waypost recipient's inbox.
+- Sends a Waypost message from an explicitly mapped producer to a configured Ishoni peer/agent as a `notice`, with `wake: none`.
 - Journals payloads and forwarding state locally before side effects. Restarts resume confirmed operations and replay stable Waypost requests/ACKs.
 - Refuses messages from unverified sources, without a route, with attachments or that cannot be read. A refused message is **quarantined**: recorded in the journal with its reason, reported once, never forwarded and never acknowledged in Waypost. It does not stop the bridge. The decision belongs to the inbox file: it holds when the file later becomes readable or names another sender, until the operator retries it. A changed Waypost space, Actor, Consumer or routing configuration for an existing journal, or an inbox record whose sender or content changes after the bridge accepted it for forwarding, is an error that stops it.
 - Reports IDs and counts, without printing message bodies or credentials.
@@ -27,9 +27,9 @@ This is a forwarder, not an executor. Received text does not approve an operatio
 
 ## Configure one bridge for one Waypost space
 
-This bridge currently supports macOS/Linux (POSIX), with Python 3.8+ and the existing Yobiru launcher. Windows locking and private-file checks are not implemented. On the bridge machine, create a Waypost assistant with `message.send`, `message.read` and `receipt.write`. Grant only the incoming routes' recipient Actor IDs. The bridge reads its own Consumer; it does not read other assistants' inboxes.
+This bridge currently supports macOS/Linux (POSIX), with Python 3.8+ and the existing Ishoni launcher. Windows locking and private-file checks are not implemented. On the bridge machine, create a Waypost assistant with `message.send`, `message.read` and `receipt.write`. Grant only the incoming routes' recipient Actor IDs. The bridge reads its own Consumer; it does not read other assistants' inboxes.
 
-Save its assistant bearer token in a private file (mode `0600` on POSIX). Keep the Yobiru data home and journal private. Do not use a service administrator credential.
+Save its assistant bearer token in a private file (mode `0600` on POSIX). Keep the Ishoni data home and journal private. Do not use a service administrator credential.
 
 Create `routes.json`, replacing the example Actor IDs with the actual IDs from Waypost:
 
@@ -44,16 +44,16 @@ Create `routes.json`, replacing the example Actor IDs with the actual IDs from W
 }
 ```
 
-`incoming` keys use the **full authenticated node name** and the sender's `from_agent`. Configure the sender's `self_agent`, or send with `--as`. `outgoing` keys are the Waypost producer Actor IDs the bridge may forward. Values are Yobiru addresses. Message content cannot choose an address or grant access.
+`incoming` keys use the **full authenticated node name** and the sender's `from_agent`. Configure the sender's `self_agent`, or send with `--as`. `outgoing` keys are the Waypost producer Actor IDs the bridge may forward. Values are Ishoni addresses. Message content cannot choose an address or grant access.
 
-Names such as `alpha/grok` are display/routing labels. They are never Waypost Actor IDs. Short Yobiru destinations are resolved by Yobiru's normal current-peer lookup; ambiguous or offline peers are not silently replaced.
+Names such as `alpha/grok` are display/routing labels. They are never Waypost Actor IDs. Short Ishoni destinations are resolved by Ishoni's normal current-peer lookup; ambiguous or offline peers are not silently replaced.
 
 Start with a read-only plan, then run once:
 
 ```sh
 python3 tools/waypost_bridge.py \
-  --yobiru /path/to/yobiru/scripts/yobiru \
-  --home /path/to/private/yobiru-home \
+  --ishoni /path/to/ishoni/scripts/ishoni \
+  --home /path/to/private/ishoni-home \
   --waypost-url https://your-waypost.example \
   --token-file /path/to/private/bridge-token \
   --map /path/to/private/routes.json \
@@ -67,23 +67,23 @@ Use HTTPS for a remote Waypost. Plain HTTP is restricted to loopback for local t
 
 ## Identity: trust the receipt, not the envelope's claim
 
-Yobiru stores `{"envelope": ..., "received": {"peer": {"node": ...}}}`. The source node comes only from `received.peer.node`, recorded by the authenticated receiver. Missing verification or a contradictory sender is rejected; there is no fallback to the envelope's `from`.
+Ishoni stores `{"envelope": ..., "received": {"peer": {"node": ...}}}`. The source node comes only from `received.peer.node`, recorded by the authenticated receiver. Missing verification or a contradictory sender is rejected; there is no fallback to the envelope's `from`.
 
 Agent names route inside that verified machine. Another process with the same machine authority can claim a different `from_agent`; these names are not a security boundary. Do not place independent tenants behind that assumption.
 
-The Waypost producer is always the bridge's own token-bound Actor. Authenticated Yobiru provenance is carried in the body. The bridge neither mints identities from inbound names nor impersonates another Waypost Actor.
+The Waypost producer is always the bridge's own token-bound Actor. Authenticated Ishoni provenance is carried in the body. The bridge neither mints identities from inbound names nor impersonates another Waypost Actor.
 
 ## Recovery and receipt meanings
 
-For Yobiru → Waypost, the write key is derived from the space, authenticated peer, agent and envelope ID. The payload is journaled first. If Waypost commits but its response is lost, retrying uses the same key and payload, preserving one published message.
+For Ishoni → Waypost, the write key is derived from the space, authenticated peer, agent and envelope ID. The payload is journaled first. If Waypost commits but its response is lost, retrying uses the same key and payload, preserving one published message.
 
-For Waypost → Yobiru, the bridge fetches the actual message by the feed item's `resource_id`, persists the feed item and message, and then writes `received`. A confirmed Yobiru response must have the matching ID, `ok: true` and HTTP 200/202. Only then does the bridge write `processed`. If the ACK response is lost, it retries the ACK without sending the message again.
+For Waypost → Ishoni, the bridge fetches the actual message by the feed item's `resource_id`, persists the feed item and message, and then writes `received`. A confirmed Ishoni response must have the matching ID, `ok: true` and HTTP 200/202. Only then does the bridge write `processed`. If the ACK response is lost, it retries the ACK without sending the message again.
 
-Here, `processed` means **this bridge finished forwarding**. It does not mean that the Yobiru recipient completed the underlying task. Tracked task outcomes (`running`, `completed`, `failed`, `rejected`, `blocked`, `timed_out`, `late`) are not synchronized by this version. In particular, timeout never becomes a successful outcome.
+Here, `processed` means **this bridge finished forwarding**. It does not mean that the Ishoni recipient completed the underlying task. Tracked task outcomes (`running`, `completed`, `failed`, `rejected`, `blocked`, `timed_out`, `late`) are not synchronized by this version. In particular, timeout never becomes a successful outcome.
 
-Yobiru's ordinary `send` generates a fresh envelope ID each invocation. Therefore, after an uncertain result or a crash during an attempt, the bridge marks delivery **unknown** and blocks automatic resending and `processed`. Check the receiving machine's inbox and actual effects before an operator resolves it. Do not delete the journal or issue another send merely to clear the error. This avoids blind duplicates; it does not provide exactly-once remote execution.
+Ishoni's ordinary `send` generates a fresh envelope ID each invocation. Therefore, after an uncertain result or a crash during an attempt, the bridge marks delivery **unknown** and blocks automatic resending and `processed`. Check the receiving machine's inbox and actual effects before an operator resolves it. Do not delete the journal or issue another send merely to clear the error. This avoids blind duplicates; it does not provide exactly-once remote execution.
 
-After verifying the exact receiver record, repeat the same connection arguments with `--confirm-sent ITEM_ID YOBIRU_ID` to finish ACKs without resending. Only after verifying that no delivery or effects occurred, `--retry-unsent ITEM_ID` may authorize a later run to retry. Neither operation automatically dispatches other pending messages.
+After verifying the exact receiver record, repeat the same connection arguments with `--confirm-sent ITEM_ID ISHONI_ID` to finish ACKs without resending. Only after verifying that no delivery or effects occurred, `--retry-unsent ITEM_ID` may authorize a later run to retry. Neither operation automatically dispatches other pending messages.
 
 `--list-refused` prints the quarantined items (direction, ID and reason, never content). `--dismiss-refused ITEM_ID` marks one as reviewed; it stays unforwarded and unacknowledged. `--retry-refused ENVELOPE_ID` forgets an incoming refusal, dismissed or not, so that the next run plans the current inbox record again (for example after that record was repaired); until then a changed record stays quarantined, and the command itself forwards nothing. If a journal from an earlier build planned one inbox file more than once, none of those plans is sent: they are quarantined as `PLANNED_MORE_THAN_ONCE`. Refused Waypost items depend on the journal's fixed routes and cannot be retried in the same journal.
 
@@ -91,11 +91,11 @@ The journal binds the Waypost space, Actor, Consumer and routing configuration. 
 
 ## Correlation stays inside message bodies
 
-Yobiru rejects unknown envelope fields. Correlation remains inside JSON text, never a new top-level wire field. Original Yobiru IDs and reply links stay available in the imported body; a reverse-forwarded notice includes its Waypost message identity. Correlation is evidence for joining records, not authority to redirect or execute a message.
+Ishoni rejects unknown envelope fields. Correlation remains inside JSON text, never a new top-level wire field. Original Ishoni IDs and reply links stay available in the imported body; a reverse-forwarded notice includes its Waypost message identity. Correlation is evidence for joining records, not authority to redirect or execute a message.
 
 ## Limits and unsupported data
 
-A record containing Yobiru `fetch` entries or Waypost attachments is refused as a whole. No successful receipt is written for an omitted attachment. Blob uploads, file verification and versioned memory need their own explicit grants and a future file-transfer path.
+A record containing Ishoni `fetch` entries or Waypost attachments is refused as a whole. No successful receipt is written for an omitted attachment. Blob uploads, file verification and versioned memory need their own explicit grants and a future file-transfer path.
 
 There is no supervisor installation, hosted relay, group chat, remote task approval, automatic primary-assistant setup or multi-tenant routing. Size limits and privacy filtering are enforced by the connected Waypost instance; oversized content fails rather than being truncated.
 
@@ -119,6 +119,6 @@ On 2026-10-16, all 22 bridge tests passed (14 mapping/security tests and 8 integ
 
 On 2026-10-21, during the backlog integration on Linux, all 33 bridge tests passed against a Waypost built from upstream commit `926601d`: the 22 above, ten quarantine tests that need no Waypost binary, and a real-Waypost scenario in which an unrelated inbox message is quarantined without stopping the bridge.
 
-This starts a fresh encrypted Waypost service and the real packaged Yobiru CLI with two actual HTTP receivers. Only Tailscale identity lookup and the accepted loopback network range use Yobiru's existing test harness. It exercises dry run, bidirectional delivery, restart deduplication, receipts, response loss, and refusal and quarantine paths. It does not contact a real tailnet, use production data or test an external model.
+This starts a fresh encrypted Waypost service and the real packaged Ishoni CLI with two actual HTTP receivers. Only Tailscale identity lookup and the accepted loopback network range use Ishoni's existing test harness. It exercises dry run, bidirectional delivery, restart deduplication, receipts, response loss, and refusal and quarantine paths. It does not contact a real tailnet, use production data or test an external model.
 
-The service contract follows Waypost's [HTTP routes](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/src/http.rs), [identity response](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/src/service/mod.rs) and [consumer guide](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/docs/user-guide.md). Yobiru identity and envelope rules remain those in [SPEC](../SPEC.md).
+The service contract follows Waypost's [HTTP routes](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/src/http.rs), [identity response](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/src/service/mod.rs) and [consumer guide](https://github.com/mainline-org/waypost/blob/926601dce1b5b4bad218c52c75880e6eb48d158d/docs/user-guide.md). Ishoni identity and envelope rules remain those in [SPEC](../SPEC.md).

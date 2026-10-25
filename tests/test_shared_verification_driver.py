@@ -80,7 +80,7 @@ class SharedVerificationDriverTests(unittest.TestCase):
         fetch = self.transport.tm("bravo", "fetch", mid)
         self.assertEqual(0, fetch.returncode, fetch.stdout + fetch.stderr)
         self.assertEqual(journal["sha256"], shared.digest(fixture.read_bytes()))
-        marker = "YOBIRU_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
+        marker = "ISHONI_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
         result = self.transport.tm_json("bravo", "request", "respond", mid,
                                        marker if text is None else text, "--state", state,
                                        "--file", str(attachment or fixture))
@@ -150,7 +150,7 @@ class SharedVerificationDriverTests(unittest.TestCase):
         process = self.start_driver()
         record = self.await_request(process)
         journal = self.journal()
-        marker = "YOBIRU_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
+        marker = "ISHONI_SHARED_OK " + journal["nonce"] + " " + journal["sha256"]
         self.respond(record, text="This result was not verified: " + marker)
         stdout, stderr = self.finish_driver(process, expected=2)
         self.assertIn("exactly match", stderr)

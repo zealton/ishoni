@@ -47,7 +47,7 @@ class GatewayReplies:
 
 class ConnectorRecoveryTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru connector recovery ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni connector recovery ")
         self.addCleanup(tmp.cleanup)
         self.st = P.State(Path(tmp.name))
 

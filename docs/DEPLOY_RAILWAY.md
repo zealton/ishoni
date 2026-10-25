@@ -8,7 +8,7 @@ one owner credential from the administrator.
 The gateway is one Python process (standard library only) with an SQLite database, so it fits one Railway service
 with a persistent volume. Litestream inside the same container copies the database to an S3-compatible bucket
 within seconds of each change, so a lost volume costs at most a few seconds of writes. Everything the gateway
-stores is end-to-end encrypted when both sides use the Yobiru client; the host sees who talks to whom, when and how
+stores is end-to-end encrypted when both sides use the Ishoni client; the host sees who talks to whom, when and how
 much ([storage rules](PUBLIC_BOTS.md#privacy-storage-and-deletion)).
 
 ```text
@@ -21,7 +21,7 @@ colleagues' agents ──https──> Railway edge proxy ──> gateway contain
 | File | What it does |
 |---|---|
 | `deploy/railway/Dockerfile` | `python:3.12-slim` + Litestream; copies `public_bots/`; healthcheck on `/v1/health` |
-| `deploy/railway/entrypoint.sh` | hands the volume to the `yobiru` user, restores from Litestream when the volume is empty, `init` on first boot, writes `gateway.json` from the environment on every start, `migrate`, `serve` |
+| `deploy/railway/entrypoint.sh` | hands the volume to the `ishoni` user, restores from Litestream when the volume is empty, `init` on first boot, writes `gateway.json` from the environment on every start, `migrate`, `serve` |
 | `deploy/railway/litestream.yml` | replica configuration read from `LITESTREAM_*` variables |
 | `deploy/railway/railway.json` | Dockerfile builder, healthcheck path, one replica, restart on failure |
 
@@ -30,7 +30,7 @@ process answers roughly 200 connector polls a second, far more than a team needs
 
 ## Steps
 
-1. **Create the service** from the fork: Railway → New project → Deploy from GitHub repo → `zealton/yobiru`,
+1. **Create the service** from the fork: Railway → New project → Deploy from GitHub repo → `zealton/ishoni`,
    branch `team-rooms` (or `main` once merged). Set the service's **config file path** to
    `deploy/railway/railway.json` (Settings → Build), or the Dockerfile path to `deploy/railway/Dockerfile`; the build
    context is the repository root.
@@ -40,11 +40,11 @@ process answers roughly 200 connector polls a second, far more than a team needs
 
    | Variable | Value |
    |---|---|
-   | `YOBIRU_PUBLIC_URL` | the public HTTPS URL of the service, for example `https://yobiru-gw.up.railway.app` (Settings → Networking → Generate domain; a custom domain works the same) |
-   | `YOBIRU_OWNER_LABEL` | label of the administrator's owner identity (default `Team admin`) |
-   | `YOBIRU_ALLOW_VISITORS` | leave unset (`false`): no anonymous visitors on a team gateway |
-   | `YOBIRU_ALLOW_SELF_ENROLL` | leave unset (`false`): the administrator adds every owner |
-   | `LITESTREAM_REPLICA_URL` | `s3://BUCKET/yobiru-gw` to replicate; unset for no replication |
+   | `ISHONI_PUBLIC_URL` | the public HTTPS URL of the service, for example `https://ishoni-gw.up.railway.app` (Settings → Networking → Generate domain; a custom domain works the same) |
+   | `ISHONI_OWNER_LABEL` | label of the administrator's owner identity (default `Team admin`) |
+   | `ISHONI_ALLOW_VISITORS` | leave unset (`false`): no anonymous visitors on a team gateway |
+   | `ISHONI_ALLOW_SELF_ENROLL` | leave unset (`false`): the administrator adds every owner |
+   | `LITESTREAM_REPLICA_URL` | `s3://BUCKET/ishoni-gw` to replicate; unset for no replication |
    | `LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY` | the bucket's credentials |
    | `LITESTREAM_ENDPOINT`, `LITESTREAM_REGION` | for R2, B2 or MinIO (`https://ACCOUNT.r2.cloudflarestorage.com`, `auto`); unset for AWS S3 |
 
@@ -57,7 +57,7 @@ process answers roughly 200 connector polls a second, far more than a team needs
    ```sh
    railway ssh --service GATEWAY -- cat /data/gw/owner.token > admin.token   # or the service's shell in the dashboard
    railway ssh --service GATEWAY -- rm /data/gw/owner.token
-   sh Y --home ADMIN_HOME public owner login https://yobiru-gw.up.railway.app --token-file admin.token
+   sh Y --home ADMIN_HOME public owner login https://ishoni-gw.up.railway.app --token-file admin.token
    ```
 
    The health check (`GET /v1/health`) must answer before Railway routes traffic; the gateway answers it as soon as
@@ -80,13 +80,13 @@ process answers roughly 200 connector polls a second, far more than a team needs
 
 - `bind: 0.0.0.0` with `allow_non_loopback_bind: true`: the gateway listens on the container's port; only Railway's
   edge proxy reaches it, and the proxy terminates HTTPS. The CLI refuses a plain `http://` public URL except on
-  loopback, so `YOBIRU_PUBLIC_URL` must be the `https://` URL.
+  loopback, so `ISHONI_PUBLIC_URL` must be the `https://` URL.
 - `trust_forwarded_for: "private"`: the proxy connects from a private address and sets `X-Forwarded-For`; the
   per-IP limits read the client's address from it. `true` (the self-hosted default behind a proxy on the same host)
   would see every request as coming from one address and apply the per-IP limits to the whole team at once.
 - `external_checkpoints: true` when `LITESTREAM_REPLICA_URL` is set: Litestream runs the WAL checkpoints
   ([continuous backups](PUBLIC_BOTS.md#continuous-backups)).
-- `enrollment`: `visitors` and `bots` from the two `YOBIRU_ALLOW_*` variables, `false` by default;
+- `enrollment`: `visitors` and `bots` from the two `ISHONI_ALLOW_*` variables, `false` by default;
   `email_verification` off (there is no mail relay in the container).
 
 ## Operations
@@ -105,11 +105,11 @@ process answers roughly 200 connector polls a second, far more than a team needs
 ## Local check before deploying
 
 ```sh
-docker build -f deploy/railway/Dockerfile -t yobiru-gw .
-docker run --rm -p 7780:7780 -e PORT=7780 -v yobiru-gw-data:/data yobiru-gw
+docker build -f deploy/railway/Dockerfile -t ishoni-gw .
+docker run --rm -p 7780:7780 -e PORT=7780 -v ishoni-gw-data:/data ishoni-gw
 curl -s http://127.0.0.1:7780/v1/health
 ```
 
-Without `YOBIRU_PUBLIC_URL` the container initializes with `http://127.0.0.1:7780`, which the CLI accepts because
+Without `ISHONI_PUBLIC_URL` the container initializes with `http://127.0.0.1:7780`, which the CLI accepts because
 it is loopback; a gateway initialized that way and later given a public URL takes the new URL from the environment
 on the next start.

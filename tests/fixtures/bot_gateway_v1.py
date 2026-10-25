@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Fixture: the schema-1 public bot gateway exactly as committed on the unreleased public-bot branch (385def1),
 # kept to build real schema-1 databases for the v1 -> v2 migration tests. Do not edit.
-"""Yobiru public bot gateway: a small self-hostable mailbox for published bot contacts.
+"""Ishoni public bot gateway: a small self-hostable mailbox for published bot contacts.
 
 Separate from the private tailmsg receiver (port 7766): its own process, port (default 7780, loopback),
 data directory and credentials. Callers outside Tailscale reach a *bot* by its immutable id or public
@@ -38,8 +38,8 @@ if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 import bot_common as C  # noqa: E402
 
-HOME_ENV = "YOBIRU_GATEWAY_HOME"
-DEFAULT_HOME = "~/.yobiru-gateway"
+HOME_ENV = "ISHONI_GATEWAY_HOME"
+DEFAULT_HOME = "~/.ishoni-gateway"
 DEFAULT_PORT = 7780
 SCHEMA_VERSION = "1"
 CONFIG_KEYS = {"v", "bind", "port", "public_base_url", "allow_non_loopback_bind", "trust_forwarded_for", "limits"}
@@ -76,7 +76,7 @@ RESERVED_HANDLES = {
     "about", "account", "actor", "actors", "admin", "administrator", "api", "bot", "bots", "capability",
     "contact", "contacts", "gateway", "health", "help", "info", "login", "me", "mod", "moderator", "msg",
     "null", "official", "owner", "owners", "root", "security", "staff", "support", "system", "undefined",
-    "verifier", "worker", "workers", "yobiru"}
+    "verifier", "worker", "workers", "ishoni"}
 CAPABILITIES = ("faq", "leave_message", "calendar_slots")
 KIND_CAPABILITY = {"faq": "faq", "message": "leave_message", "slots": "calendar_slots"}
 DEFAULT_POLICY = {"visitor": {"conversations": True, "capabilities": ["faq", "leave_message"]},
@@ -1425,7 +1425,7 @@ def make_handler(api):
     cfg, limits = api.cfg, api.limits
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "yobiru-gateway"
+        server_version = "ishoni-gateway"
         sys_version = ""
         timeout = limits["read_timeout_seconds"]
 
@@ -1807,7 +1807,7 @@ def cmd_status(home, a):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="bot_gateway", description="Yobiru public bot gateway (self-hosted mailbox)")
+    ap = argparse.ArgumentParser(prog="bot_gateway", description="Ishoni public bot gateway (self-hosted mailbox)")
     ap.add_argument("--gateway-home", help="data directory (default: $%s or %s)" % (HOME_ENV, DEFAULT_HOME))
     sp = ap.add_subparsers(dest="cmd")
     sp.required = True

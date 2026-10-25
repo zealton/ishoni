@@ -1,6 +1,6 @@
 """Run a tailmsg.py file with 127.0.0.0/8 treated as a tailnet range, for loopback-only tests.
 
-Used through the documented YOBIRU_PYTHON interpreter override: tests point it at a small shim that
+Used through the documented ISHONI_PYTHON interpreter override: tests point it at a small shim that
 sends `.../tailmsg.py ARGS` here and everything else to the real Python. Nothing in the plugin or in
 tailmsg.py knows about this file.
 """

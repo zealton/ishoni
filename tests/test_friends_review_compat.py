@@ -129,7 +129,7 @@ class LegacyReviewTests(FriendsClientCase):
 
 class BaseGatewayDeclineTests(unittest.TestCase):
     def test_decline_retries_with_exact_base_gateway_across_client_processes(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru legacy decline ") as directory:
+        with tempfile.TemporaryDirectory(prefix="ishoni legacy decline ") as directory:
             root = Path(directory)
             legacy = root / "base-gateway"
             legacy.mkdir()

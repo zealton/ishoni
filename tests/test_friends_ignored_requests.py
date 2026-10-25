@@ -10,7 +10,7 @@ from support.public_harness import C, FriendsGateway
 class IgnoredRequestTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory(prefix="yobiru ignored requests ")
+        cls.tmp = tempfile.TemporaryDirectory(prefix="ishoni ignored requests ")
         cls.gw = FriendsGateway(Path(cls.tmp.name)).start()
         cls.sequence = 0
 
@@ -104,7 +104,7 @@ class IgnoredRequestTests(unittest.TestCase):
 
 class IgnoredPendingCapacityTests(unittest.TestCase):
     def gateway(self, **limits):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru ignored capacity ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni ignored capacity ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name), limits=limits).start()
         self.addCleanup(self.gw.stop)

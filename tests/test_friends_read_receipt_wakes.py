@@ -9,7 +9,7 @@ from support.public_harness import C, FriendsGateway
 class ReadReceiptWakeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru read receipt wakes ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni read receipt wakes ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits={
             "messages_per_minute_per_actor": 1000,
             "messages_per_hour_per_actor": 5000,

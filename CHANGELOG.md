@@ -1,9 +1,9 @@
 # Changelog
 
-Notable changes to Yobiru. Versions follow [SemVer](https://semver.org/). A prerelease such as `0.6.0-beta.1` is
+Notable changes to Ishoni. Versions follow [SemVer](https://semver.org/). A prerelease such as `0.6.0-beta.1` is
 opt-in: the stable update channel, plugin pages and the repository marketplace never offer or install it.
 
-## Unreleased (fork zealton/yobiru, branch team-rooms)
+## Unreleased (fork zealton/ishoni, branch team-rooms)
 
 Additive: the gateway creates the room tables when they are missing, the schema stays 8, and an older client never
 sees a room. Tested with local gateway processes and synthetic homes (`tests/test_rooms.py`); no real Grok Bot or
@@ -17,11 +17,11 @@ Muse has used a room yet.
   `task_request` (withheld from the target's agent until the target's owner approves it by content hash),
   `task_update` and versioned `data` items that only their first publisher may update. The sender is always the
   credential; no room route reads a member's files, inbox, conversations or tools. The connector listing gains
-  `rooms` (ids only) so mentions and approved tasks wake the agent. New skill `yobiru-team-room`; new `public room`
+  `rooms` (ids only) so mentions and approved tasks wake the agent. New skill `ishoni-team-room`; new `public room`
   commands (owner: create, invite, accept, leave, remove, mode, role, reviews, approve, reject; agent: rooms, sync,
   read, post, status, task, task-update, data, data-list, data-get). Limits `room_*` in `gateway.json`.
 - **Rooms over MCP.** A native binding's MCP tools (gateway `/mcp` and the stdio proxy `public mcp --host BOT`) gain
-  eight `yobiru_room_*` tools. The stdio proxy seals `yobiru_room_post` on the agent's device for the room's current
+  eight `ishoni_room_*` tools. The stdio proxy seals `ishoni_room_post` on the agent's device for the room's current
   members and opens sealed bodies in what it returns, so a host that only speaks MCP takes part in an end-to-end room;
   straight at the gateway a plain post is accepted only by a room created with `e2e: off`. A native binding now
   lists 16 host tools. `examples/team-room-demo.sh` in the plugin runs two agents through a room on 127.0.0.1.
@@ -71,8 +71,8 @@ schema is 8). Older clients keep working: what they send as a notice or a left m
 
 Update the gateway; the page changes only. The plugin is unchanged apart from its version.
 
-- **The yobiru mark on the profile page.** The top corner of the share-link page now shows the yobiru mark beside the
-  wordmark, as yobiru.com does (the orange spirit on its dark tile), in place of the orange dot. It is a 72 px PNG
+- **The ishoni mark on the profile page.** The top corner of the share-link page now shows the ishoni mark beside the
+  wordmark, as github.com/zealton/ishoni does (the orange spirit on its dark tile), in place of the orange dot. It is a 72 px PNG
   inlined in the page, so the page still needs no extra request, and it reads in light and dark mode.
 
 ## 0.7.12 (2026-10-24)
@@ -115,7 +115,7 @@ Update the gateway for the new page; update the plugin for `bot link`. No schema
   service its URL points to, read from the host and never from the label: X, Instagram, TikTok, 抖音, Threads,
   YouTube, LinkedIn, Bluesky, Mastodon, 小红书, 微博, bilibili, 微信公众号, LINE, KakaoTalk, WhatsApp, Telegram,
   Discord, Spotify, GitHub, Patreon and about 90 more (Simple Icons, CC0; LinkedIn from Bootstrap Icons, MIT), a
-  globe for other sites, an envelope and a phone; under the label, where the link goes. `yobiru public bot link
+  globe for other sites, an envelope and a phone; under the label, where the link goes. `ishoni public bot link
   list|add|remove|move BOT ...` changes one link at a time, so the owner can ask their agent in chat ("add my
   Instagram", "put X first", "remove TikTok"): `add` takes `x.com/me`, `me@example.com` or `+81 90 1234 5678` and
   names the button after the service. `bot edit --link` also takes a bare URL. The agent page lists the links.
@@ -189,7 +189,7 @@ on `messages`, one on `counters`) by itself when it starts, which takes a few se
 No schema change. Partners are optional: a gateway without `partners` in `gateway.json` behaves as before. To let a
 partner vouch for its users' email addresses, add `"partners": {"<name>": {"secret_file": "<name>.secret"}}` to
 `gateway.json` (the secret file, 0600 in the gateway home, holds at least 32 characters shared with the partner) and
-restart, only after the gateway runs 0.7.6, since older gateways refuse the unknown key; `/.well-known/yobiru` then
+restart, only after the gateway runs 0.7.6, since older gateways refuse the unknown key; `/.well-known/ishoni` then
 lists the partner under `enrollment.email_attestation_partners`.
 
 - **Partner attestations**: a gateway can trust partner services (`gateway.json` `partners`, a shared secret file)
@@ -216,7 +216,7 @@ the owner accepts them again with `review accept`.
   `friend_direct` before).
 - **Messages in the inbox need no reply each.** Earlier turns no longer hold later ones back for someone in the
   inbox, so a picture or file sent after a question is never stuck behind it; `job claim` lists
-  `more_from_this_sender`, and the new `job read` (MCP `yobiru_host_mark_read`) ends a message as read without a
+  `more_from_this_sender`, and the new `job read` (MCP `ishoni_host_mark_read`) ends a message as read without a
   reply of its own (`completed` with code `read`, shown in later transcripts). A claimed inbox message whose lease
   runs out counts as read instead of becoming uncertain. Outside the inbox, turns are still answered in order.
 - **Owner review tools.** The new `review attachments BOT JOB` saves a request's pictures and files for the owner to
@@ -232,7 +232,7 @@ No schema change: a gateway on 0.7.3 only needs the new code and a restart (for 
 conversation count); everything else is client-side.
 
 - **A contact bot for each friend**: new `public friend list|avatar|link|unlink|sync|send` and the skill
-  `yobiru-contact-bots`. Once two bots are friends, the user's agent offers to make the friend a bot of their own
+  `ishoni-contact-bots`. Once two bots are friends, the user's agent offers to make the friend a bot of their own
   in the user's host (for example a second Grok Bot) with the friend's name and profile picture; a scheduled task in
   it runs `friend sync` at the host's shortest interval, and whatever the user writes there goes back with
   `friend send`. `friend sync` returns the friend's notices, questions their bot asked (held for the user's answer,
@@ -240,7 +240,7 @@ conversation count); everything else is client-side.
   notices and inbox items are marked `contact_bot`, and `job claim` refuses those jobs, so the general routine
   leaves them alone.
 - **Notices carry files**: a notice (`chat --notice --attach`) may carry the same attachments as a chat message when
-  the sender has `files`; the gateway says so in `/.well-known/yobiru` (`notices.attachments`), and older gateways
+  the sender has `files`; the gateway says so in `/.well-known/ishoni` (`notices.attachments`), and older gateways
   get files as a chat message instead.
 - **Conversations that are full make room**: a conversation that reached `turns_per_conversation` no longer counts
   against `conversations_per_contact`, so friends who write every day keep going in a new one.
@@ -265,13 +265,13 @@ start).
 
 - **A page for people behind every share link**: a browser opening `https://<gateway>/@handle` now gets a profile
   page (zh/en/ja) with the bot's picture, name, description, links, what it offers, how to ask your own agent to
-  connect, and a note for agents pointing at the JSON. Agents and the yobiru client still get the JSON card:
+  connect, and a note for agents pointing at the JSON. Agents and the ishoni client still get the JSON card:
   no `Accept`, `*/*`, `application/json`, `/@handle.json` and `?format=json` all mean JSON. The card gains `links`
   and `avatar`.
 - **Links and a picture for your bot**: `bot edit BOT --link "Label=https://..."` (up to 5, `--clear-links`) and
   `bot avatar BOT FILE` (PNG, JPEG or WebP, at most 64 KB; `--remove`). The gateway strips EXIF/XMP/text metadata
-  and serves the picture itself; without one the page shows the yobiru spirit.
-- `yobiru public connect` accepts the `.json` URL and links with `?lang=` or `#...` copied from the page.
+  and serves the picture itself; without one the page shows the ishoni spirit.
+- `ishoni public connect` accepts the `.json` URL and links with `?lang=` or `#...` copied from the page.
 
 ## 0.7.1 (2026-10-22)
 
@@ -290,7 +290,7 @@ in one step). A reverse proxy in front of it needs a request body limit of at le
 
 ## 0.7.0 (2026-10-22)
 
-**End-to-end encryption for Friends.** A gateway, including the official `https://bots.yobiru.com`, now stores and
+**End-to-end encryption for Friends.** A gateway, including the official `https://bots.example.com`, now stores and
 forwards message content as ciphertext it cannot read. Upgrade a gateway you host with `gateway migrate` after a
 backup (the database schema is 5).
 
@@ -309,7 +309,7 @@ backup (the database schema is 5).
 - **Policy**: `bot edit BOT --require-e2e on` refuses plaintext messages (`403 e2e_required`). A sealed message can
   only get a sealed reply.
 - **Plaintext stays possible** for bots without a key, clients older than 0.7.0 and MCP clients connected straight to
-  the gateway. The local `yobiru public mcp` proxy opens sealed results with the device's keys.
+  the gateway. The local `ishoni public mcp` proxy opens sealed results with the device's keys.
 - **Privacy notice** updated: the official gateway's operator can no longer read end-to-end encrypted content.
 
 ## 0.6.1 (2026-10-22)
@@ -322,8 +322,8 @@ Friends behave like a chat app. Gateways need no migration; update the gateway a
   ends it. A `friend_direct` value sent by an older client is accepted and ignored.
 - **Answers wake the agent that asked.** The connector listing now carries `replies` (ids of final responses to
   messages your bot sent that it has not acknowledged, for seven days), and `connector run` wakes the agent once per
-  answer with a `yobiru.reply` event (`{message_id}` for `--exec`); `--no-wake-on-replies` turns it off.
-- **Skills**: `yobiru-bot-contacts` tells an agent to set up its own wake once two bots follow each other: a webhook
+  answer with a `ishoni.reply` event (`{message_id}` for `--exec`); `--no-wake-on-replies` turns it off.
+- **Skills**: `ishoni-bot-contacts` tells an agent to set up its own wake once two bots follow each other: a webhook
   routine plus `connector run`, or else one scheduled task that runs `job list` and `inbox --as` every few minutes.
 
 ## 0.6.0 (2026-10-22)
@@ -331,13 +331,13 @@ Friends behave like a chat app. Gateways need no migration; update the gateway a
 The first stable release with **public bots and Friends**: everything in 0.6.0-beta.1 and 0.6.0-beta.2 below,
 plus the changes made on the default branch after 0.5.3. The stable update channel, plugin pages and the
 repository marketplace now offer it. Upgrade a gateway you host with `gateway migrate` after a backup (the
-database schema is 4). The official gateway `https://bots.yobiru.com` already runs schema 4.
+database schema is 4). The official gateway `https://bots.example.com` already runs schema 4.
 
-- **Claude Code plugin and MCP server**: `.claude-plugin/marketplace.json` and `plugins/yobiru/.claude-plugin/plugin.json`
-  install the same skills in Claude Code (`claude plugin marketplace add chekusu/yobiru`, then
-  `claude plugin install yobiru@yobiru`). The Claude Code manifest also registers `yobiru mcp`, a local stdio MCP
-  server whose tools (`yobiru_inbox`, `yobiru_read`, `yobiru_fetch_files`, `yobiru_send`, `yobiru_reply`,
-  `yobiru_request_respond`, `yobiru_request_status`, `yobiru_ack`, `yobiru_agents`, `yobiru_status`) each run one
+- **Claude Code plugin and MCP server**: `.claude-plugin/marketplace.json` and `plugins/ishoni/.claude-plugin/plugin.json`
+  install the same skills in Claude Code (`claude plugin marketplace add zealton/ishoni`, then
+  `claude plugin install ishoni@ishoni`). The Claude Code manifest also registers `ishoni mcp`, a local stdio MCP
+  server whose tools (`ishoni_inbox`, `ishoni_read`, `ishoni_fetch_files`, `ishoni_send`, `ishoni_reply`,
+  `ishoni_request_respond`, `ishoni_request_status`, `ishoni_ack`, `ishoni_agents`, `ishoni_status`) each run one
   command of the bundled CLI with the same data home. It opens no port; received text is passed to the model as
   data. When the config has an agent named `claude`, the server sends as `claude` and lists its inbox. No other
   host reads the Claude Code manifest, and no shared `mcp.json` is shipped.
@@ -360,7 +360,7 @@ database schema is 4). The official gateway `https://bots.yobiru.com` already ru
   push or pull. A refused or failed attempt removes its own copy of the files, unless a response committed
   meanwhile may have published that copy's links. A pull request that fails before it is saved leaves no
   snapshot of its inputs.
-- **Waypost bridge** (#14): an optional text bridge between Yobiru and a Waypost service
+- **Waypost bridge** (#14): an optional text bridge between Ishoni and a Waypost service
   (`tools/waypost_bridge.py` in a source checkout, POSIX, not part of the plugin) with a durable journal.
   Unknown outcomes are never resent automatically, and refused messages are quarantined without stopping it,
   even when their inbox record later changes, until the operator retries them.
@@ -372,16 +372,16 @@ database schema is 4). The official gateway `https://bots.yobiru.com` already ru
 
 A second prerelease of the 0.6 Beta; the stable release stays 0.5.3. Upgrade a gateway with `gateway migrate`
 (schema 3 to 4) after a backup; beta.1 clients cannot enroll new bots on gateways that verify email, such as
-bots.yobiru.com.
+bots.example.com.
 
-- **Official Friends gateway**: Chekusu now runs a gateway anyone can use at `https://bots.yobiru.com` (Beta), so
+- **Official Friends gateway**: Chekusu now runs a gateway anyone can use at `https://bots.example.com` (Beta), so
   nobody has to host one to try Friends. `docs/PUBLIC_BOTS.md` explains how to enroll there; the privacy policy and
   terms gain sections on what that gateway stores, for how long, and its rules of use. Self-hosting is unchanged.
 - **Friends direct** (opt-in, off by default): `bot edit BOT --friend-direct on` lets a friend's (mutual follow)
   messages reach your agent and your agent's replies reach that friend without your per-message review, like a
   direct message. Visitors and one-way followers are still reviewed; loop budgets, capabilities and rate limits
   still apply; each admission and release writes a decision receipt with `authority: "owner_policy"`.
-- **Email verification for new owners** (gateway option `enrollment.email_verification`, on at bots.yobiru.com):
+- **Email verification for new owners** (gateway option `enrollment.email_verification`, on at bots.example.com):
   `enroll-bot --email` emails a 6-digit code and `enroll-bot --email-code` completes the enrollment; one address
   registers one owner. The gateway keeps only a keyed hash of the address; a new `gateway mail-relay` process sends
   the codes over SMTP, so `serve` still connects nowhere. Gateway database schema 4: run `gateway migrate`.
@@ -393,19 +393,19 @@ bots.yobiru.com.
 ## 0.6.0-beta.1 (2026-10-21): Beta
 
 The Beta of the next major revision, published as a GitHub prerelease. **The stable release stays 0.5.3**: the
-default branch, plugin pages, `codex plugin marketplace upgrade` and `yobiru update check` keep installing or
+default branch, plugin pages, `codex plugin marketplace upgrade` and `ishoni update check` keep installing or
 offering 0.5.3. Install the Beta only from its tag, as the
-[Beta guide](https://github.com/chekusu/yobiru/blob/v0.6.0-beta.1/docs/UPGRADING-0.6-BETA.md) describes; it also
+[Beta guide](https://github.com/zealton/ishoni/blob/v0.6.0-beta.1/docs/UPGRADING-0.6-BETA.md) describes; it also
 covers the receiver upgrade, the gateway migration, rollback limits and an acceptance checklist.
 
 ### Friends: share a bot with other people's agents (new)
 
 Public bots and Friends let someone else's own agent talk to one bot you choose, through a gateway you host
-([guide](https://github.com/chekusu/yobiru/blob/v0.6.0-beta.1/docs/PUBLIC_BOTS.md)). There is no web chat page:
+([guide](https://github.com/zealton/ishoni/blob/v0.6.0-beta.1/docs/PUBLIC_BOTS.md)). There is no web chat page:
 each person stays in their own agent (Codex, Grok, another agent that can run the CLI, or an MCP client).
 
 - **Share links**: `https://your-gateway/@handle` resolves to a machine-readable card; the other person's agent runs
-  `yobiru public connect LINK`. Contacts are saved by the bot's immutable id, so a renamed or reused handle never
+  `ishoni public connect LINK`. Contacts are saved by the bot's immutable id, so a renamed or reused handle never
   redirects them. Only the chosen bot is shared, never your other bots, machines or sessions.
 - **Follow and friends**: following is one-way and needs no approval; two follows in opposite directions make
   friends. Identities are pseudonymous and belong to one gateway; there is no federation.
@@ -430,7 +430,7 @@ each person stays in their own agent (Codex, Grok, another agent that can run th
   no reply.
 - **Small text files, opt-in**: with the `files` capability, chat and replies can carry up to 4 small UTF-8 text
   files, covered by your reviews and quotas.
-- **MCP**: the gateway serves the same API at `POST /mcp` (Streamable HTTP, JSON responses) and `yobiru public mcp`
+- **MCP**: the gateway serves the same API at `POST /mcp` (Streamable HTTP, JSON responses) and `ishoni public mcp`
   is a local stdio proxy. Static bearer credentials only (no OAuth); no review or administration tools.
 - **Storage**: the gateway is a plaintext SQLite store that you operate; finished bodies are deleted after 30 days
   and decision receipts after 365 days by default. There is no end-to-end encryption.
@@ -456,10 +456,10 @@ each person stays in their own agent (Codex, Grok, another agent that can run th
 - `install-runtime --upgrade` keeps a runtime whose version is newer than its own (for example a development build)
   unless `--allow-downgrade`; `doctor` and `update check` no longer advise replacing such a runtime.
 - The build requires a strict SemVer 2.0 version, and a prerelease's listing privacy link must point into its own
-  tag. Release files: `yobiru-0.6.0-beta.1-plugin.zip`, `yobiru-0.6.0-beta.1-marketplace.zip` and `SHA256SUMS`.
+  tag. Release files: `ishoni-0.6.0-beta.1-plugin.zip`, `ishoni-0.6.0-beta.1-marketplace.zip` and `SHA256SUMS`.
 - The plugin bundles the public bot guide (`docs/PUBLIC_BOTS.md`) and a runnable local demo
-  (`examples/public-bot-demo.sh`); three skills are new: `yobiru-bot-contacts`, `yobiru-public-bot` and
-  `yobiru-friends-host`.
+  (`examples/public-bot-demo.sh`); three skills are new: `ishoni-bot-contacts`, `ishoni-public-bot` and
+  `ishoni-friends-host`.
 
 ### Compatibility and migration
 
@@ -477,7 +477,7 @@ each person stays in their own agent (Codex, Grok, another agent that can run th
 ### Security and privacy boundaries
 
 - The gateway's operator can read everything it stores; its
-  [privacy notice](https://github.com/chekusu/yobiru/blob/v0.6.0-beta.1/docs/PRIVACY.md) is updated for this Beta.
+  [privacy notice](https://github.com/zealton/ishoni/blob/v0.6.0-beta.1/docs/PRIVACY.md) is updated for this Beta.
 - The review gates are enforced by the gateway, not by an agent. Same-account Grok bots share files, tools, logins,
   apps and memory, so a dedicated bot is not a privacy boundary; keep the owner credential on another device.
 - A visitor or source bot identity is not a verified person. MCP uses a static bearer profile, not MCP OAuth.
@@ -487,7 +487,7 @@ each person stays in their own agent (Codex, Grok, another agent that can run th
 
 Verified offline: the full plugin test suite and the bridge, resident and installer suite on Python 3.12, with
 synthetic homes, real loopback HTTP and stdio, fake clocks and no network (counts in the
-[verification notes](https://github.com/chekusu/yobiru/blob/v0.6.0-beta.1/docs/VERIFICATION.md)). The maintainers
+[verification notes](https://github.com/zealton/ishoni/blob/v0.6.0-beta.1/docs/VERIFICATION.md)). The maintainers
 also ran the official MCP SDK client against a local gateway, and a real local Codex agent completed a supervised
 two-turn chat through an earlier snapshot.
 
@@ -497,4 +497,4 @@ deployment, real calendars, federation between gateways, and runs on Windows, ma
 
 ## 0.5.3 and earlier
 
-See the [GitHub releases](https://github.com/chekusu/yobiru/releases).
+See the [GitHub releases](https://github.com/zealton/ishoni/releases).

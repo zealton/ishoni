@@ -78,7 +78,7 @@ tailmsg inbox --pending --agent codex
 ### 快速开始
 
 ```sh
-Y="/path/to/yobiru/scripts/yobiru"
+Y="/path/to/ishoni/scripts/ishoni"
 SOCK=/absolute/path/to/app-server.sock      # 你的 app-server 实际监听的 socket
 sh "$Y" codex-bridge install --thread-id <入口会话 UUID> --codex-remote "unix://$SOCK" --dry-run
 sh "$Y" codex-bridge install --thread-id <入口会话 UUID> --codex-remote "unix://$SOCK"
@@ -131,7 +131,7 @@ sh "$Y" codex-bridge rollback <backup 路径>
 
 ### 执行证据与诊断
 
-`codex_bridge.py --config <配置> diagnose`（以及 `yobiru codex-bridge status` 输出中的 `diagnostics`）只读地汇总可核对的证据，不新建、迁移或修改应用数据，不发送或重发任何消息（SQLite 可能自行创建账本的 WAL 协调文件）；`status` 也改为只读，不再打开可写队列。证据按层次区分：
+`codex_bridge.py --config <配置> diagnose`（以及 `ishoni codex-bridge status` 输出中的 `diagnostics`）只读地汇总可核对的证据，不新建、迁移或修改应用数据，不发送或重发任何消息（SQLite 可能自行创建账本的 WAL 协调文件）；`status` 也改为只读，不再打开可写队列。证据按层次区分：
 
 | 层次 | 来源 | 含义 |
 | --- | --- | --- |
@@ -167,12 +167,12 @@ sh "$Y" codex-bridge rollback <backup 路径>
 - 只有接收端对一封未 ack、实际级别为 `now` 的消息直接调用 `wake` 时，才运行该程序：argv 原样，只追加经过校验的规范 inbox 路径；不经 shell，stdin 为空，不展开任何正文。`none`、`batch`、已 ack，或未配置程序时只记为 skipped，消息留在 inbox。`scan`、定时投递、`status` 和核对都不会运行它。
 - 结果写到标准输出（JSON），并在标准错误输出一行固定状态，接收端会把它记入 wake 日志：`forwarded`（程序退出码 0）；`forward_failed`（程序非零退出，`exit_code` 记录其值）；`forward_timeout`（超时，程序及其整个进程组被终止）。这三种情况程序都已启动过，适配器一律以 0 退出，接收端不会重放它；程序失败或超时都不会被自动重试，消息仍留在 inbox 中，由该程序或用户处理。程序未能启动时（`forward_not_started`：可执行文件不可用为 127，没有可用时限为 1）以非零退出，接收端可能按 `wake_attempts` 再试，这是安全的，因为程序从未运行。程序可能在失败或超时前已部分执行，去重与重试由它自己以消息 ID 为键负责；这里不承诺恰好一次。
 - 跟踪请求被分流给处理程序时，已完成、已过期或已报告 `running` 的请求不会再次启动处理程序（`skipped`，原因 `request_*`）。`allow_replies` 只约束 Codex 入口；处理程序是用户自己的程序，须自行遵守回复授权。
-- 支持边界：这种分流适合用户自行选择的、固定的只读处理程序（例如定时状态查询），用来避免依赖桌面会话；Yobiru 不评估来信正文、不扩大权限、不包含业务逻辑，也不承诺恰好一次执行。`batch` 消息和扫描不会运行处理程序。
+- 支持边界：这种分流适合用户自行选择的、固定的只读处理程序（例如定时状态查询），用来避免依赖桌面会话；Ishoni 不评估来信正文、不扩大权限、不包含业务逻辑，也不承诺恰好一次执行。`batch` 消息和扫描不会运行处理程序。
 - 没有对应的 CLI 选项：直接编辑 `codex-bridge.json`，再用 `codex-bridge install ... --dry-run` 预览（会校验这些字段，并显示 `excluded_kinds`）。两个安装器升级时都保留这些字段，以及调整过的轮询/重试时间、自定义入口指令路径、已记录的 Codex CLI 路径、固定的 Codex 账户设置和已授权的 `allow_replies`。迁移已有部署时，先把原有分流设置写入 `codex-bridge.json`，确认预览无误后再安装，避免消息被误投到入口会话。`codex-bridge status` 会列出当前分流设置，但不会运行程序。
 
 ## 会话名称与发现（0.3.0）
 
-安装桥接后，`yobiru agents` 和其他机器的发现（`GET /info`，仅对访问策略允许的认证机器）会自动报告固定入口会话的 UUID。原生名称由 `codex_bridge.py session-name` 只读查询：短时官方 app-server 执行 `thread/read`（`includeTurns: false`），只取 `Thread.name`，从不读取 `preview`、回合或会话列表，不入队、不创建队列数据库、不启动模型回合；接收端在整组进程超时清理和输出上限下调用它并缓存约 5 分钟。别名用 `yobiru session bind --agent codex --display-name 名称` 记录在 `sessions.json`；与桥接入口不同的 UUID 会被拒绝。两个安装器升级时不碰 `sessions.json`，名称因此保留。
+安装桥接后，`ishoni agents` 和其他机器的发现（`GET /info`，仅对访问策略允许的认证机器）会自动报告固定入口会话的 UUID。原生名称由 `codex_bridge.py session-name` 只读查询：短时官方 app-server 执行 `thread/read`（`includeTurns: false`），只取 `Thread.name`，从不读取 `preview`、回合或会话列表，不入队、不创建队列数据库、不启动模型回合；接收端在整组进程超时清理和输出上限下调用它并缓存约 5 分钟。别名用 `ishoni session bind --agent codex --display-name 名称` 记录在 `sessions.json`；与桥接入口不同的 UUID 会被拒绝。两个安装器升级时不碰 `sessions.json`，名称因此保留。
 
 ## 入口指令的升级
 

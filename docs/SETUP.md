@@ -1,12 +1,12 @@
-# Setting up Yobiru on a new machine
+# Setting up Ishoni on a new machine
 
 **English** | [简体中文](SETUP.zh-CN.md) | [日本語](SETUP.ja.md)
 
-Installing the Yobiru plugin runs nothing: there is no install hook. A working setup needs Tailscale,
+Installing the Ishoni plugin runs nothing: there is no install hook. A working setup needs Tailscale,
 a configuration, a durable receiver, a way to wake each agent, and (optionally) the session each agent
-uses. `yobiru onboard` checks all of it and prints the next steps for this platform; it is read-only
-and works before anything exists. The `yobiru-setup` skill follows the same steps when you tell an
-agent "set up Yobiru".
+uses. `ishoni onboard` checks all of it and prints the next steps for this platform; it is read-only
+and works before anything exists. The `ishoni-setup` skill follows the same steps when you tell an
+agent "set up Ishoni".
 
 Tailscale facts below come from the official pages, checked on 2026-10-11:
 [Linux](https://tailscale.com/docs/install/linux), [macOS](https://tailscale.com/docs/install/mac),
@@ -15,15 +15,15 @@ and the official Linux script <https://tailscale.com/install.sh>.
 
 ## How to run the commands
 
-The plugin puts no `yobiru` program on PATH. Below, `yobiru` stands for the plugin's launcher called by
+The plugin puts no `ishoni` program on PATH. Below, `ishoni` stands for the plugin's launcher called by
 its quoted absolute path, as in the README's `Y` convention:
 
 ```sh
-Y="/absolute/path/to/yobiru/scripts/yobiru"     # inside the installed plugin or an unpacked release
+Y="/absolute/path/to/ishoni/scripts/ishoni"     # inside the installed plugin or an unpacked release
 sh "$Y" onboard
 ```
 
-On Windows: `py -3 "C:\path\to\yobiru\scripts\yobiru.py" onboard`. A non-default data home goes
+On Windows: `py -3 "C:\path\to\ishoni\scripts\ishoni.py" onboard`. A non-default data home goes
 before the command: `sh "$Y" --home /workspace/.tailmsg onboard`.
 
 ## Who does what
@@ -36,7 +36,7 @@ before the command: `sh "$Y" --home /workspace/.tailmsg onboard`.
 | Receiver service | Installs and starts the printed definition | — |
 | Delivery and sessions | Configures the adapter and binding you chose | Name the existing session for each agent |
 
-Yobiru never changes Tailscale ACLs, shields-up or DNS. New installations accept authenticated
+Ishoni never changes Tailscale ACLs, shields-up or DNS. New installations accept authenticated
 Tailscale peers permitted by those network controls, except local deny rules. Message access never
 authorizes task execution or wake-ups. Ordinary
 `help`, `doctor`, `status`, `onboard`, `agents` and `update check` are read-only.
@@ -51,12 +51,12 @@ authorizes task execution or wake-ups. Ordinary
 - **macOS**: install the Tailscale app from the Mac App Store or the download page, approve the
   system extension / VPN configuration prompt, and sign in from the menu bar. The app's CLI is
   `/Applications/Tailscale.app/Contents/MacOS/Tailscale`; if `tailscale` is not on PATH run
-  `yobiru setup --tailscale-cmd /Applications/Tailscale.app/Contents/MacOS/Tailscale` (add
+  `ishoni setup --tailscale-cmd /Applications/Tailscale.app/Contents/MacOS/Tailscale` (add
   `--replace tailscale_cmd` for an existing config).
 - **Windows**: run the installer (administrator rights) and sign in from the notification-area icon.
-  If the CLI is not on PATH: `yobiru setup --tailscale-cmd "C:\Program Files\Tailscale\tailscale.exe"`.
+  If the CLI is not on PATH: `ishoni setup --tailscale-cmd "C:\Program Files\Tailscale\tailscale.exe"`.
   In PowerShell call it as `& "C:\Program Files\Tailscale\tailscale.exe" status`. Use
-  `py -3 "<plugin>\scripts\yobiru.py"`; the Codex bridge is not available on Windows.
+  `py -3 "<plugin>\scripts\ishoni.py"`; the Codex bridge is not available on Windows.
 
 `doctor` names the state it finds: not installed, daemon not running, permission denied, logged out,
 stopped, waiting for device approval (a tailnet administrator approves it), or running.
@@ -65,15 +65,15 @@ On a cloud computer that may be rebuilt, also review [Tailscale state and startu
 Keeping binaries or a stable hostname is insufficient: inspect the daemon's actual `--statedir`, any
 separate `--state` backend and its startup definition. Preserve private identity state on storage the
 host confirms survives the relevant rebuild, and use a supported startup mechanism. Keep the existing
-Yobiru data home and every agent's webhook, session and permissions. Any state relocation needs a
+Ishoni data home and every agent's webhook, session and permissions. Any state relocation needs a
 coordinated, authorized stop/backup/reconfigure/start with identity verification; the plugin does not
 do this automatically. `onboard` and `doctor` cannot certify persistence or recovery after a rebuild.
 
 ## 2. Peers and agent names
 
 ```sh
-yobiru setup --agent NAME --self-agent NAME --default-agent NAME          # plan
-yobiru setup --agent NAME --self-agent NAME --default-agent NAME --apply
+ishoni setup --agent NAME --self-agent NAME --default-agent NAME          # plan
+ishoni setup --agent NAME --self-agent NAME --default-agent NAME --apply
 ```
 
 New configurations use `tailnet` mode without a per-peer allow list. To restrict a new setup, add
@@ -81,8 +81,8 @@ New configurations use `tailnet` mode without a per-peer allow list. To restrict
 list. Existing access policies are preserved. Changing an identity needs `--replace FIELD`; changed
 configurations are backed up.
 
-For an existing installation, `yobiru policy show` explains the effective mode. To migrate a legacy
-allow list, preview `yobiru policy set --mode tailnet`, then add `--apply` when the owner has authorized
+For an existing installation, `ishoni policy show` explains the effective mode. To migrate a legacy
+allow list, preview `ishoni policy set --mode tailnet`, then add `--apply` when the owner has authorized
 that policy. `--deny RULE` replaces the entire deny list; repeat it for several rules. Deny wins in
 both modes. A 0.4 receiver and bridge reload policy for the next authorization check, so a policy-only
 change needs no restart. The initial runtime upgrade still needs a restart. See
@@ -91,8 +91,8 @@ change needs no restart. The initial runtime upgrade still needs a restart. See
 ## 3. Durable receiver
 
 ```sh
-yobiru install-runtime --apply
-yobiru service-template systemd-user     # or systemd, launchd, windows (onboard names the right one)
+ishoni install-runtime --apply
+ishoni service-template systemd-user     # or systemd, launchd, windows (onboard names the right one)
 ```
 
 Install the printed definition where its header says and start it. To receive, shields-up must be
@@ -100,9 +100,9 @@ off and your tailnet policy must let the chosen peers reach `tcp:7766`.
 
 ## 4. How each agent is woken, and which session it is
 
-These are separate. Delivery: the Codex bridge (`yobiru codex-bridge install --thread-id UUID ...`) or
-`yobiru wake-config --agent NAME --exec PROGRAM | --webhook ...`. Without an adapter messages wait in
-`inbox --pending`. Session: `yobiru session bind --agent NAME --session-id EXACT_ID
+These are separate. Delivery: the Codex bridge (`ishoni codex-bridge install --thread-id UUID ...`) or
+`ishoni wake-config --agent NAME --exec PROGRAM | --webhook ...`. Without an adapter messages wait in
+`inbox --pending`. Session: `ishoni session bind --agent NAME --session-id EXACT_ID
 [--display-name ALIAS] [--confirmed-title TITLE]`, dry run then `--apply`. A name alone never selects
 or renames a session; with the Codex bridge the dispatcher UUID is reported automatically and a
 conflicting binding is refused.
@@ -116,12 +116,12 @@ needed for authorized replies/downloads, and does not override `allow_replies=fa
 ## 5. Verify
 
 ```sh
-yobiru doctor
-yobiru agents --online
-yobiru send PEER/AGENT "hello"
+ishoni doctor
+ishoni agents --online
+ishoni send PEER/AGENT "hello"
 ```
 
-`agents` shows each machine's receiver state, whether you may send there, its Yobiru version, and each
+`agents` shows each machine's receiver state, whether you may send there, its Ishoni version, and each
 agent's session name (with its source) and exact id. To test a wake-up, send with `--wake now` from a
 peer whose wake policy allows `now`, then check `show ID` for `wake_delivery` on the receiver.
 
@@ -129,12 +129,12 @@ peer whose wake policy allows `now`, then check `show ID` for `wake_delivery` on
 
 Update the plugin the way it was installed: the Codex/Cursor/Grok Bot plugin page or marketplace, a
 new official release archive (verify it against `SHA256SUMS` and extract it into a new folder, never
-over the data home), or a checkout of an official tag. Then run the NEW package's `scripts/yobiru`
-(`yobiru version` shows the new version); the data home is not touched.
+over the data home), or a checkout of an official tag. Then run the NEW package's `scripts/ishoni`
+(`ishoni version` shows the new version); the data home is not touched.
 
-See the `yobiru-upgrade` skill and `yobiru update --help`: a plugin update does not change the
+See the `ishoni-upgrade` skill and `ishoni update --help`: a plugin update does not change the
 durable runtime (`install-runtime --upgrade --apply`, then restart the receiver), and
-`yobiru update notify` tells your other known installations once this machine runs a published
+`ishoni update notify` tells your other known installations once this machine runs a published
 release.
 
 Existing installations keep legacy allow lists; policy migration is separate from installing the new

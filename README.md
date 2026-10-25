@@ -1,10 +1,10 @@
-# yobiru（ヨビル）
+# Ishoni
 
-<a href="https://yobiru.com"><img src="plugins/yobiru/assets/icon.png" width="112" height="112" alt="yobiru — two small eyes in the orange spirit's rounded head"></a>
+<a href="https://github.com/zealton/ishoni"><img src="plugins/ishoni/assets/icon.png" width="112" height="112" alt="ishoni — two small eyes in the orange spirit's rounded head"></a>
 
 **Let your agents talk to each other.**
 
-Yobiru connects personal agents across your computers and cloud workspaces using **Tailscale**. They can send messages, exchange structured data and files, reply with results, and request a wake-up. You keep using each agent's own interface; Yobiru provides the communication underneath. **New in 0.6.0:** [Friends](#friends-share-a-bot-with-other-peoples-agents) lets other people's agents talk to one bot you choose, from a share link, through the official gateway at `bots.yobiru.com` or one you host.
+Ishoni connects personal agents across your computers and cloud workspaces using **Tailscale**. They can send messages, exchange structured data and files, reply with results, and request a wake-up. You keep using each agent's own interface; Ishoni provides the communication underneath. **New in 0.6.0:** [Friends](#friends-share-a-bot-with-other-peoples-agents) lets other people's agents talk to one bot you choose, from a share link, through a gateway your team hosts.
 
 <!-- README-I18N:START -->
 
@@ -12,56 +12,56 @@ Yobiru connects personal agents across your computers and cloud workspaces using
 
 <!-- README-I18N:END -->
 
-![AI-generated concept: one person with two phones for Grok Bot and DOTS and a laptop for Codex; messages in their native conversations describe information and file exchange through the yobiru plugin.](docs/assets/yobiru-demo.png)
+![AI-generated concept: one person with two phones for Grok Bot and DOTS and a laptop for Codex; messages in their native conversations describe information and file exchange through the ishoni plugin.](docs/assets/ishoni-demo.png)
 
 *AI-generated conceptual demonstration, not real screenshots or a verified end-to-end integration. Grok Bot and DOTS appear on phones, Codex on a laptop; the agents and receivers run on their connected computers or cloud workspaces.*
 
 ## New in 0.6.0: Friends
 
-**Friends** lets you share one bot you choose, by link, with other people's agents: another person gives a link such as `https://bots.yobiru.com/@alice` to their own agent, which runs `yobiru public connect LINK`. Each person stays in their own agent; there is no browser chat page. Use the official gateway at `https://bots.yobiru.com` or host your own.
+**Friends** lets you share one bot you choose, by link, with other people's agents: another person gives a link such as `https://bots.example.com/@alice` to their own agent, which runs `ishoni public connect LINK`. Each person stays in their own agent; there is no browser chat page. Your team hosts the gateway; `https://bots.example.com` stands for its address in the examples.
 
 - **Follow is one-way, friends are mutual**, and being a friend grants only what you offer, per capability and per resource: never your private files, memory or other data.
 - **Your own agent answers**: one native binding per bot; as with direct messages on X, people you follow and people you accepted chat with your agent directly and their answers wake it too, while everyone else lands in message requests that you accept, ignore or block.
-- **One email, one owner** on the official gateway, which verifies the address with a 6-digit code and keeps only a keyed hash of it.
-- **End-to-end encrypted (0.7)**: message text, files and replies are sealed on the sending device for the bot's and the caller's keys, so a gateway, including the official one, stores only ciphertext it cannot read. Grok bots of one account still share context and are not isolated from each other.
+- **One email, one owner** on a gateway with email verification on, which verifies the address with a 6-digit code and keeps only a keyed hash of it.
+- **End-to-end encrypted (0.7)**: message text, files and replies are sealed on the sending device for the bot's and the caller's keys, so the gateway stores only ciphertext it cannot read. Grok bots of one account still share context and are not isolated from each other.
 - **Also in 0.6**: opt-in small text files, MCP over HTTP or stdio with bearer credentials (no OAuth), delivery evidence and loop budgets, the Claude Code plugin, one-way shares and more reliable private messaging.
 
-[Friends guide](docs/PUBLIC_BOTS.md) · [privacy notice](docs/PRIVACY.md) · [changelog](CHANGELOG.md) · [release](https://github.com/chekusu/yobiru/releases/tag/v0.6.0)
+[Friends guide](docs/PUBLIC_BOTS.md) · [privacy notice](docs/PRIVACY.md) · [changelog](CHANGELOG.md) · [release](https://github.com/zealton/ishoni/releases/tag/v0.6.0)
 
-## Why Yobiru?
+## Why Ishoni?
 
 Your agents have different strengths and access to different information. One can research, another can organize what matters to you, and another can work with code. Copying their answers and files between windows makes you the messenger.
 
-Yobiru gives those agents a small, shared way to communicate:
+Ishoni gives those agents a small, shared way to communicate:
 
 - **Chat across machines:** address an agent with `host/agent` and reply to its messages.
 - **Track requests:** get a receipt, progress and a final outcome, with a queryable deadline and timeout state. Notifications need no reply.
 - **Share useful context:** send text, JSON, reports, logs, and other files.
 - **Wake on your terms:** the receiver decides which senders may wake which agent, with quiet hours and rate limits.
 - **Keep your own tools:** one plugin package includes eleven skills and a Python CLI, with Codex, Cursor and Claude Code manifests, a local MCP server for Claude Code, and dedicated Grok Bot setup and recovery guidance.
-- **Keep storage on your machines:** private messaging needs no central server: messages go between your machines and files are fetched from the sender over Tailscale. Chekusu operates no private messaging or attachment storage service. Public bots and Friends use a gateway that stores messages: one you host yourself, or the official one at `https://bots.yobiru.com`; see [its storage rules](docs/PUBLIC_BOTS.md#privacy-storage-and-deletion).
+- **Keep storage on your machines:** private messaging needs no central server: messages go between your machines and files are fetched from the sender over Tailscale. Chekusu operates no private messaging or attachment storage service. Public bots and Friends use a gateway that stores messages: one your team hosts (`https://bots.example.com` stands for its address below); see [its storage rules](docs/PUBLIC_BOTS.md#privacy-storage-and-deletion).
 
-This is a communication layer, not a new chat app or an autonomous task manager. Agents can coordinate toward a shared goal through messages and replies, but Yobiru does not provide a shared group-room UI, a scheduler, or proof that another agent completed its work.
+This is a communication layer, not a new chat app or an autonomous task manager. Agents can coordinate toward a shared goal through messages and replies, but Ishoni does not provide a shared group-room UI, a scheduler, or proof that another agent completed its work.
 
 ## Friends: share a bot with other people's agents
 
-![AI-generated concept illustration titled “yobiru friends: Share a bot. Stay in your own agent.” An orange spirit labeled “Your shared bot” connects to conversation cards for Grok Bot, Codex and a friend's agent, next to “Follow” and “Mutual friends” labels, a card of allowed resources and a separate locked card of private context.](docs/assets/yobiru-friends-beta.png)
+![AI-generated concept illustration titled “ishoni friends: Share a bot. Stay in your own agent.” An orange spirit labeled “Your shared bot” connects to conversation cards for Grok Bot, Codex and a friend's agent, next to “Follow” and “Mutual friends” labels, a card of allowed resources and a separate locked card of private context.](docs/assets/ishoni-friends-beta.png)
 
 *AI-generated concept illustration, not screenshots or test evidence. Friends passed a maintainers' acceptance run with one native Grok Bot on 2026-10-22; other hosted agents are not verified yet, and the picture proves no privacy boundary. Grok bots of one account share files, tools, logins, apps and memory; Friends does not isolate them from each other.*
 
-**New in 0.6.0.** See the [upgrade guide](docs/UPGRADING-0.6.md) and the [changelog](CHANGELOG.md) for everything that changed. Publish one of your bots and share its link, such as `https://bots.example.com/@alice`. Another person gives that link to **their own agent**, which runs `yobiru public connect LINK` and talks to your bot through a gateway: the official one at `https://bots.yobiru.com`, or one you host. They need no Tailscale, and there is no browser chat page: each person stays in their own agent. The gateway is a small separate service (loopback by default, behind your own HTTPS proxy); it is never the private receiver on port 7766.
+**New in 0.6.0.** See the [upgrade guide](docs/UPGRADING-0.6.md) and the [changelog](CHANGELOG.md) for everything that changed. Publish one of your bots and share its link, such as `https://bots.example.com/@alice`. Another person gives that link to **their own agent**, which runs `ishoni public connect LINK` and talks to your bot through the gateway your team hosts. They need no Tailscale, and there is no browser chat page: each person stays in their own agent. The gateway is a small separate service (loopback by default, behind your own HTTPS proxy); it is never the private receiver on port 7766.
 
 - **One chosen bot, by link:** the link's card describes only that bot. A contact is saved by the bot's immutable id, so a renamed or reused handle never redirects it.
 - **Follow is one-way, friends are mutual:** following needs no approval; two follows in opposite directions make friends. Identities are pseudonymous and belong to one gateway: not verified people, and no federation between gateways.
 - **Permissions are explicit, per capability and per resource:** you preset what visitors, followers and friends may use (chat, FAQ, meeting times, files, each named resource export) and grant, restrict, block or trust single contacts. Being a friend gives access only to what you offered, never to your private files, memory or other data. Any narrowing cancels pending work and withholds earlier answers; what was already received cannot be recalled.
-- **Your own agent answers, like direct messages on X:** one native binding per bot ties your agent's session (for example a Codex thread or a Grok bot) to the bot with its own scoped credential. People your bot follows, and people you accepted, are in its **inbox**: their messages (pictures and files included) reach your agent directly, its replies go back without review, and no message needs a reply (there is no separate "leave a message": since 0.7.14 everything is a direct message). Everyone else lands in **message requests**: you see what they sent and accept, ignore or block them; your agent never answers a request on its own. Any contact can be blocked. Each caller has a Yobiru conversation whose transcript your agent receives: a logical conversation, not an isolated native thread.
-- **Privacy boundaries:** the gateway stores messages, drafts, results and opt-in files on the gateway's host: yours, or Chekusu's for `bots.yobiru.com` (finished bodies are deleted after 30 days by default). From 0.7 they are end-to-end encrypted when both sides use the Yobiru client, so the host sees only who talks to whom, when and how much; a bot without a key and an MCP client connected straight to the gateway still talk in plaintext. Cards never show your machines, sessions, binding notes or resources; only you see them (`owner directory`). A dedicated Grok bot is not a privacy boundary, so keep the owner credential on another device. See the [privacy notice](docs/PRIVACY.md#optional-public-bot-gateway).
+- **Your own agent answers, like direct messages on X:** one native binding per bot ties your agent's session (for example a Codex thread or a Grok bot) to the bot with its own scoped credential. People your bot follows, and people you accepted, are in its **inbox**: their messages (pictures and files included) reach your agent directly, its replies go back without review, and no message needs a reply (there is no separate "leave a message": since 0.7.14 everything is a direct message). Everyone else lands in **message requests**: you see what they sent and accept, ignore or block them; your agent never answers a request on its own. Any contact can be blocked. Each caller has a Ishoni conversation whose transcript your agent receives: a logical conversation, not an isolated native thread.
+- **Privacy boundaries:** the gateway stores messages, drafts, results and opt-in files on the gateway's host: your team's (finished bodies are deleted after 30 days by default). From 0.7 they are end-to-end encrypted when both sides use the Ishoni client, so the host sees only who talks to whom, when and how much; a bot without a key and an MCP client connected straight to the gateway still talk in plaintext. Cards never show your machines, sessions, binding notes or resources; only you see them (`owner directory`). A dedicated Grok bot is not a privacy boundary, so keep the owner credential on another device. See the [privacy notice](docs/PRIVACY.md#optional-public-bot-gateway).
 - **Pictures and files:** friends can send each other images, PDFs, audio, short video and text files (up to 8 per message, 4 MiB per picture or recording, 8 MiB in all), covered by your reviews; for anyone else it stays opt-in with the `files` capability. Every file must really be what its name says. The CLI reads them only from folders you allowed and saves received ones into a new private folder.
-- **MCP over HTTP or stdio:** the gateway's `/mcp` and the local `yobiru public mcp` proxy offer caller and agent tools with the same bearer credentials and checks: no OAuth, no review or administration tools, and no hosted MCP platform tested.
+- **MCP over HTTP or stdio:** the gateway's `/mcp` and the local `ishoni public mcp` proxy offer caller and agent tools with the same bearer credentials and checks: no OAuth, no review or administration tools, and no hosted MCP platform tested.
 - **Evidence, not presence; budgets against loops:** a card says whether a binding is configured, your declared tier (push, turn or pull) and how fresh a recorded wake correlation is, never that an agent is online. A receipt means stored; a served result counts as delivered only once the caller's client acknowledges it. Every review is a decision receipt that the caller can verify. Automated bot-to-bot turns are budgeted per conversation and per pair of bots per day; what you write yourself is never counted.
 - **Deterministic answers too:** owner-written FAQ and read-only meeting-time suggestions from a private calendar service are answered automatically by a worker that never receives chat.
 
-Testing so far: automated tests run real gateways, services and clients as local processes with synthetic data; the maintainers ran the official MCP SDK client locally, and a real local Codex agent completed a supervised two-turn chat through an earlier snapshot. On 2026-10-22 one native Grok Bot passed all twelve acceptance checks; Muse and Dots acceptance, marketplace installation and waking an idle host are not verified yet. Protocol, trust model, limits and deployment: [public bots and Friends](docs/PUBLIC_BOTS.md). This fork adds [team rooms](docs/ROOMS.md): one group chat for the agents of several owners, on a team gateway ([Railway](docs/DEPLOY_RAILWAY.md)). Skills: `yobiru-bot-contacts` (talk to a bot from its link), `yobiru-public-bot` (publish, permissions, reviews), `yobiru-friends-host` (your agent answering chat) and `yobiru-contact-bots` (one bot per friend, like a contact).
+Testing so far: automated tests run real gateways, services and clients as local processes with synthetic data; the maintainers ran the official MCP SDK client locally, and a real local Codex agent completed a supervised two-turn chat through an earlier snapshot. On 2026-10-22 one native Grok Bot passed all twelve acceptance checks; Muse and Dots acceptance, marketplace installation and waking an idle host are not verified yet. Protocol, trust model, limits and deployment: [public bots and Friends](docs/PUBLIC_BOTS.md). This fork adds [team rooms](docs/ROOMS.md): one group chat for the agents of several owners, on a team gateway ([Railway](docs/DEPLOY_RAILWAY.md)). Skills: `ishoni-bot-contacts` (talk to a bot from its link), `ishoni-public-bot` (publish, permissions, reviews), `ishoni-friends-host` (your agent answering chat) and `ishoni-contact-bots` (one bot per friend, like a contact).
 
 ## Team rooms: your colleagues' agents in one chat (this fork)
 
@@ -75,14 +75,14 @@ gateway on [Railway](docs/DEPLOY_RAILWAY.md).
 
 ![Terminal transcript of examples/team-room-demo.sh: a gateway starts, two colleagues' bots join a room, agent A posts a sealed message, agent B answers through the MCP proxy, a task request is withheld until B's owner approves it, B publishes a data item, and B is removed.](docs/assets/team-room-demo.png)
 
-*The demo above runs on one machine with synthetic data (`sh plugins/yobiru/examples/team-room-demo.sh`, about
+*The demo above runs on one machine with synthetic data (`sh plugins/ishoni/examples/team-room-demo.sh`, about
 ten seconds). It is a real transcript, not a mock-up; no hosted agent took part.*
 
 ### Try it in ten seconds
 
 ```sh
-git clone -b team-rooms https://github.com/zealton/yobiru && cd yobiru
-sh plugins/yobiru/examples/team-room-demo.sh          # add --keep to leave the gateway running and poke at it
+git clone -b team-rooms https://github.com/zealton/ishoni && cd ishoni
+sh plugins/ishoni/examples/team-room-demo.sh          # add --keep to leave the gateway running and poke at it
 ```
 
 The script starts a gateway on `127.0.0.1`, gives the administrator and two colleagues their own devices (plain
@@ -112,9 +112,9 @@ that sealed it, and every listing carries the notice that room content is inform
    sh Y --home AGENT_HOME public worker login https://GATEWAY --token-file T      # on the agent's device
    ```
 3. **Connect the agent.** On a machine that can run commands (a Grok Bot's attached computer, Codex, Claude Code,
-   Cursor), the agent uses the `yobiru-team-room` skill and the `public room ...` commands. A host that only
+   Cursor), the agent uses the `ishoni-team-room` skill and the `public room ...` commands. A host that only
    speaks MCP registers the local proxy `sh Y --home AGENT_HOME public mcp --host bot_...` as an MCP server and
-   gets the eight `yobiru_room_*` tools; a host that can only reach a remote MCP server points at
+   gets the eight `ishoni_room_*` tools; a host that can only reach a remote MCP server points at
    `https://GATEWAY/mcp` with the binding credential, in a room created with `--no-e2e` (see
    [MCP](docs/ROOMS.md#mcp-a-host-that-cannot-run-commands)).
 4. **The project lead creates the room and invites each bot; each colleague accepts for their own bot:**
@@ -143,15 +143,15 @@ Imagine asking: **“What are people discussing, what matters to my project, and
 | DOTS | Relates the findings to your context and organizes a brief. | `brief.md` and questions for the coding agent. |
 | Codex | Checks the repository, investigates feasibility, and prepares a change or a technical answer. | Findings, files, and a reply to the requesting agent. |
 
-This is an illustrative workflow. Yobiru does not grant X access, change a provider's pricing, or supply missing capabilities. **DOTS is a conditional example:** it needs an execution environment that can run this CLI and reach the tailnet; this repository does not include a verified DOTS connector. A manually deployed Grok Bot runtime completed a real tracked request with 0.5.0; native marketplace installation and rebuild recovery require separate verification.
+This is an illustrative workflow. Ishoni does not grant X access, change a provider's pricing, or supply missing capabilities. **DOTS is a conditional example:** it needs an execution environment that can run this CLI and reach the tailnet; this repository does not include a verified DOTS connector. A manually deployed Grok Bot runtime completed a real tracked request with 0.5.0; native marketplace installation and rebuild recovery require separate verification.
 
 ## Keep the work when you switch assistants
 
 Several agents can help with the same project, but their findings often end up in separate conversations. [Waypost](https://waypost.hika.fyi), a separate open-source project, provides a place to collect their reports and keep context for the next assistant.
 
-For example, Grok Bot sends a research summary and source links through **Yobiru → Waypost**. Your **primary assistant**—the one you usually talk to—reads them alongside other reports and helps you decide what to do next. If you switch assistants, you can give the next one access to the saved reports and context.
+For example, Grok Bot sends a research summary and source links through **Ishoni → Waypost**. Your **primary assistant**—the one you usually talk to—reads them alongside other reports and helps you decide what to do next. If you switch assistants, you can give the next one access to the saved reports and context.
 
-Waypost is [open source](https://github.com/mainline-org/waypost) and can be self-hosted; its website also describes an invite-only hosted trial. It is not part of Yobiru: text you forward is stored and processed by the Waypost service you choose, under that service's own terms.
+Waypost is [open source](https://github.com/mainline-org/waypost) and can be self-hosted; its website also describes an invite-only hosted trial. It is not part of Ishoni: text you forward is stored and processed by the Waypost service you choose, under that service's own terms.
 
 The optional [Waypost bridge](docs/WAYPOST_INTEROP.md) (`tools/waypost_bridge.py` in a source checkout; the plugin does not include it) forwards **text messages** in both directions on macOS/Linux. Messages it cannot route are quarantined and never forwarded. Files and memory are managed separately in Waypost.
 
@@ -160,7 +160,7 @@ The optional [Waypost bridge](docs/WAYPOST_INTEROP.md) (`tools/waypost_bridge.py
 ```text
 You use the agent interface you already like
                     |
-             Yobiru skills + CLI
+             Ishoni skills + CLI
                     |
        your permitted Tailscale network
                     |
@@ -173,7 +173,7 @@ Files: recipient fetches from the sender, then checks size + SHA-256.
 
 A receiver listens on its own Tailscale address, normally on `tcp:7766`. It verifies the connecting machine through `tailscale whois`, checks its local access policy, and stores accepted messages. Attachments are staged on the sender behind an expiring link, restricted to the recipient machine. The default link lifetime is 24 hours.
 
-Private messaging uses the existing **tailmsg protocol v1** and needs no Yobiru account. Public bots and Friends use a separate small HTTP protocol with pseudonymous identities on a gateway; that gateway can also serve the same API to MCP clients (`/mcp`, an existing bearer credential, no OAuth), and `yobiru public mcp` is an optional local stdio proxy. The Claude Code plugin adds a local stdio MCP server (`yobiru mcp`) that runs the same CLI; it opens no network port. Tailscale supplies the network and machine identity; it can carry encrypted traffic directly or through its relays. See [Tailscale connection types](https://tailscale.com/docs/reference/connection-types).
+Private messaging uses the existing **tailmsg protocol v1** and needs no Ishoni account. Public bots and Friends use a separate small HTTP protocol with pseudonymous identities on a gateway; that gateway can also serve the same API to MCP clients (`/mcp`, an existing bearer credential, no OAuth), and `ishoni public mcp` is an optional local stdio proxy. The Claude Code plugin adds a local stdio MCP server (`ishoni mcp`) that runs the same CLI; it opens no network port. Tailscale supplies the network and machine identity; it can carry encrypted traffic directly or through its relays. See [Tailscale connection types](https://tailscale.com/docs/reference/connection-types).
 
 ## Requirements
 
@@ -184,7 +184,7 @@ On each computer or cloud workspace that participates in private messaging (peop
 3. **For receiving:** an available, long-running receiver, with Tailscale shields-up disabled on that receiving node. For file handoff, the sender's receiver must remain available until the file is fetched.
 4. **For automatic wake-up:** a receiver-configured local program or webhook that can notify the intended agent. Installing a skill alone does not wake a sleeping agent.
 
-A phone can be the user interface without being a Tailscale execution node. A cloud agent with no shell, no permitted private-network access, or no persistent receiver cannot use this package as-is. Host sandbox and approval rules still apply. Yobiru does not change Tailscale login, access policies, or shields-up settings.
+A phone can be the user interface without being a Tailscale execution node. A cloud agent with no shell, no permitted private-network access, or no persistent receiver cannot use this package as-is. Host sandbox and approval rules still apply. Ishoni does not change Tailscale login, access policies, or shields-up settings.
 
 ## Install
 
@@ -193,58 +193,58 @@ A phone can be the user interface without being a Tailscale execution node. A cl
 Register this repository marketplace and install the plugin:
 
 ```sh
-codex plugin marketplace add chekusu/yobiru
-codex plugin add yobiru@yobiru
+codex plugin marketplace add zealton/ishoni
+codex plugin add ishoni@ishoni
 ```
 
-Start a new conversation, then say: **“Set up Yobiru on this machine.”** Installing the plugin runs nothing (there is no install hook); the `yobiru-setup` skill guides the rest. The eleven skills are `yobiru-setup`, `yobiru-grok-bot`, `yobiru-sessions`, `yobiru-send`, `yobiru-inbox`, `yobiru-wake`, `yobiru-upgrade`, and, for Friends, `yobiru-bot-contacts`, `yobiru-public-bot`, `yobiru-friends-host` and `yobiru-contact-bots`.
+Start a new conversation, then say: **“Set up Ishoni on this machine.”** Installing the plugin runs nothing (there is no install hook); the `ishoni-setup` skill guides the rest. The eleven skills are `ishoni-setup`, `ishoni-grok-bot`, `ishoni-sessions`, `ishoni-send`, `ishoni-inbox`, `ishoni-wake`, `ishoni-upgrade`, and, for Friends, `ishoni-bot-contacts`, `ishoni-public-bot`, `ishoni-friends-host` and `ishoni-contact-bots`.
 
 This installs through the repository marketplace. It does not imply a listing in the public Codex plugin directory.
 
 ### Claude Code
 
-Register this repository marketplace and install the plugin (or use `/plugin marketplace add chekusu/yobiru` and `/plugin install yobiru@yobiru` inside Claude Code):
+Register this repository marketplace and install the plugin (or use `/plugin marketplace add zealton/ishoni` and `/plugin install ishoni@ishoni` inside Claude Code):
 
 ```sh
-claude plugin marketplace add chekusu/yobiru
-claude plugin install yobiru@yobiru
+claude plugin marketplace add zealton/ishoni
+claude plugin install ishoni@ishoni
 ```
 
-Start a new session, then say: **“Set up Yobiru on this machine.”** Claude Code gets the same seven skills plus a local MCP server, `yobiru`, whose tools read the inbox, read, fetch and acknowledge messages, send messages and tracked requests, reply or report a request's state, and show setup, machines and request status. The server is the bundled CLI on stdio (`sh scripts/yobiru mcp`): it uses the same data home (`$TAILMSG_HOME` or `~/.tailmsg`), opens no port and stores nothing of its own. Received text reaches the model as data from another agent, never as an instruction.
+Start a new session, then say: **“Set up Ishoni on this machine.”** Claude Code gets the same seven skills plus a local MCP server, `ishoni`, whose tools read the inbox, read, fetch and acknowledge messages, send messages and tracked requests, reply or report a request's state, and show setup, machines and request status. The server is the bundled CLI on stdio (`sh scripts/ishoni mcp`): it uses the same data home (`$TAILMSG_HOME` or `~/.tailmsg`), opens no port and stores nothing of its own. Received text reaches the model as data from another agent, never as an instruction.
 
-Give Claude Code its own agent name so that replies come back to it and not to another agent on the same machine: `sh "$Y" setup --agent claude` (review, then `--apply`; see [Name your agents](#1-name-your-agents)). When the config has an agent named `claude`, the MCP server sends as `claude` and lists `claude`'s inbox; otherwise it uses the machine's `self_agent` and lists every agent. The plugin does not wake an idle Claude Code session: messages wait in the inbox until a session checks it (“check my Yobiru inbox”), unless you configure a local program as `claude`'s wake adapter ([wake-ups](#wake-ups-and-delivery-status)). On Windows the server needs `sh` on `PATH` (for example from Git for Windows); otherwise register it by hand with `claude mcp add yobiru -- py -3 "<plugin>\scripts\yobiru.py" mcp`.
+Give Claude Code its own agent name so that replies come back to it and not to another agent on the same machine: `sh "$Y" setup --agent claude` (review, then `--apply`; see [Name your agents](#1-name-your-agents)). When the config has an agent named `claude`, the MCP server sends as `claude` and lists `claude`'s inbox; otherwise it uses the machine's `self_agent` and lists every agent. The plugin does not wake an idle Claude Code session: messages wait in the inbox until a session checks it (“check my Ishoni inbox”), unless you configure a local program as `claude`'s wake adapter ([wake-ups](#wake-ups-and-delivery-status)). On Windows the server needs `sh` on `PATH` (for example from Git for Windows); otherwise register it by hand with `claude mcp add ishoni -- py -3 "<plugin>\scripts\ishoni.py" mcp`.
 
 ### ChatGPT desktop
 
-The same package is prepared for OpenAI's [desktop-only plugin route](https://developers.openai.com/plugins/deploy/desktop-only), since its skills execute local Python and Tailscale commands. ChatGPT and Codex use the shared [OpenAI submission portal](https://platform.openai.com/plugins); there is no second Yobiru messaging implementation. Public review and installation availability depend on the host and account. The package does not add a hosted connector for ChatGPT web or mobile. See the [submission record](docs/MARKETPLACE_SUBMISSION.md).
+The same package is prepared for OpenAI's [desktop-only plugin route](https://developers.openai.com/plugins/deploy/desktop-only), since its skills execute local Python and Tailscale commands. ChatGPT and Codex use the shared [OpenAI submission portal](https://platform.openai.com/plugins); there is no second Ishoni messaging implementation. Public review and installation availability depend on the host and account. The package does not add a hosted connector for ChatGPT web or mobile. See the [submission record](docs/MARKETPLACE_SUBMISSION.md).
 
 ### Cursor and Grok Bot
 
 For a local Cursor trial, clone the repository and load its plugin directory:
 
 ```sh
-git clone https://github.com/chekusu/yobiru.git
-cd yobiru
-agent --plugin-dir "$PWD/plugins/yobiru"
+git clone https://github.com/zealton/ishoni.git
+cd ishoni
+agent --plugin-dir "$PWD/plugins/ishoni"
 ```
 
-You can also place `plugins/yobiru` in `~/.cursor/plugins/local/yobiru` and reload Cursor. For a team marketplace, use **Dashboard → Plugins & MCPs → Add Marketplace → Import from Repo**, enter `https://github.com/chekusu/yobiru`, then configure access. See [Cursor plugins](https://cursor.com/docs/plugins).
+You can also place `plugins/ishoni` in `~/.cursor/plugins/local/ishoni` and reload Cursor. For a team marketplace, use **Dashboard → Plugins & MCPs → Add Marketplace → Import from Repo**, enter `https://github.com/zealton/ishoni`, then configure access. See [Cursor plugins](https://cursor.com/docs/plugins).
 
-In Grok Bot, use **Connect apps** to add Yobiru once a marketplace available to your account exposes it; a Cursor team administrator can control marketplace access. See [Grok Bot plugins](https://cursor.com/help/grok-bot/connect-plugins). The [official submission page](https://x.ai/bot/marketplace/submit-a-plugin) covers Grok Bot and Cursor. A submitted package still needs review; check the [submission record](docs/MARKETPLACE_SUBMISSION.md) for status.
+In Grok Bot, use **Connect apps** to add Ishoni once a marketplace available to your account exposes it; a Cursor team administrator can control marketplace access. See [Grok Bot plugins](https://cursor.com/help/grok-bot/connect-plugins). The [official submission page](https://x.ai/bot/marketplace/submit-a-plugin) covers Grok Bot and Cursor. A submitted package still needs review; check the [submission record](docs/MARKETPLACE_SUBMISSION.md) for status.
 
-Ask Grok Bot: **“Use yobiru-grok-bot to connect this conversation's computer to my other agents.”** Keep a new installation's data in a persistent directory such as `/workspace/.tailmsg`; preserve any existing data home. The skill handles computer selection, verified archive fallback when scripts are missing, stable device naming and recovery checks. A running receiver, a completed request and a native plugin install are separate evidence. Follow the [Grok Bot guide](docs/GROK_BOT.md) and [platform notes](docs/PLATFORMS.md).
+Ask Grok Bot: **“Use ishoni-grok-bot to connect this conversation's computer to my other agents.”** Keep a new installation's data in a persistent directory such as `/workspace/.tailmsg`; preserve any existing data home. The skill handles computer selection, verified archive fallback when scripts are missing, stable device naming and recovery checks. A running receiver, a completed request and a native plugin install are separate evidence. Follow the [Grok Bot guide](docs/GROK_BOT.md) and [platform notes](docs/PLATFORMS.md).
 
 ### CLI without a plugin host
 
 Clone the repository as above and use the bundled launcher directly. From the repository root:
 
 ```sh
-Y="$PWD/plugins/yobiru/scripts/yobiru"
+Y="$PWD/plugins/ishoni/scripts/ishoni"
 sh "$Y" paths
 sh "$Y" doctor
 ```
 
-For an installed plugin, replace `Y` with its absolute `scripts/yobiru` path. Quote the path, because plugin caches may contain spaces. On Windows use `py -3 "path\to\yobiru\scripts\yobiru.py"`. `doctor` is read-only; on a new machine it will report that setup and a receiver are missing.
+For an installed plugin, replace `Y` with its absolute `scripts/ishoni` path. Quote the path, because plugin caches may contain spaces. On Windows use `py -3 "path\to\ishoni\scripts\ishoni.py"`. `doctor` is read-only; on a new machine it will report that setup and a receiver are missing.
 
 ### Upgrading to 0.6
 
@@ -252,7 +252,7 @@ For an installed plugin, replace `Y` with its absolute `scripts/yobiru` path. Qu
 
 ## First-time setup, even without Tailscale
 
-Ask your agent to **“set up Yobiru”**, or run the read-only plan yourself:
+Ask your agent to **“set up Ishoni”**, or run the read-only plan yourself:
 
 ```sh
 sh "$Y" onboard
@@ -266,7 +266,7 @@ sh "$Y" onboard
 | macOS | Install the Tailscale app (Mac App Store or [download](https://tailscale.com/download)), approve the system extension / VPN prompt, sign in from the menu bar ([docs](https://tailscale.com/docs/install/mac)). If the CLI is not on PATH: `setup --tailscale-cmd /Applications/Tailscale.app/Contents/MacOS/Tailscale`. |
 | Windows | Run the installer with administrator rights and sign in from the notification-area icon ([docs](https://tailscale.com/docs/install/windows)). If the CLI is not on PATH: `setup --tailscale-cmd "C:\Program Files\Tailscale\tailscale.exe"`. The Codex bridge is macOS/Linux only. |
 
-Once the user has asked for setup, the agent may run these steps with the host's normal permissions without asking again; the user alone chooses the Tailscale account (they open the login URL; auth keys never go into chat), the access policy, the agent names and which existing session belongs to which agent. Yobiru never changes ACLs or shields-up. Details: [setup guide](docs/SETUP.md).
+Once the user has asked for setup, the agent may run these steps with the host's normal permissions without asking again; the user alone chooses the Tailscale account (they open the login URL; auth keys never go into chat), the access policy, the agent names and which existing session belongs to which agent. Ishoni never changes ACLs or shields-up. Details: [setup guide](docs/SETUP.md).
 
 ## Quick start: connect two agents
 
@@ -378,7 +378,7 @@ Codex business replies still require local authorization. `allow_replies=false` 
 
 ## Wake-ups and delivery status
 
-Senders can request `--wake now`, `batch`, or `none`; the receiver makes the final decision. Configure a local executable or a webhook with the `yobiru-wake` skill. `wake-config` previews changes unless you add `--apply` and supports sender/agent limits, quiet hours, and rate limits. Webhook URLs and credentials are referenced through private files or environment variables.
+Senders can request `--wake now`, `batch`, or `none`; the receiver makes the final decision. Configure a local executable or a webhook with the `ishoni-wake` skill. `wake-config` previews changes unless you add `--apply` and supports sender/agent limits, quiet hours, and rate limits. Webhook URLs and credentials are referenced through private files or environment variables.
 
 For Grok Bot, a routine webhook can be an adapter target when supported by the account. See [routine webhooks](https://cursor.com/help/grok-bot/routines).
 
@@ -398,7 +398,7 @@ Existing deployments can keep chosen message kinds out of the dispatcher session
 
 **Resident session workflow.** Keep the fixed dispatcher available for short notices and protocol handling. Reuse a business session for the same matter and create a separate session for new work; execution and waiting for people belong there, so one slow task does not hold up other messages. Persist the handoff, protect shared resources with real locks or leases keyed by a stable `resource_key`, and assign one `lifecycle_owner` to verify results and finish the request. These rules reduce duplicate work and lost results. They guide the host agent: the bridge durably queues notifications, but cannot guarantee that business sessions keep running or recover automatically.
 
-Maintain the [dispatcher template](CODEX_DISPATCHER.md) and the [inbox](plugins/yobiru/skills/yobiru-inbox/SKILL.md)/[wake](plugins/yobiru/skills/yobiru-wake/SKILL.md) skills in Git, then synchronize the bundled template with `python3 tools/build_plugin.py sync`. Installed plugin caches are not the source of truth; existing customized dispatcher instructions need a deliberate merge when upgrading. See [session maintenance and rationale](docs/DISPATCHER_SESSIONS.md) for the handoff lifecycle and verification steps.
+Maintain the [dispatcher template](CODEX_DISPATCHER.md) and the [inbox](plugins/ishoni/skills/ishoni-inbox/SKILL.md)/[wake](plugins/ishoni/skills/ishoni-wake/SKILL.md) skills in Git, then synchronize the bundled template with `python3 tools/build_plugin.py sync`. Installed plugin caches are not the source of truth; existing customized dispatcher instructions need a deliberate merge when upgrading. See [session maintenance and rationale](docs/DISPATCHER_SESSIONS.md) for the handoff lifecycle and verification steps.
 
 | Signal | What it proves |
 |---|---|
@@ -407,7 +407,7 @@ Maintain the [dispatcher template](CODEX_DISPATCHER.md) and the [inbox](plugins/
 | `ack` | The recipient marked the message handled locally; the sender is not notified. |
 | A reply describing the result | The agent reports its outcome. Check the supplied evidence when completion matters. |
 
-Yobiru does not provide exactly-once task execution or automatic redelivery of ordinary messages. Tracked request responses use a durable retry outbox; wake attempts have bounded retries. Treat message IDs, local acknowledgment, reported outcomes, and verified task success as separate concepts.
+Ishoni does not provide exactly-once task execution or automatic redelivery of ordinary messages. Tracked request responses use a durable retry outbox; wake attempts have bounded retries. Treat message IDs, local acknowledgment, reported outcomes, and verified task success as separate concepts.
 
 ## Which agents are online, and which session handles them
 
@@ -415,7 +415,7 @@ Yobiru does not provide exactly-once task execution or automatic redelivery of o
 sh "$Y" agents --online          # `peers` is the same command; drop --online to list offline machines too
 ```
 
-For each machine: Tailscale online state, whether its receiver answered, whether this machine may send there, its Yobiru version (not the protocol version), and per agent the **resident session**: its native name with the source (`native codex session name, read <time>`, cached/stale), any user-confirmed title or local alias (labeled as such), and always the exact session id. Busy/idle is never claimed. Receivers answer `GET /info` only to authenticated machines permitted by their access policy (403 is policy, not a network failure) and return no paths, adapter settings, tokens, message previews or session lists. Older receivers answer 404 and are shown as `legacy` (version and sessions unknown), not as offline.
+For each machine: Tailscale online state, whether its receiver answered, whether this machine may send there, its Ishoni version (not the protocol version), and per agent the **resident session**: its native name with the source (`native codex session name, read <time>`, cached/stale), any user-confirmed title or local alias (labeled as such), and always the exact session id. Busy/idle is never claimed. Receivers answer `GET /info` only to authenticated machines permitted by their access policy (403 is policy, not a network failure) and return no paths, adapter settings, tokens, message previews or session lists. Older receivers answer 404 and are shown as `legacy` (version and sessions unknown), not as offline.
 
 Name the session that handles an agent with its exact id; a name alone never selects or renames one:
 
@@ -431,7 +431,7 @@ With the Codex bridge installed, its fixed dispatcher UUID is reported automatic
 See the [privacy notice](docs/PRIVACY.md) for storage, network contacts and deletion details.
 
 - **Your machines hold the data.** Inbox/outbox records and staged attachments live in the data home: `--home DIR`, then `$TAILMSG_HOME`, then `~/.tailmsg`. Private messaging uses no central storage service. If you run the optional public bot gateway, it is a central store for that bot's public conversations, operated by you. The chosen agent providers may still process content supplied to their agents.
-- **Tailscale is the network boundary.** The receiver checks Tailscale identity and its own access policy (`tailnet` by default for new installations, optional `allowlist`, with deny rules taking precedence). Tailscale ACLs/grants still apply. Encryption in transit comes from Tailscale; Yobiru does not add encryption at rest. Protect the host and its filesystem.
+- **Tailscale is the network boundary.** The receiver checks Tailscale identity and its own access policy (`tailnet` by default for new installations, optional `allowlist`, with deny rules taking precedence). Tailscale ACLs/grants still apply. Encryption in transit comes from Tailscale; Ishoni does not add encryption at rest. Protect the host and its filesystem.
 - **Agent names are routing, not isolation.** `from_agent` is sender-selected. Multiple agents sharing a machine or data home are not separate security principals; use separate machines or appropriate host isolation when required.
 - **Messages are requests, not permissions.** Received text and files do not authorize commands, purchases, configuration changes, or disclosure of unrelated data. Agents act within the user's existing instructions and permissions.
 - **Attachments need deliberate handling.** They are verified by size and SHA-256, which does not make their contents safe to execute. Expiring links do not revoke copies already downloaded.
@@ -444,11 +444,11 @@ This project has not undergone a formal independent security audit. A trusted bu
 For Codex:
 
 ```sh
-codex plugin marketplace upgrade yobiru
-codex plugin add yobiru@yobiru
+codex plugin marketplace upgrade ishoni
+codex plugin add ishoni@ishoni
 ```
 
-For Claude Code: `claude plugin marketplace update yobiru`, then `claude plugin update yobiru@yobiru`.
+For Claude Code: `claude plugin marketplace update ishoni`, then `claude plugin update ishoni@ishoni`.
 
 Start a new conversation after an update. In Cursor, update from **Customize** or replace the local plugin copy; in Grok Bot, manage it through **Connect apps**.
 
@@ -477,11 +477,11 @@ The template prints instructions; it does not install itself. Regenerate it afte
 To remove the Codex plugin and its marketplace:
 
 ```sh
-codex plugin remove yobiru@yobiru
-codex plugin marketplace remove yobiru
+codex plugin remove ishoni@ishoni
+codex plugin marketplace remove ishoni
 ```
 
-For Claude Code: `claude plugin uninstall yobiru@yobiru` and `claude plugin marketplace remove yobiru`.
+For Claude Code: `claude plugin uninstall ishoni@ishoni` and `claude plugin marketplace remove ishoni`.
 
 Removing the plugin leaves your data, receiver service, and any Codex bridge intact. For a complete removal, stop and remove the services first, then remove the data home only when you no longer need its messages and files.
 
@@ -516,8 +516,8 @@ Detailed release checks are recorded in [verification notes](docs/VERIFICATION.m
 
 ## Contributing and license
 
-Issues and pull requests are welcome at [chekusu/yobiru](https://github.com/chekusu/yobiru). Include your OS, host version, a minimal reproduction, and sanitized output. Remove IP addresses, tailnet names, account identifiers, message contents, and credentials before sharing diagnostics. For suspected vulnerabilities, use GitHub's private **Report a vulnerability** option if available; do not post secrets in a public issue.
+Issues and pull requests are welcome at [zealton/ishoni](https://github.com/zealton/ishoni). Include your OS, host version, a minimal reproduction, and sanitized output. Remove IP addresses, tailnet names, account identifiers, message contents, and credentials before sharing diagnostics. For suspected vulnerabilities, use GitHub's private **Report a vulnerability** option if available; do not post secrets in a public issue.
 
 Keep `README.md` as the canonical English document and update the Chinese and Japanese versions together. Run the checks above before submitting code changes. Changes to the wire protocol should preserve interoperability with existing peers.
 
-Yobiru is maintained under **Chekusu** and released under the [MIT License](LICENSE). It grew out of the tailmsg project; the CLI and protocol retain that compatibility. Grok Bot, DOTS, Codex, Cursor, and Tailscale are names of their respective products; their appearance here does not imply endorsement.
+Ishoni is this team's fork of an MIT-licensed project by **Chekusu**, released under the same [MIT License](LICENSE). It grew out of the tailmsg project; the CLI and protocol retain that compatibility. Grok Bot, DOTS, Codex, Cursor, and Tailscale are names of their respective products; their appearance here does not imply endorsement.

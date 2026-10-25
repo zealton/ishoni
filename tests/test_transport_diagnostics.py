@@ -25,7 +25,7 @@ def load(name, path):
 
 
 core = load("transport_core", REPO / "tailmsg.py")
-Y = load("transport_wrapper", REPO / "plugins/yobiru/scripts/yobiru.py")
+Y = load("transport_wrapper", REPO / "plugins/ishoni/scripts/ishoni.py")
 PEER = "bravo.example.ts.net"
 MID = "0123456789abcdef"
 

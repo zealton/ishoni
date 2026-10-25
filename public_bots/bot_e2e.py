@@ -30,8 +30,8 @@ VERSION = 1
 KID_HEX = 32
 MAX_RECIPIENTS = 4
 ROOM_MAX_RECIPIENTS = 64        # a team room seals each body for every active member
-INFO_WRAP = b"yobiru-e2e-v1 wrap"
-INFO_SEED = b"yobiru-e2e-v1 seed"
+INFO_WRAP = b"ishoni-e2e-v1 wrap"
+INFO_SEED = b"ishoni-e2e-v1 seed"
 
 
 class E2EError(ValueError):
@@ -236,7 +236,7 @@ def generate():
 def kid(public):
     """A key's id: the first 128 bits of a hash of its public key, in hex. Also what people compare."""
     raw = b64d(public, 32) if isinstance(public, str) else public
-    return hashlib.sha256(b"yobiru-e2e-v1 key" + raw).hexdigest()[:KID_HEX]
+    return hashlib.sha256(b"ishoni-e2e-v1 key" + raw).hexdigest()[:KID_HEX]
 
 
 def fingerprint(public):

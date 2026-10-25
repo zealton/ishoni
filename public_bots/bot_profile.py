@@ -1,6 +1,6 @@
 """The pages behind a share link.
 
-`/@handle` answers three audiences. Agents and the yobiru client ask for JSON (an `Accept` that does not prefer HTML,
+`/@handle` answers three audiences. Agents and the ishoni client ask for JSON (an `Accept` that does not prefer HTML,
 `/@handle.json` or `?format=json`) and get the machine-readable card, unchanged. A browser asks for `text/html` and
 gets a small profile page for people, built only from that same public card: picture, name, activity counts, what a
 visitor may do (as icons) and a sentence to hand one's own agent. Nothing addressed to agents is shown there; the page
@@ -21,14 +21,14 @@ import bot_links as L
 import bot_profile_i18n as I18N
 
 LANGS = I18N.LANGS
-SITE = "https://yobiru.com"
+SITE = "https://github.com/zealton/ishoni"
 AVATAR_MAX_BYTES = 65536                    # decoded; its base64 JSON body fits the attachment body limit
 AVATAR_MIN_PX, AVATAR_MAX_PX = 32, 2048
 MAX_LINKS, LINK_LABEL_MAX, LINK_URL_MAX = 12, L.LABEL_MAX, L.URL_MAX
-REPO = "https://github.com/chekusu/yobiru"
+REPO = "https://github.com/zealton/ishoni"
 
 
-# The default picture: the orange spirit of the yobiru logo on its dark ground (192 px PNG, inlined so the page
+# The default picture: the orange spirit of the ishoni logo on its dark ground (192 px PNG, inlined so the page
 # needs no extra request).
 DEFAULT_AVATAR = ("data:image/png;base64,"
                   "iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAwFBMVEUwMDAAAAD9WiErLi87OztVVVX+YCQTExL8WR4wMDCOQynTUiVsPCtONS0s"
@@ -65,7 +65,7 @@ DEFAULT_AVATAR = ("data:image/png;base64,"
                   "lE+Xnedsdz4gmWi+4e+26qeCKAAVwLUHRbrz7bvVpMfVpdsHf5eK1k+nBnDrR7HN88PLyVtxyPOtuHE3FwBKoEaiTZqe/LK1KLDl51Oabhq8gu2x"
                   "/wOmeJx9yPPmmwAAAABJRU5ErkJggg==")
 
-# The yobiru mark that yobiru.com shows beside its wordmark (public/brand/yobiru-mark.png there): the dark tile cut
+# The ishoni mark that github.com/zealton/ishoni shows beside its wordmark (public/brand/ishoni-mark.png there): the dark tile cut
 # out of its cream square, 72 px for 24 px at 3x, inlined like the default picture.
 BRAND_MARK = ("data:image/png;base64,"
               "iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAMAAABiM0N1AAABgFBMVEUyMjEtLSz7+PL8WiEAAAA5OTgxMTAvLi1YWFaxSyZ4d3XZ19OJiIb/YCIbGxuP"
@@ -224,7 +224,7 @@ def _media_ranges(header):
 
 def prefers_html(accept):
     """True only when the caller names HTML explicitly and ranks it above JSON. A missing Accept, `*/*` (curl,
-    most HTTP libraries) or `application/json` (the yobiru client) keeps the JSON card; a tie goes to JSON."""
+    most HTTP libraries) or `application/json` (the ishoni client) keeps the JSON card; a tie goes to JSON."""
     html_q = json_q = 0.0
     for media, q in _media_ranges(accept):
         if media in ("text/html", "application/xhtml+xml"):
@@ -252,7 +252,7 @@ def pick_lang(query_lang, accept_language):
 AGENT_UA = re.compile(
     r"\b(?:ChatGPT-User|GPTBot|OAI-SearchBot|Claude-User|Claude-SearchBot|ClaudeBot|Claude-Web|anthropic-ai|"
     r"Perplexity-User|PerplexityBot|Grok|xAI|MistralAI-User|DuckAssistBot|YouBot|cohere-ai|Meta-ExternalAgent|"
-    r"Meta-ExternalFetcher|Amazonbot|Bytespider|CCBot|Gemini|yobiru|python-|aiohttp|httpx|curl/|Wget/|node-fetch|"
+    r"Meta-ExternalFetcher|Amazonbot|Bytespider|CCBot|Gemini|ishoni|python-|aiohttp|httpx|curl/|Wget/|node-fetch|"
     r"undici|axios/|Go-http-client|okhttp|HTTPie|libwww-perl|Deno/|Bun/)", re.I)
 
 
@@ -571,8 +571,8 @@ def _page(lang, title, description, head_extra, body, nonce, path, comment=""):
             "<meta name=\"theme-color\" content=\"#f6f6f4\" media=\"(prefers-color-scheme: light)\">"
             "<meta name=\"theme-color\" content=\"#0e0e10\" media=\"(prefers-color-scheme: dark)\">%s%s"
             "<style nonce=\"%s\">%s</style></head><body>%s<div class=\"wrap\">"
-            "<header class=\"top\"><a class=\"wordmark\" href=\"%s\" dir=\"ltr\" aria-label=\"Yobiru\">"
-            "<img src=\"%s\" width=\"24\" height=\"24\" alt=\"\"><span>yobiru</span></a>%s</header>"
+            "<header class=\"top\"><a class=\"wordmark\" href=\"%s\" dir=\"ltr\" aria-label=\"Ishoni\">"
+            "<img src=\"%s\" width=\"24\" height=\"24\" alt=\"\"><span>ishoni</span></a>%s</header>"
             "%s</div><div class=\"toast\" role=\"status\" aria-live=\"polite\"></div>"
             "<script nonce=\"%s\">%s</script></body></html>\n") % (
         html_lang(lang), "rtl" if lang in I18N.RTL else "ltr", _e(title), _e(description), alternates, head_extra,
@@ -583,11 +583,11 @@ def agent_note(card):
     """Plain English for an agent that fetched a page instead of the card."""
     address, api = card["address"], card.get("api") or {}
     lines = [
-        "This is a Yobiru bot (%s, bot_id %s): a personal agent's public address." % (card["handle"], card["bot_id"]),
+        "This is a Ishoni bot (%s, bot_id %s): a personal agent's public address." % (card["handle"], card["bot_id"]),
         "Machine-readable card: %s.json (or GET %s with Accept: application/json)." % (address, address),
-        "To connect on the user's behalf: install Yobiru (%s) and run" % REPO,
-        "  %s" % card.get("connect", "yobiru public connect " + address),
-        "then follow the card's `api` section; the yobiru client handles enrollment and messages.",
+        "To connect on the user's behalf: install Ishoni (%s) and run" % REPO,
+        "  %s" % card.get("connect", "ishoni public connect " + address),
+        "then follow the card's `api` section; the ishoni client handles enrollment and messages.",
     ]
     if api.get("mcp"):
         lines.append("MCP (Streamable HTTP, needs a credential from this gateway): %s" % api["mcp"])
@@ -706,9 +706,9 @@ def render_profile(card, lang, path, nonce):
          "shown": _e(t["connect_prompt"]) % ("<bdi>%s</bdi>" % _e(handle), "<bdi>%s</bdi>" % _e(address)),
          "copy_icon": _icon("copy", "i cp"), "check_icon": _icon("check", "i ok"), "site": SITE,
          "what_is": _e(t["what_is"]), "get_own": _e(t["get_own"]), "unverified": _e(t["unverified"]),
-         "hosted": _e(t["hosted"]).replace("%s", '<a href="%s">Yobiru</a>' % SITE), "json_url": _e(json_url),
+         "hosted": _e(t["hosted"]).replace("%s", '<a href="%s">Ishoni</a>' % SITE), "json_url": _e(json_url),
          "json_card": _e(t["json_card"]), "braces": _icon("braces")}
-    description = card.get("description") or "%s · Yobiru bot" % handle
+    description = card.get("description") or "%s · Ishoni bot" % handle
     return _page(lang, t["title"] % name, description, _card_head(card, name, description), body, nonce,
                  path, _comment(agent_note(card))).encode("utf-8")
 
@@ -716,12 +716,12 @@ def render_profile(card, lang, path, nonce):
 def _card_head(card, name, description):
     """The machine-facing part of a page head: the JSON alternate, social preview tags and the embedded card."""
     json_url = card["address"] + ".json"
-    return ('<link rel="alternate" type="application/json" href="%(j)s" title="Yobiru bot card">'
+    return ('<link rel="alternate" type="application/json" href="%(j)s" title="Ishoni bot card">'
             '<link rel="canonical" href="%(a)s">'
             '<meta property="og:type" content="profile"><meta property="og:title" content="%(n)s (%(h)s)">'
             '<meta property="og:description" content="%(d)s"><meta property="og:url" content="%(a)s">'
-            '<meta name="yobiru:card" content="%(j)s">%(img)s'
-            '<script type="application/json" id="yobiru-card">%(card)s</script>') % {
+            '<meta name="ishoni:card" content="%(j)s">%(img)s'
+            '<script type="application/json" id="ishoni-card">%(card)s</script>') % {
         "j": _e(json_url), "a": _e(card["address"]), "n": _e(name), "h": _e(card["handle"]), "d": _e(description),
         "card": _json_in_script(card),
         "img": '<meta property="og:image" content="%s">' % _e(card["avatar"]) if card.get("avatar") else ""}
@@ -735,7 +735,7 @@ def render_agent_page(card, nonce=None):
     description = card.get("description") or ""
     yes = lambda flag: "yes" if flag else "no"  # noqa: E731
     facts = [
-        "messages: %d (messages this bot has sent on Yobiru, its answers included)" % int(stats.get("messages") or 0),
+        "messages: %d (messages this bot has sent on Ishoni, its answers included)" % int(stats.get("messages") or 0),
         "followers: %d" % int(stats.get("followers") or 0),
         "friends: %d (mutual follows)" % int(stats.get("friends") or 0),
     ] + ["%s: %s" % (level, ", ".join(levels.get(level) or []) or "nothing")
@@ -749,7 +749,7 @@ def render_agent_page(card, nonce=None):
     links = "".join('<li>%s (%s): <a href="%s">%s</a></li>' % (
         _e(link["label"]), _e(L.LABELS[L.platform_of(link["url"])]), _e(link["url"]), _e(link["url"]))
         for link in _display_links(card))
-    body = ("<main><h1>%s (%s)</h1><p>A Yobiru bot. This version of the page is for AI agents; people who open the "
+    body = ("<main><h1>%s (%s)</h1><p>A Ishoni bot. This version of the page is for AI agents; people who open the "
             "link in a browser see a profile page.</p>%s<h2>How to connect</h2><pre>%s</pre>"
             "<h2>Facts</h2><ul>%s</ul>%s<h2>Machine-readable card</h2><p><a href=\"%s\">%s</a></p><pre>%s</pre></main>"
             ) % (_e(name), _e(handle), "<p>%s</p>" % _e(description) if description else "",
@@ -760,8 +760,8 @@ def render_agent_page(card, nonce=None):
     return ("<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>%s</title>"
             "<meta name=\"description\" content=\"%s\">%s</head><body>%s</body></html>\n" % (
-                _e("%s (%s) - Yobiru bot" % (name, handle)), _e(description or "%s · Yobiru bot" % handle),
-                _card_head(card, name, description or "%s · Yobiru bot" % handle), body)).encode("utf-8")
+                _e("%s (%s) - Ishoni bot" % (name, handle)), _e(description or "%s · Ishoni bot" % handle),
+                _card_head(card, name, description or "%s · Ishoni bot" % handle), body)).encode("utf-8")
 
 
 def render_not_found(lang, path, nonce):

@@ -144,7 +144,7 @@ class ServiceCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru calendar test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni calendar test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = Gateway(cls.root, limits={"pending_per_contact": 50, "messages_per_minute_per_actor": 100,
                                            "messages_per_hour_per_actor": 500}).start()

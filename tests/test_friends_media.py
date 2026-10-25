@@ -48,7 +48,7 @@ def media(name="menu.png", raw=PNG):
 class MediaCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru media test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni media test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
 
@@ -286,7 +286,7 @@ class MigrationTests(unittest.TestCase):
         custom = {"offered": ["faq", "chat"], "visitor": [], "follower": [], "friend": ["chat"]}
         self.assertFalse(G.friend_files_policy(custom))
         self.assertEqual(["chat"], custom["friend"])
-        with tempfile.TemporaryDirectory(prefix="yobiru migration 5-6 ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni migration 5-6 ") as tmp:
             gw = FriendsGateway(Path(tmp)).start()
             try:
                 plain = gw.bot("plain-old")

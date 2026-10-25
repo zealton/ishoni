@@ -212,7 +212,7 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual("queued", self.bridge.ingest(path)["status"])
         self.assertEqual(1, self.bridge.dispatch_due()["enqueued"])
         prompt = self.client.calls[0][1]["prompt"]
-        self.assertIn("tracked Yobiru request", prompt)
+        self.assertIn("tracked Ishoni request", prompt)
         self.assertIn("request status ID --direction incoming --json", prompt)
         self.assertIn("verified final result", prompt)
         self.assertIn("A handoff is not a final result", prompt)

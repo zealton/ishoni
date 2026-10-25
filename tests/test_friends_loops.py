@@ -28,7 +28,7 @@ LIMITS = {"min_deadline_seconds": 1, "read_timeout_seconds": 5, "messages_per_mi
 class LoopCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru loops test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni loops test ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS).start()
         cls.owner = cls.gw.owner_token
 

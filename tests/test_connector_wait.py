@@ -34,7 +34,7 @@ class WaitCase(unittest.TestCase):
     processes, limits = 1, LIMITS
 
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru connector wait ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni connector wait ")
         self.addCleanup(tmp.cleanup)
         self.gw = FriendsGateway(Path(tmp.name), limits=self.limits)
         if self.processes > 1:
@@ -220,7 +220,7 @@ class MultiProcessWaitTests(WaitCase):
 
 class ChangeTriggerTests(unittest.TestCase):
     def test_writes_move_the_change_sequence_of_the_bots_they_concern(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru change triggers ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni change triggers ") as tmp:
             gw = FriendsGateway(Path(tmp))
             G.Store(gw.home, G.load_config(gw.home))         # creates the table and its triggers
             db = gw.db()
@@ -257,7 +257,7 @@ class ChangeTriggerTests(unittest.TestCase):
 
 class ChangeWatcherTests(unittest.TestCase):
     def test_poll_registration_serializes_database_reads_without_request_slots(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru watcher readers ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni watcher readers ") as tmp:
             gw = FriendsGateway(Path(tmp))
             store = G.Store(gw.home, G.load_config(gw.home))
             self.addCleanup(G.close_all, store._idle)
@@ -341,7 +341,7 @@ class OpenFileLimitTests(unittest.TestCase):
         return hard
 
     def serve(self, ulimit, limits=None):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru open files ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni open files ")
         self.addCleanup(tmp.cleanup)
         prefix = ["sh", "-c", 'ulimit %s && exec "$0" "$@"' % ulimit, sys.executable, str(PUBLIC / "bot_gateway.py")]
         gw = FriendsGateway(Path(tmp.name), prefix=prefix, limits=limits)
@@ -372,7 +372,7 @@ class OpenFileLimitTests(unittest.TestCase):
 
     def test_a_hard_limit_too_low_for_requests_refuses_to_serve(self):
         self.require_hard_limit(200)
-        with tempfile.TemporaryDirectory(prefix="yobiru insufficient files ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni insufficient files ") as tmp:
             gw = FriendsGateway(Path(tmp), limits={"max_concurrent_requests": 64})
             command = ["sh", "-c", 'ulimit -n 200 && exec "$0" "$@"', sys.executable,
                        str(PUBLIC / "bot_gateway.py"), "--gateway-home", str(gw.home), "serve"]
@@ -386,7 +386,7 @@ class OpenFileLimitTests(unittest.TestCase):
         """Use the advertised waiting cap, real sockets, WAL transactions and open blob reads in one process.
         The child alone lowers its hard limit, leaving the test runner's descriptors and limits untouched."""
         self.require_hard_limit(hard)
-        with tempfile.TemporaryDirectory(prefix="yobiru fd saturation ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni fd saturation ") as tmp:
             gw = FriendsGateway(Path(tmp))
             script = textwrap.dedent("""\
                 import contextlib
@@ -538,7 +538,7 @@ class OldGateway(BaseHTTPRequestHandler):
 
 class OlderGatewayTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru old gateway ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni old gateway ")
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
         OldGateway.script, OldGateway.paths, OldGateway.jobs, OldGateway.posts, OldGateway.reports = [], [], [], [], []

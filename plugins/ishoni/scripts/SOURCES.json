@@ -1,0 +1,110 @@
+{
+  "about": "Byte-identical copies of canonical files at the repository root, refreshed by tools/build_plugin.py sync. Edit the root files, not these copies.",
+  "protocol": "tailmsg v1",
+  "files": {
+    "scripts/tailmsg.py": {
+      "source": "tailmsg.py",
+      "sha256": "1e9b9907899a426aec1e26bf0d17183c4c1521b77b15284486f782bfaa09f759"
+    },
+    "scripts/codex_bridge/CODEX_DISPATCHER.md": {
+      "source": "CODEX_DISPATCHER.md",
+      "sha256": "eca5338ebfb08e6ab1ddb0ca5e1e3fa13a1a885526b2381687ab431a989b517b"
+    },
+    "scripts/codex_bridge/codex_bridge.py": {
+      "source": "codex_bridge.py",
+      "sha256": "ca5c85f2deb0f6087f21a3c2b22e0fb4955e64f0c7dac9b7e3c83056bdc56b1f"
+    },
+    "scripts/codex_bridge/codex_queue_client.py": {
+      "source": "codex_queue_client.py",
+      "sha256": "b564b6f12a044e597e7e748d885e7be7178b5bf90d6f59f02acb37ef905e069d"
+    },
+    "scripts/codex_bridge/codex_resident.py": {
+      "source": "codex_resident.py",
+      "sha256": "bf82bd1df9d9baefd01ed5ebd62c50dd25e39c3961ef7575ef7268e4885f6c98"
+    },
+    "scripts/codex_bridge/CODEX_SANDBOX.md": {
+      "source": "docs/CODEX_SANDBOX.md",
+      "sha256": "8c880885f8479115dbf78f80a82ad89999d4178b1696d3ae7fec6ad773578146"
+    },
+    "scripts/codex_bridge/install_codex_bridge.py": {
+      "source": "install_codex_bridge.py",
+      "sha256": "a7125216d8fc6607113af624e5b4fd55dbe9ce99d087722e588992d06d315ad0"
+    },
+    "scripts/codex_bridge/install_codex_bridge_linux.py": {
+      "source": "install_codex_bridge_linux.py",
+      "sha256": "fafbc4b38e9cd8c4e3ac5568e6f44decf232d6135dc78e9e31f299db30a73d9c"
+    },
+    "docs/DEPLOY_RAILWAY.md": {
+      "source": "docs/DEPLOY_RAILWAY.md",
+      "sha256": "d879f3989d2e9b1df7ed9d81b61927058daed8e14c73635fe85e38e0b7dc89ad"
+    },
+    "docs/PUBLIC_BOTS.md": {
+      "source": "docs/PUBLIC_BOTS.md",
+      "sha256": "8886408ed5940cffab6c2e368669241115722cf897122e926508fa7093b16ac7"
+    },
+    "docs/ROOMS.md": {
+      "source": "docs/ROOMS.md",
+      "sha256": "58b555e7c029346b5c4705b7e087335b8149f9a88e1a5b8434a654be04d14f05"
+    },
+    "scripts/public_bots/bot_agents.py": {
+      "source": "public_bots/bot_agents.py",
+      "sha256": "8741ba9993ac625415093cd7723617e1f0f13e94c6c20c3a4ef7465ee465a5a7"
+    },
+    "scripts/public_bots/bot_blobs.py": {
+      "source": "public_bots/bot_blobs.py",
+      "sha256": "8900c77b2b32e54533c4edceb55d0456f7f256406f4784db87f1914d9ddd2b97"
+    },
+    "scripts/public_bots/bot_calendar.py": {
+      "source": "public_bots/bot_calendar.py",
+      "sha256": "1a95f4f777bfd495830aab9e6c91eb7bd82cbf187f509c3c0e9949b32ebc59c7"
+    },
+    "scripts/public_bots/bot_client.py": {
+      "source": "public_bots/bot_client.py",
+      "sha256": "01215020478c56165760e7b5d462772c482e94a2a703e0a277e631fb31154bda"
+    },
+    "scripts/public_bots/bot_common.py": {
+      "source": "public_bots/bot_common.py",
+      "sha256": "8628565de251d1462734fc6d0fb8de16928f469165086ee30f51669ea9ca6235"
+    },
+    "scripts/public_bots/bot_e2e.py": {
+      "source": "public_bots/bot_e2e.py",
+      "sha256": "19c46bdd60ca1f8206fb8903e3cb3f9523a84600e0d3f4debba5ca088ec93092"
+    },
+    "scripts/public_bots/bot_gateway.py": {
+      "source": "public_bots/bot_gateway.py",
+      "sha256": "b3163a2fdd3e9f53466b9ce8c09fa1f1c2c920eb754562b4f5822f3d96f1042d"
+    },
+    "scripts/public_bots/bot_links.py": {
+      "source": "public_bots/bot_links.py",
+      "sha256": "7c6c324381a707b6697614d10df0268055b3003b919dd90100610efcf50c5634"
+    },
+    "scripts/public_bots/bot_mcp.py": {
+      "source": "public_bots/bot_mcp.py",
+      "sha256": "f1df1d7e21ab9f1c44a3dea22537a2b184680f0322de45583020f621fd141066"
+    },
+    "scripts/public_bots/bot_profile.py": {
+      "source": "public_bots/bot_profile.py",
+      "sha256": "00478b8289c78607aaef1818d6620657ea0961bfbac93858090697cc68ef2b92"
+    },
+    "scripts/public_bots/bot_profile_i18n.py": {
+      "source": "public_bots/bot_profile_i18n.py",
+      "sha256": "c93881587c982a1ce0d6f92939214ea58707fa0bf1400fdf52c82e6904c109c1"
+    },
+    "scripts/public_bots/bot_resources.py": {
+      "source": "public_bots/bot_resources.py",
+      "sha256": "024caec9c735262fed64737e80c3cf8e48910a363aaaf8c677c66012df08e85f"
+    },
+    "scripts/public_bots/bot_room_client.py": {
+      "source": "public_bots/bot_room_client.py",
+      "sha256": "0d0c2c570ad4ddc2cdab131ea9cb2e78eb5f8ce6b385ce1971a95ad4f827841f"
+    },
+    "scripts/public_bots/bot_rooms.py": {
+      "source": "public_bots/bot_rooms.py",
+      "sha256": "ebeff196db3ee11bc27f1276b7aa8af004aa956f793ea3d808916b5e2850f58f"
+    },
+    "LICENSE": {
+      "source": "LICENSE",
+      "sha256": "50780112dfc9a9a9f9ffae7b2c80279e60e259446246375644f397eb7bbdb5aa"
+    }
+  }
+}

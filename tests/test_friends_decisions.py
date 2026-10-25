@@ -33,7 +33,7 @@ def sha(obj):
 class DecisionCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru decisions test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni decisions test ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS).start()
         cls.owner = cls.gw.owner_token
 

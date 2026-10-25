@@ -1,4 +1,4 @@
-"""Opt-in: real Waypost plus the real packaged Yobiru CLI and two HTTP receivers.
+"""Opt-in: real Waypost plus the real packaged Ishoni CLI and two HTTP receivers.
 
 Set WAYPOST_TEST_BINARY to a locally built Waypost executable. Only Tailscale's
 identity lookup and loopback range are substituted by the existing test harness;
@@ -73,7 +73,7 @@ class BridgeIntegration(unittest.TestCase):
         shim = cls.pkg.root / 'loopback python'
         shim.write_text(loopback.SHIM)
         shim.chmod(0o755)
-        cls.extra = {'YOBIRU_PYTHON': str(shim), 'TM_TEST_REAL_PYTHON': sys.executable,
+        cls.extra = {'ISHONI_PYTHON': str(shim), 'TM_TEST_REAL_PYTHON': sys.executable,
                      'TM_TEST_HARNESS': str(SUPPORT / 'loopback_harness.py')}
 
     @classmethod
@@ -161,7 +161,7 @@ class BridgeIntegration(unittest.TestCase):
 
     def run_bridge(self, *flags, launcher=None, origin=None):
         return subprocess.run([sys.executable, str(ROOT / 'tools/waypost_bridge.py'),
-            '--yobiru', str(launcher or self.pkg.launcher), '--home', str(self.home['bravo']),
+            '--ishoni', str(launcher or self.pkg.launcher), '--home', str(self.home['bravo']),
             '--waypost-url', origin or self.origin, '--token-file', str(self.token_file),
             '--map', str(self.route_file), '--state', str(self.journal), '--once', *flags],
             env=self.pkg.env(self.user, extra=self.extra), capture_output=True, text=True, timeout=45)
@@ -203,7 +203,7 @@ class BridgeIntegration(unittest.TestCase):
         self.assertIn('alpha.example.ts.net', encoded)
         self.assertIn('Friday 19:00', encoded)
 
-    def test_reverse_real_yobiru_delivery_and_receipts_survive_restart(self):
+    def test_reverse_real_ishoni_delivery_and_receipts_survive_restart(self):
         sent = self.send_to_bridge()
         for _ in range(2):
             result = self.run_bridge()
@@ -219,7 +219,7 @@ class BridgeIntegration(unittest.TestCase):
         self.assertEqual(receipts[0]['stage'], 2)  # Administrative rows encode stages as integers.
         self.assertEqual(receipts[0]['version'], 2)
 
-    def test_lost_yobiru_response_stays_unknown_and_never_resends_or_claims_processed(self):
+    def test_lost_ishoni_response_stays_unknown_and_never_resends_or_claims_processed(self):
         sent = self.send_to_bridge()
         launcher = self.folder / 'lost-response.sh'
         launcher.write_text('#!/bin/sh\n/bin/sh ' + repr(str(self.pkg.launcher)) + ' "$@" >/dev/null\nexit 99\n')

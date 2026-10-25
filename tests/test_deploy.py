@@ -10,8 +10,8 @@ REPO = Path(__file__).resolve().parents[1]
 class LitestreamServiceTests(unittest.TestCase):
     def test_gateway_stop_waits_for_litestream_before_database_replacement(self):
         unit = configparser.ConfigParser(interpolation=None)
-        unit.read_string((REPO / "deploy/yobiru-litestream.service").read_text())
-        gateway = "yobiru-gateway.service"
+        unit.read_string((REPO / "deploy/ishoni-litestream.service").read_text())
+        gateway = "ishoni-gateway.service"
 
         # Deployment stops the gateway before backing up or replacing its database.
         # PartOf propagates that stop, but only After makes the gateway's stop job

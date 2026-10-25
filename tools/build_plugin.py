@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build, check and release the Yobiru agent plugin (Python 3.8+, stdlib only).
+"""Build, check and release the Ishoni agent plugin (Python 3.8+, stdlib only).
 
   python3 tools/build_plugin.py sync      render manifests + copy bundled sources into the plugin dir
   python3 tools/build_plugin.py check     verify everything is in sync and valid (no writes; CI/tests)
@@ -35,7 +35,7 @@ FORBIDDEN_NAMES = {"config.json", "codex-bridge.json", "installation.json", ".en
 FORBIDDEN_SUFFIXES = (".sqlite3", ".sqlite", ".db", ".pem", ".key", ".p12", ".log", ".bak")
 TEXT_SUFFIXES = (".md", ".json", ".py", ".txt", ".svg", ".yaml", ".yml", ".sh", "")
 # Generic markers of private data; maintainers can add personal markers (one regex per line) in a file
-# named by $YOBIRU_PRIVATE_DENYLIST that is never committed.
+# named by $ISHONI_PRIVATE_DENYLIST that is never committed.
 DENY_PATTERNS = [
     (r"\btail[0-9a-f]{4,}\.ts\.net\b", "a real tailnet MagicDNS name"),
     (r"(?<![\w.~])/home/(?!you/|me/|user/)[a-z_][a-z0-9_-]*/", "an absolute home directory path"),
@@ -260,7 +260,7 @@ def validate_openai(manifest, legacy_ui, base):
 
     https://developers.openai.com/plugins/deploy/submission
     https://developers.openai.com/plugins/deploy/desktop-only
-    This is intentionally a check of the shape Yobiru ships, not a general
+    This is intentionally a check of the shape Ishoni ships, not a general
     replacement for the portal's eligibility, policy and skill scans.
     """
     errs = []
@@ -498,11 +498,11 @@ def validate(p, root=ROOT):
         errs.append("tailmsg.py: PRODUCT_VERSION must equal packaging/product.json version %s" % p["version"])
     # hygiene
     deny = [(re.compile(rx), why) for rx, why in DENY_PATTERNS]
-    extra = os.environ.get("YOBIRU_PRIVATE_DENYLIST")
+    extra = os.environ.get("ISHONI_PRIVATE_DENYLIST")
     if extra:
         for line in Path(extra).read_text(encoding="utf-8").splitlines():
             if line.strip() and not line.startswith("#"):
-                deny.append((re.compile(line.strip(), re.I), "a private marker from $YOBIRU_PRIVATE_DENYLIST"))
+                deny.append((re.compile(line.strip(), re.I), "a private marker from $ISHONI_PRIVATE_DENYLIST"))
     for rel in plugin_files(p, root):
         path = base / rel
         parts = rel.split("/")

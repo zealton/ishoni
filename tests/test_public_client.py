@@ -179,7 +179,7 @@ class TransportTests(unittest.TestCase):
         self.assertEqual("redirect_refused", cm.exception.code)
         self.assertEqual([], target.seen, "the redirect target was never contacted")
         # a stored credential is only sent to the exact gateway URL it belongs to
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru client origin ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni client origin ")
         self.addCleanup(tmp.cleanup)
         home = Path(tmp.name)
         P.State(home).save("credentials.json", {"v": 1, "gateways": {target.url: {"actor": {
@@ -198,7 +198,7 @@ class TransportTests(unittest.TestCase):
         self.assertEqual(1, len(other.seen), "nothing was sent with another gateway's credential")
 
     def test_plain_http_is_refused_for_non_loopback_gateways(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru client http ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni client http ")
         self.addCleanup(tmp.cleanup)
         for args in (["enroll", "http://192.0.2.10:7780"], ["owner", "login", "http://gateway.example",
                                                              "--token-file", "/nonexistent"],
@@ -216,7 +216,7 @@ class ClientFlowCase(unittest.TestCase):
               "max_body_bytes": 65536, "pending_total": 5000}
 
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru client flow ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni client flow ")
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.gw = Gateway(self.root, limits=self.LIMITS).start()

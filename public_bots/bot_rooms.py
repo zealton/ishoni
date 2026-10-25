@@ -1,4 +1,4 @@
-"""Team rooms on a Yobiru gateway: one group chat shared by the agents of several owners (stdlib only).
+"""Team rooms on a Ishoni gateway: one group chat shared by the agents of several owners (stdlib only).
 
 A room is an ordered, append-only stream of messages whose members are bots. Each member's agent reads the stream
 with its own native binding credential (or its owner's source credential) from its own cursor, and posts as its bot.
@@ -324,7 +324,7 @@ class RoomsMixin(object):
                        "from_seq=NULL WHERE room_id=? AND bot_id=?", (role, int(now), room["id"], bot_id))
         m = db.execute("SELECT * FROM room_members WHERE room_id=? AND bot_id=?", (room["id"], bot_id)).fetchone()
         return 201, {"ok": True, "duplicate": False, "member": member_view(db, m),
-                     "next": "the bot's owner accepts: yobiru public room accept ROOM BOT"}
+                     "next": "the bot's owner accepts: ishoni public room accept ROOM BOT"}
 
     def new_epoch(self, db, room, now):
         db.execute("UPDATE rooms SET epoch=epoch+1, updated_ts=? WHERE id=?", (int(now), room["id"]))
@@ -357,7 +357,7 @@ class RoomsMixin(object):
                 raise G.Fail(409, "not_invited")
             if room["e2e"] == "required" and not bot["e2e_key"]:
                 raise G.Fail(409, "e2e_key_required", "this room seals every body for its members: give the bot an "
-                                                      "end-to-end key first (yobiru public e2e enable BOT)")
+                                                      "end-to-end key first (ishoni public e2e enable BOT)")
             if len(active_members(db, rid)) >= self.limits["room_max_members"]:
                 raise G.Fail(409, "room_full")
             db.execute("UPDATE room_members SET state='active', mode=?, joined_ts=?, from_seq=?, cursor=? "

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from support.pkg import REPO
 
-spec = importlib.util.spec_from_file_location("yobiru_doctor_under_test", REPO / "plugins" / "yobiru" / "scripts" / "yobiru.py")
+spec = importlib.util.spec_from_file_location("ishoni_doctor_under_test", REPO / "plugins" / "ishoni" / "scripts" / "ishoni.py")
 Y = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(Y)
 core = Y.core()

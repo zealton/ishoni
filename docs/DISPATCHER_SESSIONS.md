@@ -1,10 +1,10 @@
 # Maintaining resident dispatcher sessions
 
-Yobiru uses one fixed entry session to receive authenticated notifications. Keep that session
+Ishoni uses one fixed entry session to receive authenticated notifications. Keep that session
 available for intake, then route business work to an appropriate session under the owner's existing
 permissions. The policy lives in the [dispatcher template](../CODEX_DISPATCHER.md),
-[inbox skill](../plugins/yobiru/skills/yobiru-inbox/SKILL.md) and
-[wake skill](../plugins/yobiru/skills/yobiru-wake/SKILL.md).
+[inbox skill](../plugins/ishoni/skills/ishoni-inbox/SKILL.md) and
+[wake skill](../plugins/ishoni/skills/ishoni-wake/SKILL.md).
 
 ## Why separate intake from business work
 
@@ -79,10 +79,10 @@ when they are unavailable. See [bridge setup](../CODEX_LOCAL.md) and
 | File | Maintenance role |
 | --- | --- |
 | `CODEX_DISPATCHER.md` | Canonical template copied on a new bridge installation. |
-| `plugins/yobiru/skills/yobiru-inbox/SKILL.md` | Canonical inbox processing and routing instructions. |
-| `plugins/yobiru/skills/yobiru-wake/SKILL.md` | Canonical wake guidance pointing to the same routing policy. |
-| `plugins/yobiru/scripts/codex_bridge/CODEX_DISPATCHER.md` | Generated, byte-identical template copy for the plugin package. |
-| `plugins/yobiru/scripts/SOURCES.json` | Generated source mapping and SHA-256 hashes for bundled files. |
+| `plugins/ishoni/skills/ishoni-inbox/SKILL.md` | Canonical inbox processing and routing instructions. |
+| `plugins/ishoni/skills/ishoni-wake/SKILL.md` | Canonical wake guidance pointing to the same routing policy. |
+| `plugins/ishoni/scripts/codex_bridge/CODEX_DISPATCHER.md` | Generated, byte-identical template copy for the plugin package. |
+| `plugins/ishoni/scripts/SOURCES.json` | Generated source mapping and SHA-256 hashes for bundled files. |
 
 Make general policy changes in the canonical files and keep the skills and template consistent.
 Then, from the repository root:

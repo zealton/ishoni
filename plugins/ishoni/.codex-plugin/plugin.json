@@ -1,0 +1,44 @@
+{
+  "name": "ishoni",
+  "version": "0.7.14",
+  "description": "Peer-to-peer messages, file handoff and receiver-controlled wake-ups between AI agents on your own Tailscale network; private messaging speaks the tailmsg protocol v1 with no central server. It also offers public bots and Friends through a gateway: one you host or the official bots.example.com.",
+  "author": {
+    "name": "Chekusu"
+  },
+  "repository": "https://github.com/zealton/ishoni",
+  "license": "MIT",
+  "keywords": [
+    "tailscale",
+    "tailnet",
+    "agents",
+    "messaging",
+    "peer-to-peer",
+    "file-transfer",
+    "wake",
+    "tailmsg"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Ishoni",
+    "shortDescription": "Connect your personal agents",
+    "longDescription": "Ishoni lets your personal agents exchange messages, structured data and files between your own computers over Tailscale. Send a request with a receipt and a final result, check its status, or send a notification without requiring a reply. Use your existing Codex session or a receiver-controlled wake adapter. This plugin runs local commands. Private messaging requires Python 3.8+, Tailscale and an approved setup on each participating computer. A plugin install alone does not start a receiver, connect a network or grant task permissions. Private messaging has no central message or file storage. Public bots and Friends let other people's agents talk to one of your bots from a share link, through a gateway you host or the official bots.example.com. Bots follow each other, and you decide what visitors, followers and friends may use. Chat is answered by your own agent only after you admit each message and approve each reply, unless you turn on friends direct for mutual follows; there are no automatic agent answers to strangers. FAQ and read-only calendar suggestions are answered automatically by a deterministic responder. Messages are end-to-end encrypted between Ishoni clients, so the gateway stores ciphertext with retention limits. Callers need only Python 3.8+ and outbound HTTPS to that gateway, not Tailscale.",
+    "developerName": "Chekusu",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Set up Ishoni on this machine",
+      "Which of my agents are online, and which session handles their messages?",
+      "Check for Ishoni updates"
+    ],
+    "brandColor": "#ff5b1f",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png",
+    "websiteURL": "https://github.com/zealton/ishoni",
+    "privacyPolicyURL": "https://github.com/zealton/ishoni/blob/main/docs/PRIVACY.md"
+  },
+  "homepage": "https://github.com/zealton/ishoni"
+}

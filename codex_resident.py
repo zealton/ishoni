@@ -186,7 +186,7 @@ class ResidentDispatcher:
 
     def _connected(self, ws):
         ws.send({"id": 1, "method": "initialize", "params": {
-            "clientInfo": {"name": "yobiru_resident", "version": "1"},
+            "clientInfo": {"name": "ishoni_resident", "version": "1"},
             "capabilities": {"experimentalApi": True}}})
         self._response(ws, 1)
         ws.send({"method": "initialized"})
@@ -205,7 +205,7 @@ class ResidentDispatcher:
                 self._status("connected")
                 heartbeat = now
             if now - ping_at >= 10:
-                ws.send(b"yobiru", opcode=9)
+                ws.send(b"ishoni", opcode=9)
                 ping_at = now
             if now - received_at >= 30:
                 raise ResidentError("resident_timeout")

@@ -26,7 +26,7 @@ import bot_gateway as G  # noqa: E402
 
 BIG_PNG = PNG + bytes(range(256)) * 40          # ~11 KiB, well over the test spill size
 SPILL = dict(LIMITS, blob_spill_bytes=4096)
-ACCESS, SECRET, BUCKET = "TESTKEY", "test-secret-access-key", "yobiru-test"
+ACCESS, SECRET, BUCKET = "TESTKEY", "test-secret-access-key", "ishoni-test"
 
 
 class FakeS3(object):
@@ -142,7 +142,7 @@ class BlobUnitTests(unittest.TestCase):
 class BlobGatewayCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru blobs test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni blobs test ")
         cls.root = Path(cls._tmp.name)
         cls.s3 = FakeS3()
         cls.gw = FriendsGateway(cls.root, limits=SPILL)
@@ -269,7 +269,7 @@ class BlobGatewayTests(BlobGatewayCase):
 
 class LocalStoreTests(unittest.TestCase):
     def test_a_local_directory_store(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru local blobs ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni local blobs ") as tmp:
             gw = FriendsGateway(Path(tmp), limits=SPILL)
             private(gw.home / "blobs.json", json.dumps({"kind": "local"}))
             gw.start()
@@ -293,7 +293,7 @@ class LocalStoreTests(unittest.TestCase):
 
 class MigrationTests(unittest.TestCase):
     def test_schema_6_gets_the_blob_table_and_keeps_friend_presets(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru migration 6-7 ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni migration 6-7 ") as tmp:
             gw = FriendsGateway(Path(tmp)).start()
             try:
                 taken = gw.bot("files-taken-back", policy={"offered": ["faq", "chat"],

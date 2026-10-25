@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Opt-in text-only Yobiru <-> Waypost bridge; POSIX, Python 3.8+, stdlib only.
+"""Opt-in text-only Ishoni <-> Waypost bridge; POSIX, Python 3.8+, stdlib only.
 
 Routes are operator configuration, never instructions from message bodies.
 The private SQLite journal is required for recovery. Preserve it: ordinary
-Yobiru send cannot supply a stable envelope ID, so uncertain sends must be
+Ishoni send cannot supply a stable envelope ID, so uncertain sends must be
 reconciled by a human and are never automatically sent again. A processed
 receipt means the bridge confirmed forwarding, not that a remote task ran.
 A message the bridge refuses (no route, unverified sender, attachments, an
@@ -225,7 +225,7 @@ def waypost_request(base_url, token, method, route, body=None):
     return value['data']
 
 
-def yobiru_cli(launcher, home, *args):
+def ishoni_cli(launcher, home, *args):
     return subprocess.run(['sh', str(launcher), '--home', str(home)] + list(args),
                           capture_output=True, text=True, timeout=120)
 
@@ -269,7 +269,7 @@ class Journal:
                   item_id TEXT PRIMARY KEY,resource_id TEXT NOT NULL,producer_id TEXT NOT NULL,
                   feed TEXT NOT NULL,message TEXT NOT NULL,address TEXT,state TEXT NOT NULL,
                   received_acked INTEGER NOT NULL DEFAULT 0,processed_acked INTEGER NOT NULL DEFAULT 0,
-                  yobiru_id TEXT,confirmation TEXT,error TEXT);
+                  ishoni_id TEXT,confirmation TEXT,error TEXT);
             ''')
             stored = self.get('binding')
             if stored is not None and stored != canonical(binding):
@@ -353,14 +353,14 @@ class Bridge:
         if not isinstance(envelope.get('text', ''), str):
             raise BridgeError('INVALID_MESSAGE_TEXT', item=mid)
         payload = {'request_id': stable_request_id(mid, self.identity['space_id'], node, agent),
-                   'recipient_ids': [recipient], 'kind': 'info', 'subject': 'Yobiru message ' + mid,
-                   'body': {'text': canonical({'type': 'yobiru-message', 'authenticated_peer': node,
+                   'recipient_ids': [recipient], 'kind': 'info', 'subject': 'Ishoni message ' + mid,
+                   'body': {'text': canonical({'type': 'ishoni-message', 'authenticated_peer': node,
                                               'source_agent': agent, 'envelope': envelope})}}
         if len(canonical(payload).encode('utf-8')) > self.max_json:
             raise BridgeError('MESSAGE_EXCEEDS_WAYPOST_LIMIT', item=mid)
         return payload
 
-    def poll_yobiru_once(self):
+    def poll_ishoni_once(self):
         failures, refused, count = [], [], 0
         if not self.args.dry_run:
             db = self.journal.db
@@ -477,7 +477,7 @@ class Bridge:
                     else:
                         planned += 1
                     continue
-                # A refused item is quarantined: never sent to Yobiru and never acknowledged in Waypost.
+                # A refused item is quarantined: never sent to Ishoni and never acknowledged in Waypost.
                 with self.journal.db:
                     self.journal.db.execute('''INSERT INTO outgoing
                         (item_id,resource_id,producer_id,feed,message,address,state,error)
@@ -519,7 +519,7 @@ class Bridge:
             if selected is not None and selected != mid:
                 continue
             if row['state'] in ('unknown', 'attempting'):
-                failures.append(BridgeError('YOBIRU_DELIVERY_UNKNOWN', item=mid))
+                failures.append(BridgeError('ISHONI_DELIVERY_UNKNOWN', item=mid))
                 continue
             try:
                 if not row['received_acked']:
@@ -535,7 +535,7 @@ class Bridge:
                     with db:
                         db.execute("UPDATE outgoing SET state='attempting' WHERE item_id=?",(mid,))
                     try:
-                        run = yobiru_cli(self.args.yobiru,self.args.home,'send',row['address'],wrapper,
+                        run = ishoni_cli(self.args.ishoni,self.args.home,'send',row['address'],wrapper,
                                          '--kind','notice','--wake','none')
                         confirmation = strict_json(run.stdout.strip())
                         response = confirmation.get('response') if isinstance(confirmation,dict) else None
@@ -544,13 +544,13 @@ class Bridge:
                                 or not valid_envelope_id(confirmation.get('id'))
                                 or not isinstance(response,dict) or response.get('ok') is not True
                                 or response.get('id')!=confirmation['id']):
-                            raise BridgeError('YOBIRU_DELIVERY_UNKNOWN',item=mid)
+                            raise BridgeError('ISHONI_DELIVERY_UNKNOWN',item=mid)
                     except (OSError,subprocess.SubprocessError,ValueError,BridgeError):
                         with db:
                             db.execute("UPDATE outgoing SET state='unknown',error='UNCONFIRMED_CLI_RESULT' WHERE item_id=?",(mid,))
-                        raise BridgeError('YOBIRU_DELIVERY_UNKNOWN',item=mid)
+                        raise BridgeError('ISHONI_DELIVERY_UNKNOWN',item=mid)
                     with db:
-                        db.execute("UPDATE outgoing SET state='confirmed',yobiru_id=?,confirmation=?,error=NULL WHERE item_id=?",
+                        db.execute("UPDATE outgoing SET state='confirmed',ishoni_id=?,confirmation=?,error=NULL WHERE item_id=?",
                                    (confirmation['id'],canonical(confirmation),mid))
                     sent += 1
                 self.ack(mid,'processed')
@@ -568,9 +568,9 @@ class Bridge:
             raise BridgeError('ONLY_UNKNOWN_DELIVERY_CAN_BE_RECONCILED')
         if confirm:
             if not valid_envelope_id(confirm[1]):
-                raise BridgeError('INVALID_CONFIRMED_YOBIRU_ID')
+                raise BridgeError('INVALID_CONFIRMED_ISHONI_ID')
             with db:
-                db.execute("UPDATE outgoing SET state='confirmed',yobiru_id=?,confirmation=?,error=NULL WHERE item_id=?",
+                db.execute("UPDATE outgoing SET state='confirmed',ishoni_id=?,confirmation=?,error=NULL WHERE item_id=?",
                            (confirm[1],canonical({'operator_confirmed':True,'id':confirm[1]}),mid))
             return self.process_outgoing(selected=mid)
         with db:
@@ -609,7 +609,7 @@ class Bridge:
                 raise BridgeError('ONLY_INCOMING_REFUSALS_CAN_BE_RETRIED')
 
     def run_once(self):
-        incoming, refused, failures = self.poll_yobiru_once()
+        incoming, refused, failures = self.poll_ishoni_once()
         planned, remote_refused, remote_failures = self.ingest_waypost()
         failures += remote_failures
         refused += remote_refused
@@ -631,8 +631,8 @@ def emit_errors(errors, key='error'):
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--yobiru',required=True,help='Yobiru launcher; invoked with sh')
-    parser.add_argument('--home',required=True,help='explicit Yobiru data home')
+    parser.add_argument('--ishoni',required=True,help='Ishoni launcher; invoked with sh')
+    parser.add_argument('--home',required=True,help='explicit Ishoni data home')
     parser.add_argument('--waypost-url',required=True)
     parser.add_argument('--token-file',required=True,help='private token file, no symlinks')
     parser.add_argument('--map',required=True,help='explicit incoming/outgoing routes JSON')
@@ -644,7 +644,7 @@ def main(argv=None):
     parser.add_argument('--max-failures',type=int,default=3)
     parser.add_argument('--max-pages',type=int,default=100)
     reconcile=parser.add_mutually_exclusive_group()
-    reconcile.add_argument('--confirm-sent',nargs=2,metavar=('ITEM_ID','YOBIRU_ID'),help='ONLY after verifying this exact delivery on the remote peer; ACK without sending again')
+    reconcile.add_argument('--confirm-sent',nargs=2,metavar=('ITEM_ID','ISHONI_ID'),help='ONLY after verifying this exact delivery on the remote peer; ACK without sending again')
     reconcile.add_argument('--retry-unsent',metavar='ITEM_ID',help='ONLY after verifying the unknown attempt did not reach the peer; authorize a later retry')
     reconcile.add_argument('--list-refused',action='store_true',help='print quarantined and dismissed items (ids and reasons only)')
     reconcile.add_argument('--dismiss-refused',metavar='ITEM_ID',help='mark a quarantined item as reviewed; it stays unforwarded and unacknowledged')
@@ -661,7 +661,7 @@ def main(argv=None):
         if (url.scheme not in ('http','https') or not url.hostname or url.username or url.password
                 or url.query or url.fragment or url.path not in ('','/') or (url.scheme=='http' and not local)):
             raise ValueError('Waypost must use HTTPS, or HTTP on loopback')
-        if (not Path(args.home).is_dir() or not Path(args.yobiru).is_file()
+        if (not Path(args.home).is_dir() or not Path(args.ishoni).is_file()
                 or not 0.1<=args.interval<=3600 or not args.interval<=args.max_backoff<=3600
                 or not 1<=args.max_failures<=10 or not 1<=args.max_pages<=1000):
             raise ValueError('invalid bridge options')

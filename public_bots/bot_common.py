@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared helpers for Yobiru public bot contacts (Python 3.8+, stdlib only).
+"""Shared helpers for Ishoni public bot contacts (Python 3.8+, stdlib only).
 
 Used by bot_gateway.py (the public mailbox), bot_client.py (callers, owners and the constrained
 worker) and bot_calendar.py (the private calendar capability service). Nothing here touches the
@@ -24,7 +24,7 @@ import urllib.parse
 from pathlib import Path
 
 API_VERSION = 1
-SERVICE = "yobiru-bot-gateway"
+SERVICE = "ishoni-bot-gateway"
 MAX_RESPONSE_BYTES = 24 * 1024 * 1024      # a job or message may carry 8 MiB of media (sealed: about 15 MB)
 ID_KINDS = ("bot", "act", "own", "wrk", "ver", "cnv", "msg", "chk", "dec", "eml", "room", "rmsg", "rdec")
 ID_RE = re.compile(r"^(?:bot|act|own|wrk|ver|cnv|msg|chk|dec|eml|room|rmsg|rdec)_[a-z2-7]{16}\Z")
@@ -673,7 +673,7 @@ def api_call(base_url, method, path, body=None, token=None, timeout=15.0):
                                            context=ssl.create_default_context())
     else:
         conn = http.client.HTTPConnection(host, port or 80, timeout=timeout)
-    headers = {"Accept": "application/json", "User-Agent": "yobiru-public/%d" % API_VERSION}
+    headers = {"Accept": "application/json", "User-Agent": "ishoni-public/%d" % API_VERSION}
     if token is not None:
         if token_kind(token) is None:
             raise ValueError("refusing to send a malformed credential")
@@ -716,7 +716,7 @@ def post_raw(base_url, path, data, headers, timeout=60.0):
                                            context=ssl.create_default_context())
     else:
         conn = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=timeout)
-    hdrs = {"User-Agent": "yobiru-public/%d" % API_VERSION}
+    hdrs = {"User-Agent": "ishoni-public/%d" % API_VERSION}
     hdrs.update(headers)
     with _Deadline(conn, transfer_seconds(timeout, len(data))) as d:
         try:
@@ -748,7 +748,7 @@ def get_raw(base_url, path, max_bytes, timeout=15.0):
     with _Deadline(conn, timeout) as d:
         try:
             d.connect()
-            conn.request("GET", u.path + path, headers={"User-Agent": "yobiru-public/%d" % API_VERSION,
+            conn.request("GET", u.path + path, headers={"User-Agent": "ishoni-public/%d" % API_VERSION,
                                                         "Accept": "image/png, image/jpeg, image/webp"})
             resp = conn.getresponse()
             raw = resp.read(max_bytes + 1)
@@ -806,7 +806,7 @@ def post_wake(url, headers, body, timeout=20.0):
     else:
         conn = http.client.HTTPConnection(u.hostname, u.port or 80, timeout=timeout)
     data = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    hdrs = {"Content-Type": "application/json", "User-Agent": "yobiru-connector/%d" % API_VERSION}
+    hdrs = {"Content-Type": "application/json", "User-Agent": "ishoni-connector/%d" % API_VERSION}
     hdrs.update(headers)
     target = (u.path or "/") + ("?" + u.query if u.query else "")
     with _Deadline(conn, timeout) as d:

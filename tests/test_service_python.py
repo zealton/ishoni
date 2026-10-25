@@ -15,14 +15,14 @@ from unittest import mock
 from support.pkg import REPO
 
 spec = importlib.util.spec_from_file_location(
-    "yobiru_service_python_under_test", REPO / "plugins/yobiru/scripts/yobiru.py")
+    "ishoni_service_python_under_test", REPO / "plugins/ishoni/scripts/ishoni.py")
 Y = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(Y)
 
 
 class ServicePythonTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru service python ")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni service python ")
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.prefix = self.root / "brew"

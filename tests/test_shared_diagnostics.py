@@ -14,7 +14,7 @@ from unittest import mock
 from support.pkg import REPO
 
 
-spec = importlib.util.spec_from_file_location("yobiru_shared_diagnostics", REPO / "plugins/yobiru/scripts/yobiru.py")
+spec = importlib.util.spec_from_file_location("ishoni_shared_diagnostics", REPO / "plugins/ishoni/scripts/ishoni.py")
 Y = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(Y)
 
@@ -23,7 +23,7 @@ class SharedPeerDoctorTests(unittest.TestCase):
     def setUp(self):
         self.routes = {
             "/health": (200, {"ok": True, "v": 1}),
-            "/info": (200, {"ok": True, "v": 1, "product": "yobiru", "version": "0.5.1",
+            "/info": (200, {"ok": True, "v": 1, "product": "ishoni", "version": "0.5.1",
                              "node": "receiver.example.ts.net", "agents": [],
                              "capabilities": ["request-lifecycle-v1", "request-pull-v1"]}),
         }
@@ -103,7 +103,7 @@ class SharedPeerDoctorTests(unittest.TestCase):
         self.assertIn("not advertised", checks["peer-pull"]["detail"])
         self.assertEqual([("GET", "/health"), ("GET", "/info")], self.requests)
 
-    def test_unrelated_http_service_is_not_accepted_as_yobiru(self):
+    def test_unrelated_http_service_is_not_accepted_as_ishoni(self):
         self.routes["/health"] = (200, {"status": "healthy"})
         self.routes["/info"] = (200, {"ok": True, "product": "something-else"})
         checks = self.checks()
