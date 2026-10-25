@@ -18,7 +18,7 @@ import bot_gateway as G
 class OwnerConversationMediaTests(FriendsClientCase):
     def setUp(self):
         # Use the real default pending, attachment and storage quotas for this reproduction.
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru owner history ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni owner history ")
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.gw = FriendsGateway(self.root).start()
@@ -88,7 +88,7 @@ class OwnerConversationMediaTests(FriendsClientCase):
         self.assertEqual("Synthetic owner reply", received["content"]["text"])
 
         # Also exercise the distributed client, whose source is synced by the build check.
-        bundled = PUBLIC.parent / "plugins" / "yobiru" / "scripts" / "public_bots" / "bot_client.py"
+        bundled = PUBLIC.parent / "plugins" / "ishoni" / "scripts" / "public_bots" / "bot_client.py"
         for args in (("owner", "conversation", cid), ("owner", "reply", cid, "Bundled owner reply")):
             run = subprocess.run([sys.executable, str(bundled), "--home", str(self.homes["owner"]), *args],
                                  capture_output=True, text=True, timeout=30,

@@ -106,7 +106,7 @@ def _core():
         if source is None:
             raise Rejected("invalid_access_policy")
         try:
-            spec = importlib.util.spec_from_file_location("yobiru_bridge_policy_core", str(source))
+            spec = importlib.util.spec_from_file_location("ishoni_bridge_policy_core", str(source))
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             if not callable(getattr(module, "access_decision", None)):
@@ -128,7 +128,7 @@ def _sibling(name):
     """A module next to this file (for example codex_resident), loaded by path without writing bytecode."""
     if name not in _SIBLINGS:
         path = Path(__file__).resolve().with_name(name + ".py")
-        spec = importlib.util.spec_from_file_location("yobiru_bridge_" + name, str(path))
+        spec = importlib.util.spec_from_file_location("ishoni_bridge_" + name, str(path))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         _SIBLINGS[name] = module
@@ -481,7 +481,7 @@ class Bridge:
                     json.dumps(self.instructions, ensure_ascii=False))
         envelope = _read_json(row["path"]).get("envelope", {})
         if "request" in envelope:
-            prompt += ("\nThis is a tracked Yobiru request. Before acting, use the installed tailmsg.py "
+            prompt += ("\nThis is a tracked Ishoni request. Before acting, use the installed tailmsg.py "
                        "with explicit --home and `request status ID --direction incoming --json`. "
                        "Do not start expired, blocked or finished work, and never repeat an existing task. "
                        "Within existing owner authorization, report running only when work actually starts, "
@@ -502,7 +502,7 @@ class Bridge:
                            "or `reply` stores the result for the original requester to poll; use --file "
                            "for authorized result attachments. Stored is not proof that the requester "
                            "has fetched the response.") % json.dumps(str(directory), ensure_ascii=False)
-        elif envelope.get("kind") in ("notice", "notification", "status", "yobiru-upgrade-notice") or \
+        elif envelope.get("kind") in ("notice", "notification", "status", "ishoni-upgrade-notice") or \
                 "response" in envelope:
             prompt += "\nThis is a notification or status receipt. Do not send an automatic reply."
         return prompt

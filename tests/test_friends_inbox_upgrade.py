@@ -22,7 +22,7 @@ class InboxAuthorizationTests(unittest.TestCase):
     """Run in shallow checkouts and source archives, without the historical gateway fixture."""
 
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru inbox authorization ")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni inbox authorization ")
         self.addCleanup(self.tmp.cleanup)
         self.gw = FriendsGateway(Path(self.tmp.name)).start()
         self.addCleanup(self.gw.stop)
@@ -152,7 +152,7 @@ class InboxAuthorizationTests(unittest.TestCase):
 class InboxUpgradeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.code_tmp = tempfile.TemporaryDirectory(prefix="yobiru inbox base code ")
+        cls.code_tmp = tempfile.TemporaryDirectory(prefix="ishoni inbox base code ")
         cls.addClassCleanup(cls.code_tmp.cleanup)
         cls.legacy = Path(cls.code_tmp.name)
         for name in ("bot_gateway.py", "bot_common.py", "bot_e2e.py", "bot_mcp.py", "bot_blobs.py",
@@ -165,7 +165,7 @@ class InboxUpgradeTests(unittest.TestCase):
             (cls.legacy / name).write_bytes(source)
 
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru inbox upgrade ")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni inbox upgrade ")
         self.addCleanup(self.tmp.cleanup)
         self.gw = FriendsGateway(Path(self.tmp.name),
                                  prefix=[sys.executable, str(self.legacy / "bot_gateway.py")]).start()

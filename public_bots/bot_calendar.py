@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Yobiru private calendar capability service: read-only meeting-slot suggestions for one public bot.
+"""Ishoni private calendar capability service: read-only meeting-slot suggestions for one public bot.
 
 This process holds the owner's private calendar data (an events file) and the owner's disclosure rules.
 The public worker never reads that data: it can only ask this service, over loopback with an access
@@ -400,7 +400,7 @@ class Service(object):
 
 def make_handler(service):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "yobiru-capability"
+        server_version = "ishoni-capability"
         sys_version = ""
         timeout = 10
 
@@ -425,7 +425,7 @@ def make_handler(service):
 
         def do_GET(self):
             if self.path == "/v1/health":
-                return self.reply(200, {"ok": True, "service": "yobiru-calendar-capability"})
+                return self.reply(200, {"ok": True, "service": "ishoni-calendar-capability"})
             self.reply(404, {"ok": False, "code": "not_found"})
 
         def do_POST(self):
@@ -483,7 +483,7 @@ def cmd_init(a):
     print(json.dumps({"ok": True, "dir": str(d), "access_token_file": str(d / "access.token"),
                       "events_file": events, "verifier_token_file": str(d / "verifier.token"),
                       "next": ["write the owner-approved rules in service.json policy",
-                               "create the verifier credential: yobiru public verifier bind BOT --token-file %s"
+                               "create the verifier credential: ishoni public verifier bind BOT --token-file %s"
                                % (d / "verifier.token"),
                                "start: serve --dir %s" % d]}, indent=2))
     return 0
@@ -498,7 +498,7 @@ def cmd_serve(a):
     srv = ThreadingHTTPServer(("127.0.0.1", a.port or 0), make_handler(service))
     srv.daemon_threads = True
     print(json.dumps({"listening": "http://127.0.0.1:%d" % srv.server_address[1],
-                      "service": "yobiru-calendar-capability"}), flush=True)
+                      "service": "ishoni-calendar-capability"}), flush=True)
     log("calendar capability service for %s on 127.0.0.1:%d" % (service.bot_id, srv.server_address[1]))
     try:
         srv.serve_forever()

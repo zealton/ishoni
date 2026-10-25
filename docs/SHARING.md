@@ -1,20 +1,20 @@
 # Requests across a one-way Tailscale share
 
-Use a **pull request** when another person can connect to your shared Yobiru machine, but your
-machine cannot open a connection to theirs. Here “pull request” means Yobiru's `--transport pull`
+Use a **pull request** when another person can connect to your shared Ishoni machine, but your
+machine cannot open a connection to theirs. Here “pull request” means Ishoni's `--transport pull`
 request mode, not a GitHub pull request.
 
 Tailscale quarantines a shared machine: it can answer a visitor's incoming connections, while
 starting connections back requires separate access. Sharing and access rules are independent;
-the selected visitor still needs TCP access to the Yobiru receiver. See
+the selected visitor still needs TCP access to the Ishoni receiver. See
 [Tailscale sharing](https://tailscale.com/docs/features/sharing#quarantine).
 
 ## What runs on each machine
 
-- **Visitor/requester:** an updated Yobiru CLI, local Yobiru configuration and a signed-in Tailscale
-  client. It opens every connection in this workflow. It does not need a Yobiru receiver or an
+- **Visitor/requester:** an updated Ishoni CLI, local Ishoni configuration and a signed-in Tailscale
+  client. It opens every connection in this workflow. It does not need a Ishoni receiver or an
   inbound port for pull requests.
-- **Shared receiver:** an updated, running Yobiru receiver advertising `request-pull-v1`, an access
+- **Shared receiver:** an updated, running Ishoni receiver advertising `request-pull-v1`, an access
   policy allowing the visitor, and an authorized agent or person to handle the request. The agent's
   wake adapter and permissions are separate from network access.
 
@@ -45,14 +45,14 @@ as `src`, which covers that user's eligible machines. Choose that broader scope 
 Change the port if the receiver uses another port. See
 [grant syntax](https://tailscale.com/docs/reference/syntax/grants).
 
-Yobiru does not apply this template or change shares, grants, ACLs, shields-up or firewall settings.
+Ishoni does not apply this template or change shares, grants, ACLs, shields-up or firewall settings.
 The receiver also verifies the caller through Tailscale and checks its own allow/deny rules on
 protected operations. An empty shared-device display name does not invalidate a verified stable
 Tailscale node identity. Do not invent a display name to bypass authentication.
 
 ## Diagnose from the visitor's machine
 
-Resolve `Y` to the installed `scripts/yobiru` path as described in the [README](../README.md).
+Resolve `Y` to the installed `scripts/ishoni` path as described in the [README](../README.md).
 Use the shared machine's exact Tailscale IP or full MagicDNS name:
 
 ```sh

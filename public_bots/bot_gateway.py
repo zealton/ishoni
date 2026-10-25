@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Yobiru public bot gateway: a small self-hostable mailbox for published bots and their Friends.
+"""Ishoni public bot gateway: a small self-hostable mailbox for published bots and their Friends.
 
 Separate from the private tailmsg receiver (port 7766): its own process, port (default 7780, loopback),
 data directory and credentials. Callers outside Tailscale reach a *bot* by its immutable id or public
@@ -57,8 +57,8 @@ import bot_rooms as R  # noqa: E402
 import bot_mcp as M  # noqa: E402
 import bot_profile as P  # noqa: E402
 
-HOME_ENV = "YOBIRU_GATEWAY_HOME"
-DEFAULT_HOME = "~/.yobiru-gateway"
+HOME_ENV = "ISHONI_GATEWAY_HOME"
+DEFAULT_HOME = "~/.ishoni-gateway"
 DEFAULT_PORT = 7780
 SCHEMA_VERSION = "8"
 CONFIG_KEYS = {"v", "bind", "port", "public_base_url", "allow_non_loopback_bind", "trust_forwarded_for", "limits",
@@ -164,7 +164,7 @@ RESERVED_HANDLES = {
     "about", "account", "actor", "actors", "admin", "administrator", "api", "bot", "bots", "capability",
     "contact", "contacts", "enroll", "follow", "friends", "gateway", "health", "help", "info", "login", "me", "mod",
     "moderator", "msg", "null", "official", "owner", "owners", "root", "security", "source", "staff", "support",
-    "system", "undefined", "verifier", "well-known", "worker", "workers", "yobiru"}
+    "system", "undefined", "verifier", "well-known", "worker", "workers", "ishoni"}
 CAPABILITIES = ("faq", "calendar_slots", "chat", "files")
 # A message for a bot is a direct message (`chat`), whoever sends it and whether or not it gets an answer. Until
 # 0.7.14 a message left for the owner (`leave_message`, kinds `message` and `notice`) was a separate thing with its
@@ -219,7 +219,7 @@ POLICY_DECISION_NOTE = ("Audit record: this gateway applied the bot owner's frie
 AUTOMATIC_BLOCKERS = [
     "the host does not enforce a per-agent boundary for files, installed tools, browser logins or connected apps",
     "the host's agent memory is shared across conversations, so callers are not isolated from each other",
-    "Yobiru cannot verify a host's isolation from a declaration or local probes",
+    "Ishoni cannot verify a host's isolation from a declaration or local probes",
 ]
 MAX_SLOTS = 5
 READ_TEXT = "Read by the bot's agent, without a separate reply (as in a chat app)."
@@ -255,7 +255,7 @@ AGENT_NOTICE_DIRECT = AGENT_NOTICE.replace(
     "this caller is in your owner's inbox (your owner follows them or accepted them), so your reply is released to "
     "them without review: write only what your owner would want this person to read. As in a chat app, their "
     "messages need no reply each: read them all (more_from_this_sender), answer once, and mark the others read.")
-NOTICES_MERGED = ("Notices are direct messages since Yobiru 0.7.14: every message for your bot comes as a job "
+NOTICES_MERGED = ("Notices are direct messages since Ishoni 0.7.14: every message for your bot comes as a job "
                   "(`job list`), and none needs a reply. This list stays empty; upgrade the client.")
 SUPERVISED_DECLINE_TEXT = {
     "declined": "The bot declined this request. No details were released.",
@@ -1845,7 +1845,7 @@ def bot_card(cfg, db, bot, now=None):
     enroll = cfg["enrollment"]
     agent = native_binding(db, bot["id"])
     now = C.now_ts() if now is None else now
-    return {"type": "yobiru.bot", "card_version": 1, "issuer": base, "bot_id": bot["id"],
+    return {"type": "ishoni.bot", "card_version": 1, "issuer": base, "bot_id": bot["id"],
             "handle": "@" + bot["handle"], "address": "%s/@%s" % (base, bot["handle"]),
             "id_address": "%s/@%s" % (base, bot["id"]), "display_name": bot["display_name"],
             "description": bot["description"], "capabilities": public_levels(pol),
@@ -1864,7 +1864,7 @@ def bot_card(cfg, db, bot, now=None):
                     "follow": "POST /v1/bots/%s/follow" % bot["id"],
                     "conversations": "POST /v1/bots/%s/conversations" % bot["id"],
                     "mcp": base + "/mcp" if cfg["mcp"]["enabled"] else None},
-            "connect": "yobiru public connect %s/@%s" % (base, bot["handle"]),
+            "connect": "ishoni public connect %s/@%s" % (base, bot["handle"]),
             "stats": public_stats(db, bot["id"]),
             **profile_fields(cfg, db, bot)}
 
@@ -2014,8 +2014,8 @@ def worker_view(w, bot, limits=None, now=None):
                              proves=EVIDENCE_PROVES)
         if limits is not None:
             v["delivery"] = delivery_report(limits, bot, w, C.now_ts() if now is None else now)
-        v["isolation"] = {"per_caller_context": "yobiru_transcript_only", "host_memory": "shared_unknown",
-                          "files_tools_apps": "not_enforced_by_yobiru", "inbound_review": "gateway_enforced",
+        v["isolation"] = {"per_caller_context": "ishoni_transcript_only", "host_memory": "shared_unknown",
+                          "files_tools_apps": "not_enforced_by_ishoni", "inbound_review": "gateway_enforced",
                           "reply_review": "gateway_enforced"}
         v["automatic_mode"] = {"available": False, "blockers": AUTOMATIC_BLOCKERS}
     return v
@@ -2397,7 +2397,7 @@ class Api(R.RoomsMixin):
 
     def well_known(self, db, r):
         base = self.cfg["public_base_url"]
-        return 200, {"ok": True, "type": "yobiru.gateway", "service": C.SERVICE, "api": C.API_VERSION,
+        return 200, {"ok": True, "type": "ishoni.gateway", "service": C.SERVICE, "api": C.API_VERSION,
                      "issuer": base, "api_base": base + "/v1", "share_link": base + "/@{handle}",
                      "enrollment": {"visitors": self.enrollment["visitors"], "bots": self.enrollment["bots"],
                                     "email_verification": self.enrollment["email_verification"],
@@ -2891,7 +2891,7 @@ class Api(R.RoomsMixin):
             raise Fail(400, "invalid_sealed", "sealed_files and files go with a sealed message")
         elif policy_of(bot).get("require_e2e") and (kind != "slots" or body.get("text") is not None):
             raise Fail(403, "e2e_required", "this bot accepts only end-to-end encrypted messages: send it with the "
-                                            "yobiru client, which seals it for the bot's key")
+                                            "ishoni client, which seals it for the bot's key")
         elif kind == "slots":
             content["query"] = slots_query(body.get("query"))
             if body.get("text") is not None:
@@ -4412,7 +4412,7 @@ class Api(R.RoomsMixin):
         if "sealed_files" in reply or "files" in reply:
             raise Fail(400, "invalid_sealed", "sealed_files and files go with a sealed reply")
         if inbound_sealed and reply.get("text") is not None and msg["route"] == "agent":
-            raise Fail(409, "e2e_required", "this message was end-to-end encrypted: answer it with `yobiru public "
+            raise Fail(409, "e2e_required", "this message was end-to-end encrypted: answer it with `ishoni public "
                                             "job reply`, which seals the reply for the caller")
         if msg["route"] == "agent":
             fields(reply, ("text", "attachments"))
@@ -4807,7 +4807,7 @@ SHARE_RE = re.compile(r"/@(?P<ref>[^/]{1,64}?)(?P<json>\.json)?\Z")
 AVATAR_RE = re.compile(r"/@(?P<ref>[^/]{1,64})/avatar(?:/(?P<v>[0-9a-f]{16}))?\Z")
 ROUTES = [(m, re.compile(p + r"\Z"), h, k) for m, p, h, k in [
     ("GET", r"/v1/health", "health", None),
-    ("GET", r"/\.well-known/yobiru", "well_known", None),
+    ("GET", r"/\.well-known/ishoni", "well_known", None),
     ("GET", r"/@(?P<ref>[^/]{1,64})", "share_card", None),
     ("POST", r"/v1/actors", "enroll", None),
     ("POST", r"/v1/enroll", "enroll_bot", None),
@@ -5012,7 +5012,7 @@ class McpGateway(object):
                 if subject is None:
                     raise Fail(401, "unauthorized")
                 self.db, self.subject, self.now = db, subject, now
-                return getattr(self, "t_" + name[len("yobiru_"):])(args)
+                return getattr(self, "t_" + name[len("ishoni_"):])(args)
         except Fail as f:
             return f.status, dict({"ok": False, "error": f.code, "detail": f.detail}, **f.extra)
         except sqlite3.Error as e:
@@ -5033,7 +5033,7 @@ class McpGateway(object):
             raise Fail(400, "invalid_bot", str(e))
         if base is not None and base != self.api.cfg["public_base_url"]:
             raise Fail(400, "other_gateway", "that link names another gateway; tools here never fetch other URLs. "
-                                             "Use the yobiru CLI (connect LINK) with an identity on that gateway")
+                                             "Use the ishoni CLI (connect LINK) with an identity on that gateway")
         return ref
 
     def bot_id_ref(self, value):
@@ -5041,7 +5041,7 @@ class McpGateway(object):
         renamed or reused, so a retry under the same op key could otherwise reach another bot."""
         ref = self.bot_ref(value)
         if not ref.startswith("bot_"):
-            raise Fail(400, "bot_id_required", "use the bot_id (bot_...) from yobiru_lookup_bot or yobiru_connect: "
+            raise Fail(400, "bot_id_required", "use the bot_id (bot_...) from ishoni_lookup_bot or ishoni_connect: "
                                                "handles can be renamed or reused")
         return ref
 
@@ -5282,7 +5282,7 @@ def make_handler(api):
     cfg, limits = api.cfg, api.limits
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "yobiru-gateway"
+        server_version = "ishoni-gateway"
         sys_version = ""
         timeout = limits["read_timeout_seconds"]
 
@@ -6308,32 +6308,32 @@ def cmd_serve(home, a):
 
 
 MAIL_KEYS = {"smtp_host", "smtp_port", "security", "username", "password_file", "from", "reply_to"}
-# Verification email: plain text plus an HTML part in the yobiru.com style (calm neutrals, one orange signal dot,
+# Verification email: plain text plus an HTML part in the github.com/zealton/ishoni style (calm neutrals, one orange signal dot,
 # the code in a monospace tile). Inline styles and tables only, so mail clients render it as designed.
 MAIL_TEXT = {
-    "en": {"subject": "Your Yobiru verification code: {code}",
+    "en": {"subject": "Your Ishoni verification code: {code}",
            "title": "Your verification code",
            "lead": "Give this code to your agent (for example your Grok Bot) to finish registering your bot on the "
-                   "Yobiru Friends gateway {issuer}.",
+                   "Ishoni Friends gateway {issuer}.",
            "expiry": "It expires in {minutes} minutes and works once.",
            "rule": "One email address registers one owner on this gateway.",
            "ignore": "Didn't ask for this? Ignore this email. Nothing is registered without the code.",
-           "footer": "Yobiru Friends: let your agent talk with your friends' agents."},
-    "zh": {"subject": "你的 Yobiru 验证码：{code}",
+           "footer": "Ishoni Friends: let your agent talk with your friends' agents."},
+    "zh": {"subject": "你的 Ishoni 验证码：{code}",
            "title": "你的验证码",
-           "lead": "把这个验证码告诉你的 Agent（比如你的 Grok Bot），它会用来完成在 Yobiru Friends 网关 {issuer} 上的注册。",
+           "lead": "把这个验证码告诉你的 Agent（比如你的 Grok Bot），它会用来完成在 Ishoni Friends 网关 {issuer} 上的注册。",
            "expiry": "{minutes} 分钟内有效，只能使用一次。",
            "rule": "一个邮箱在这个网关上只能注册一个主人。",
            "ignore": "不是你本人申请的？忽略这封邮件即可。没有验证码，什么都不会被注册。",
-           "footer": "Yobiru Friends：让你的 Agent 和朋友的 Agent 直接聊。"},
-    "ja": {"subject": "Yobiru 確認コード：{code}",
+           "footer": "Ishoni Friends：让你的 Agent 和朋友的 Agent 直接聊。"},
+    "ja": {"subject": "Ishoni 確認コード：{code}",
            "title": "確認コード",
-           "lead": "このコードをあなたのエージェント（たとえば Grok Bot）に伝えると、Yobiru Friends ゲートウェイ {issuer} "
+           "lead": "このコードをあなたのエージェント（たとえば Grok Bot）に伝えると、Ishoni Friends ゲートウェイ {issuer} "
                    "での登録が完了します。",
            "expiry": "有効期限は {minutes} 分で、一度だけ使えます。",
            "rule": "このゲートウェイでは、1 つのメールアドレスで登録できるオーナーは 1 人です。",
            "ignore": "心当たりがない場合は、このメールを無視してください。コードがなければ何も登録されません。",
-           "footer": "Yobiru Friends：あなたのエージェントが、友だちのエージェントと話せるように。"},
+           "footer": "Ishoni Friends：あなたのエージェントが、友だちのエージェントと話せるように。"},
 }
 MAIL_FONTS = {
     "en": "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif",
@@ -6350,7 +6350,7 @@ MAIL_HTML = """<!doctype html>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbfbfa;">
 <tr><td align="center" style="padding:40px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
-<tr><td style="padding:0 8px 24px 8px;font-family:{font};font-size:22px;font-weight:700;letter-spacing:-0.04em;color:#121214;line-height:1;">yobiru<span style="display:inline-block;width:5px;height:5px;margin-left:2px;border-radius:50%;background:#ff5b1f;"></span></td></tr>
+<tr><td style="padding:0 8px 24px 8px;font-family:{font};font-size:22px;font-weight:700;letter-spacing:-0.04em;color:#121214;line-height:1;">ishoni<span style="display:inline-block;width:5px;height:5px;margin-left:2px;border-radius:50%;background:#ff5b1f;"></span></td></tr>
 <tr><td style="background:#ffffff;border:1px solid rgba(18,18,20,0.10);border-radius:24px;padding:36px 32px;">
 <p style="margin:0 0 12px 0;font-family:{font};font-size:24px;font-weight:600;letter-spacing:-0.02em;color:#121214;line-height:1.25;">{title}</p>
 <p style="margin:0 0 28px 0;font-family:{font};font-size:15px;color:#48484f;line-height:1.6;">{lead}</p>
@@ -6360,7 +6360,7 @@ MAIL_HTML = """<!doctype html>
 <p style="margin:16px 0 0 0;font-family:{font};font-size:13px;color:#c2410c;line-height:1.5;">{expiry}</p>
 <p style="margin:28px 0 0 0;padding-top:20px;border-top:1px solid rgba(18,18,20,0.10);font-family:{font};font-size:13px;color:#6a6a72;line-height:1.6;">{rule}<br>{ignore}</p>
 </td></tr>
-<tr><td style="padding:20px 8px 0 8px;font-family:{font};font-size:12px;color:#6a6a72;line-height:1.6;">{footer}<br><a href="https://yobiru.com" style="color:#6a6a72;text-decoration:underline;">yobiru.com</a></td></tr>
+<tr><td style="padding:20px 8px 0 8px;font-family:{font};font-size:12px;color:#6a6a72;line-height:1.6;">{footer}<br><a href="https://github.com/zealton/ishoni" style="color:#6a6a72;text-decoration:underline;">github.com/zealton/ishoni</a></td></tr>
 </table></td></tr></table></body></html>
 """
 
@@ -6372,7 +6372,7 @@ def mail_parts(lang, code, issuer, minutes):
     lang = lang if lang in MAIL_TEXT else "en"
     host = urllib.parse.urlsplit(issuer).netloc or issuer
     fill = {k: v.format(code=code, issuer=host, minutes=minutes) for k, v in t.items()}
-    text = "%s\n\n    %s\n\n%s\n%s\n\n%s\n%s\n\n%s\nhttps://yobiru.com\n" % (
+    text = "%s\n\n    %s\n\n%s\n%s\n\n%s\n%s\n\n%s\nhttps://github.com/zealton/ishoni\n" % (
         fill["title"], code, fill["lead"], fill["expiry"], fill["rule"], fill["ignore"], fill["footer"])
     page = MAIL_HTML.format(lang={"zh": "zh-CN"}.get(lang, lang), font=MAIL_FONTS[lang], code=_html.escape(code),
                             **{k: _html.escape(v) for k, v in fill.items() if k != "subject"})
@@ -6533,7 +6533,7 @@ def cmd_status(home, a):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="bot_gateway", description="Yobiru public bot gateway (self-hosted mailbox)")
+    ap = argparse.ArgumentParser(prog="bot_gateway", description="Ishoni public bot gateway (self-hosted mailbox)")
     ap.add_argument("--gateway-home", help="data directory (default: $%s or %s)" % (HOME_ENV, DEFAULT_HOME))
     sp = ap.add_subparsers(dest="cmd")
     sp.required = True

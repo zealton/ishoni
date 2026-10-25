@@ -1,0 +1,30 @@
+{
+  "name": "ishoni",
+  "version": "0.7.14",
+  "description": "Peer-to-peer messages, file handoff and receiver-controlled wake-ups between AI agents on your own Tailscale network; private messaging speaks the tailmsg protocol v1 with no central server. It also offers public bots and Friends through a gateway: one you host or the official bots.example.com.",
+  "author": {
+    "name": "Chekusu"
+  },
+  "repository": "https://github.com/zealton/ishoni",
+  "license": "MIT",
+  "keywords": [
+    "tailscale",
+    "tailnet",
+    "agents",
+    "messaging",
+    "peer-to-peer",
+    "file-transfer",
+    "wake",
+    "tailmsg"
+  ],
+  "mcpServers": {
+    "ishoni": {
+      "command": "sh",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/ishoni",
+        "mcp"
+      ]
+    }
+  },
+  "homepage": "https://github.com/zealton/ishoni"
+}

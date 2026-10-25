@@ -33,7 +33,7 @@ LIMITS = {"min_deadline_seconds": 1, "read_timeout_seconds": 5, "messages_per_mi
 class FriendDirectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru friend direct ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni friend direct ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS).start()
         cls.n = 0
 
@@ -252,12 +252,12 @@ class FriendDirectTests(unittest.TestCase):
         for _ in range(2):
             code, out, err = cli(home, "connector", "run", b, "--once")
             self.assertEqual(0, code, err)
-        self.assertEqual(["yobiru.reply %s" % mid], log.read_text().splitlines(), "woken once, ids only")
+        self.assertEqual(["ishoni.reply %s" % mid], log.read_text().splitlines(), "woken once, ids only")
 
 class EmailEnrollmentTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru email enrollment ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni email enrollment ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS)
         cfg = json.loads((cls.gw.home / "gateway.json").read_text())
         cfg["enrollment"] = {"visitors": True, "bots": True, "self_enrolled_publish": True, "email_verification": True}
@@ -285,13 +285,13 @@ class EmailEnrollmentTests(unittest.TestCase):
         return self.gw.call("POST", "/v1/enroll", body, owner)
 
     def test_the_gateway_advertises_it(self):
-        enrollment = self.gw.ok("GET", "/.well-known/yobiru")["enrollment"]
+        enrollment = self.gw.ok("GET", "/.well-known/ishoni")["enrollment"]
         self.assertEqual((True, "POST /v1/enroll/email"), (enrollment["email_verification"], enrollment["email_code"]))
 
     def test_one_email_registers_one_owner(self):
         status, obj = self.enroll("em-nocode")
         self.assertEqual((400, "email_required"), (status, obj["error"]))
-        cid, code, sent = self.challenge("Alice.Smith+yobiru@Gmail.com")
+        cid, code, sent = self.challenge("Alice.Smith+ishoni@Gmail.com")
         self.assertEqual("a***@gmail.com", sent["sent_to"])
         wrong = "%06d" % ((int(code) + 1) % 10 ** 6)
         status, obj = self.enroll("em-first", {"id": cid, "code": wrong})
@@ -328,7 +328,7 @@ class EmailEnrollmentTests(unittest.TestCase):
         cid, code, _ = self.challenge("carol@example.com")
         store = G.Store(self.gw.home, G.load_config(self.gw.home))
         mail = {"host": "smtp.invalid", "port": 465, "security": "ssl", "username": None, "password": None,
-                "from": "Yobiru <no-reply@yobiru.test>", "reply_to": None}
+                "from": "Ishoni <no-reply@ishoni.test>", "reply_to": None}
         sent = []
 
         def fake(mail_cfg, messages):
@@ -352,7 +352,7 @@ class EmailEnrollmentTests(unittest.TestCase):
         cid, _, _ = self.challenge("dave@example.com")
         store = G.Store(self.gw.home, G.load_config(self.gw.home))
         mail = {"host": "smtp.invalid", "port": 465, "security": "ssl", "username": None, "password": None,
-                "from": "no-reply@yobiru.test", "reply_to": None}
+                "from": "no-reply@ishoni.test", "reply_to": None}
         for _ in range(4):
             G.relay_once(store, mail, send=lambda m, msgs: ["SMTPServerDisconnected"] * len(msgs))
         row = self.gw.sql("SELECT * FROM mail_outbox WHERE challenge_id=?", (cid,))[0]
@@ -375,7 +375,7 @@ class EmailEnrollmentTests(unittest.TestCase):
 
 class SchemaThreeMigrationTests(unittest.TestCase):
     def test_a_schema_3_database_moves_to_4(self):
-        with tempfile.TemporaryDirectory(prefix="yobiru migration 3-4 ") as tmp:
+        with tempfile.TemporaryDirectory(prefix="ishoni migration 3-4 ") as tmp:
             gw = FriendsGateway(Path(tmp))
             db = gw.db()
             try:

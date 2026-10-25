@@ -116,12 +116,12 @@ class WebhookDiagnosticsTests(unittest.TestCase):
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         self.addCleanup(srv.server_close)
         self.addCleanup(srv.shutdown)
-        os.environ["YOBIRU_T_URL"] = "http://127.0.0.1:%d/webhooks/%s?key=%s" % (srv.server_address[1], self.TOKEN,
+        os.environ["ISHONI_T_URL"] = "http://127.0.0.1:%d/webhooks/%s?key=%s" % (srv.server_address[1], self.TOKEN,
                                                                                self.QUERY)
-        os.environ["YOBIRU_T_SECRET"] = self.SECRET
-        self.addCleanup(os.environ.pop, "YOBIRU_T_URL", None)
-        self.addCleanup(os.environ.pop, "YOBIRU_T_SECRET", None)
-        return {"type": "webhook", "url_env": "YOBIRU_T_URL", "secret_env": "YOBIRU_T_SECRET"}
+        os.environ["ISHONI_T_SECRET"] = self.SECRET
+        self.addCleanup(os.environ.pop, "ISHONI_T_URL", None)
+        self.addCleanup(os.environ.pop, "ISHONI_T_SECRET", None)
+        return {"type": "webhook", "url_env": "ISHONI_T_URL", "secret_env": "ISHONI_T_SECRET"}
 
     def record(self):
         return {"envelope": dict(ENV, text=self.TEXT), "received": {"peer": {"node": ENV["from"]}, "at": ENV["ts"]}}
@@ -258,7 +258,7 @@ class WebhookDiagnosticsTests(unittest.TestCase):
             with self.subTest(field=field, value=value):
                 adapter = self.serve(400, lambda *a: {"code": code})
                 if field == "secret":
-                    os.environ["YOBIRU_T_SECRET"] = value
+                    os.environ["ISHONI_T_SECRET"] = value
                 record = self.record()
                 if field != "secret":
                     record["envelope"][field] = value
@@ -276,7 +276,7 @@ class WebhookDiagnosticsTests(unittest.TestCase):
                 self.assertIn("HTTP 400", log.getvalue())
                 self.assertNotIn("code " + code, log.getvalue())
         adapter = self.serve(None, None, raw=lambda path: b"BOGUS Q7 Q7\r\n\r\n")    # a broken answer echoes it
-        os.environ["YOBIRU_T_SECRET"] = "Q7"
+        os.environ["ISHONI_T_SECRET"] = "Q7"
         self.assertEqual("BadStatusLine", self.error(adapter))
 
 
@@ -292,9 +292,9 @@ class WebhookDiagnosticsTests(unittest.TestCase):
             with self.subTest(field=field, value=value, retry=retry):
                 adapter = self.serve(429, lambda *a: {"code": "rate_limited"}, headers={"Retry-After": retry})
                 if field == "secret":
-                    os.environ["YOBIRU_T_SECRET"] = value
+                    os.environ["ISHONI_T_SECRET"] = value
                 elif field in ("path", "query"):
-                    os.environ["YOBIRU_T_URL"] = os.environ["YOBIRU_T_URL"].replace(
+                    os.environ["ISHONI_T_URL"] = os.environ["ISHONI_T_URL"].replace(
                         self.TOKEN if field == "path" else self.QUERY, value)
                 record = self.record()
                 if field == "text":

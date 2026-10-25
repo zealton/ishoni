@@ -13,8 +13,8 @@ from pathlib import Path
 
 from support.pkg import REPO, Package, snapshot
 
-spec = importlib.util.spec_from_file_location("yobiru_onboarding_under_test",
-                                              str(REPO / "plugins" / "yobiru" / "scripts" / "yobiru.py"))
+spec = importlib.util.spec_from_file_location("ishoni_onboarding_under_test",
+                                              str(REPO / "plugins" / "ishoni" / "scripts" / "ishoni.py"))
 Y = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(Y)
 UUID = "0192f0c4-1d2e-7a3b-8c4d-5e6f7a8b9c0d"
@@ -86,7 +86,7 @@ class PlatformGuidanceTests(unittest.TestCase):
         self.assertIn("administrator", detail)
         self.assertIn("https://tailscale.com/docs/install/windows", docs)
         status, detail, cmds, _, _ = self.install(platform="win32", win_cli=True)
-        self.assertEqual(['yobiru setup --tailscale-cmd "C:\\Program Files\\Tailscale\\tailscale.exe" '
+        self.assertEqual(['ishoni setup --tailscale-cmd "C:\\Program Files\\Tailscale\\tailscale.exe" '
                           '--replace tailscale_cmd'], cmds)                  # valid in PowerShell and cmd
 
     def login(self, platform, backend="NeedsLogin", **kw):

@@ -1,4 +1,4 @@
-# Moving to Yobiru 0.4
+# Moving to Ishoni 0.4
 
 [English](#english) · [简体中文](#简体中文) · [日本語](#日本語)
 
@@ -6,20 +6,20 @@
 
 0.4 removes the per-machine allow-list requirement for **new installations**. The default
 `tailnet` policy accepts authenticated Tailscale peers that the network allows through. Local
-`deny` rules always win. Tailscale ACLs/grants and shields-up still apply; Yobiru does not change them.
+`deny` rules always win. Tailscale ACLs/grants and shields-up still apply; Ishoni does not change them.
 
 **Existing configurations keep their previous access policy.** Updating the plugin alone neither
 changes a running receiver nor widens an existing allow list. Migrate each installation deliberately.
-The commands below use the new package's launcher; resolve `Y` as in the [README](../README.md#install).
+The commands below use the new package's launcher; resolve `Y` as in the [README](GUIDE.md#install).
 Add `--home DIR` before each command if this installation uses a non-default data home.
 
 ### Upgrade and select the policy locally
 
-1. Update the plugin from the official `chekusu/yobiru` marketplace, release or tag. Verify release
+1. Update the plugin from the official `zealton/ishoni` marketplace, release or tag. Verify release
    archive checksums and extract into a new folder, never over the data home.
 2. Run `sh "$Y" install-runtime --upgrade`, review, and repeat with `--apply`. Restart that machine's
    receiver service. If a Codex bridge is installed, reinstall it with the same session UUID and
-   existing settings as described by the `yobiru-upgrade` skill.
+   existing settings as described by the `ishoni-upgrade` skill.
 3. When the owner has authorized the policy migration:
 
    ```sh

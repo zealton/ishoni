@@ -134,7 +134,6 @@ PLATFORMS = (
     ("appstore", "App Store", "appstore", "apps.apple.com"),
     ("googleplay", "Google Play", "googleplay", "play.google.com"),
     ("googlemaps", "Google Maps", "googlemaps", "maps.google.com maps.app.goo.gl"),
-    ("yobiru", "Yobiru", None, "yobiru.com"),
 )
 LABELS = dict((p[0], p[1]) for p in PLATFORMS)
 LABELS.update({"email": "Email", "phone": "Phone", "website": "Website"})

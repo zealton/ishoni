@@ -19,8 +19,8 @@ from unittest import mock
 
 from support.pkg import REPO, SUPPORT
 
-spec = importlib.util.spec_from_file_location("yobiru_update_under_test",
-                                              str(REPO / "plugins" / "yobiru" / "scripts" / "yobiru.py"))
+spec = importlib.util.spec_from_file_location("ishoni_update_under_test",
+                                              str(REPO / "plugins" / "ishoni" / "scripts" / "ishoni.py"))
 Y = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(Y)
 VERSION = Y.plugin_version()
@@ -54,7 +54,7 @@ class ReleaseTests(unittest.TestCase):
                                  release("not-a-version"), "junk", release("v0.3.1-rc.1", prerelease=True)])
         self.assertEqual(["0.3.0", "0.3.1-rc.1"], [r["version"] for r in rels])
         for r in rels:
-            self.assertTrue(r["url"].startswith("https://github.com/chekusu/yobiru/releases/tag/"))
+            self.assertTrue(r["url"].startswith("https://github.com/zealton/ishoni/releases/tag/"))
             self.assertNotIn("evil", json.dumps(r))
             self.assertEqual({"version", "tag", "prerelease", "published_at", "url"}, set(r))
         self.assertTrue(rels[1]["prerelease"])
@@ -157,15 +157,15 @@ class PrereleaseTests(unittest.TestCase):
         rel = Y.parse_releases(self.RELEASES)[1]
         steps = Y.upgrade_steps({}, "0.6.0-beta.1", rel)
         text = " ".join(steps)
-        for want in ("never install it", "https://github.com/chekusu/yobiru/releases/tag/v0.6.0-beta.1",
-                     "`yobiru-0.6.0-beta.1-plugin.zip` and `SHA256SUMS`",
-                     "scripts/yobiru version` prints 0.6.0-beta.1",
-                     "`codex plugin marketplace add chekusu/yobiru --ref v0.6.0-beta.1`",
+        for want in ("never install it", "https://github.com/zealton/ishoni/releases/tag/v0.6.0-beta.1",
+                     "`ishoni-0.6.0-beta.1-plugin.zip` and `SHA256SUMS`",
+                     "scripts/ishoni version` prints 0.6.0-beta.1",
+                     "`codex plugin marketplace add zealton/ishoni --ref v0.6.0-beta.1`",
                      "update notify --channel preview"):
             self.assertIn(want, text)
-        self.assertNotIn("marketplace upgrade yobiru` then", text, "a branch upgrade would install the stable release")
+        self.assertNotIn("marketplace upgrade ishoni` then", text, "a branch upgrade would install the stable release")
         stable = " ".join(Y.upgrade_steps({}, "0.5.3"))
-        self.assertIn("`codex plugin marketplace upgrade yobiru`", stable)
+        self.assertIn("`codex plugin marketplace upgrade ishoni`", stable)
         self.assertNotIn("--channel preview", stable)
         bridged = Y.upgrade_steps({"codex_bridge_installed": True}, "0.6.0-beta.1", rel)
         self.assertEqual(len(steps) + 1, len(bridged))
@@ -232,7 +232,7 @@ class FakeReceiver(object):
                 if self.path == "/info" and outer.info == "503":
                     return self.send(503, IDENTITY_UNAVAILABLE)
                 if self.path == "/info" and outer.info:
-                    return self.send(200, {"ok": True, "v": 1, "product": "yobiru", "version": outer.version,
+                    return self.send(200, {"ok": True, "v": 1, "product": "ishoni", "version": outer.version,
                                            "node": outer.node, "agents": outer.agents})
                 return self.send(404, {"ok": False, "error": "not found"})
 
@@ -324,11 +324,11 @@ class NotifyTests(unittest.TestCase):
         self.assertEqual(0, code, res)
         self.assertEqual(1, len(self.bravo.posts))
         env = self.bravo.posts[0]
-        self.assertEqual(("yobiru-upgrade-notice", "codex", "bravo.example.ts.net", "now"),
+        self.assertEqual(("ishoni-upgrade-notice", "codex", "bravo.example.ts.net", "now"),
                          (env["kind"], env["agent"], env["to"], env["wake"]))      # receiver policy may lower it
         notice = json.loads(env["text"])
-        self.assertEqual((VERSION, "https://github.com/chekusu/yobiru"), (notice["version"], notice["source"]))
-        self.assertEqual(("v" + VERSION, "https://github.com/chekusu/yobiru/releases/tag/v" + VERSION),
+        self.assertEqual((VERSION, "https://github.com/zealton/ishoni"), (notice["version"], notice["source"]))
+        self.assertEqual(("v" + VERSION, "https://github.com/zealton/ishoni/releases/tag/v" + VERSION),
                          (notice["tag"], notice["release"]))             # the verified release, not a guess
         self.assertNotIn("previous_version", notice)
         self.assertEqual("notified", self.entry("bravo")["status"])
@@ -454,7 +454,7 @@ class NotifyTests(unittest.TestCase):
         self.releases = [release(VERSION, prerelease=True)]
         self.notify("--apply")
         notice = json.loads(self.bravo.posts[0]["text"])
-        self.assertEqual((VERSION, "https://github.com/chekusu/yobiru/releases/tag/" + VERSION),
+        self.assertEqual((VERSION, "https://github.com/zealton/ishoni/releases/tag/" + VERSION),
                          (notice["tag"], notice["release"]))
 
     def test_unpublished_or_unverified_targets_are_refused(self):
@@ -479,7 +479,7 @@ class NotifyTests(unittest.TestCase):
         with Y.StateLock(self.home / ".upgrade-notices.lock"):
             code, res = self.notify("--apply")
         self.assertEqual(1, code)
-        self.assertIn("another yobiru process", res["error"])
+        self.assertIn("another ishoni process", res["error"])
         self.assertEqual([], self.bravo.posts)
 
     def test_connection_refused_is_known_unsent(self):
@@ -665,7 +665,7 @@ class MaintenanceTests(unittest.TestCase):
         with Y.StateLock(self.home / ".upgrade-maintenance.lock"):
             code, res = self.maintain("--apply")
         self.assertEqual(1, code)
-        self.assertIn("another yobiru process", res["errors"][0])
+        self.assertIn("another ishoni process", res["errors"][0])
         self.assertEqual([], self.bravo.posts)
 
     def test_notice_removed_after_plan_is_not_recreated_or_sent(self):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Yobiru private resource service: owner-approved text exports for one bot, released per caller.
+"""Ishoni private resource service: owner-approved text exports for one bot, released per caller.
 
 The owner puts deliberate snapshots here (`add ID --file F` copies the text; nothing links back to the
 original file). An agent answering a started job can ask this service, over loopback with an access token, for
@@ -160,7 +160,7 @@ class Service(object):
 
 def make_handler(service):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "yobiru-resources"
+        server_version = "ishoni-resources"
         sys_version = ""
         timeout = 10
 
@@ -185,7 +185,7 @@ def make_handler(service):
 
         def do_GET(self):
             if self.path == "/v1/health":
-                return self.reply(200, {"ok": True, "service": "yobiru-resources"})
+                return self.reply(200, {"ok": True, "service": "ishoni-resources"})
             self.reply(404, {"ok": False, "code": "not_found"})
 
         def do_POST(self):
@@ -248,10 +248,10 @@ def cmd_init(a):
         "access_token_hash": C.token_hash(token)}, indent=2) + "\n")
     print(json.dumps({"ok": True, "dir": str(d), "access_token_file": str(d / "access.token"),
                       "verifier_token_file": str(d / "verifier.token"),
-                      "next": ["create the verifier credential: yobiru public verifier bind BOT --token-file %s"
+                      "next": ["create the verifier credential: ishoni public verifier bind BOT --token-file %s"
                                % (d / "verifier.token"),
                                "add exports: resource-service add --dir %s ID --file FILE" % d,
-                               "offer them: yobiru public bot edit BOT --offered ...,resource:ID and grant them",
+                               "offer them: ishoni public bot edit BOT --offered ...,resource:ID and grant them",
                                "start: resource-service serve --dir %s" % d]}, indent=2))
     return 0
 
@@ -320,7 +320,7 @@ def cmd_serve(a):
         die(str(e))
     srv = ThreadingHTTPServer(("127.0.0.1", a.port or 0), make_handler(service))
     srv.daemon_threads = True
-    print(json.dumps({"listening": "http://127.0.0.1:%d" % srv.server_address[1], "service": "yobiru-resources"}),
+    print(json.dumps({"listening": "http://127.0.0.1:%d" % srv.server_address[1], "service": "ishoni-resources"}),
           flush=True)
     log("resource service for %s on 127.0.0.1:%d" % (service.bot_id, srv.server_address[1]))
     try:

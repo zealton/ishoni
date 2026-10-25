@@ -13,8 +13,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 VERSION = 1                     # wire protocol version (unchanged)
-PRODUCT = "yobiru"
-PRODUCT_VERSION = "0.7.14"  # Yobiru release of this file; tools/build_plugin.py check keeps it in sync
+PRODUCT = "ishoni"
+PRODUCT_VERSION = "0.7.14"  # Ishoni release of this file; tools/build_plugin.py check keeps it in sync
 DEFAULTS = {
     "port": 7766,
     "access_policy": "tailnet",    # authenticated Tailscale peers; use "allowlist" for opt-in restriction
@@ -1794,7 +1794,7 @@ def make_handler(ctx, me):
 
 
 # ---------------------------------------------------------------- discovery (/info, SPEC §9)
-SESSIONS_FILE = "sessions.json"     # explicit agent -> session bindings (written by `yobiru session bind`)
+SESSIONS_FILE = "sessions.json"     # explicit agent -> session bindings (written by `ishoni session bind`)
 BRIDGE_FILE = "codex-bridge.json"
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z")
 SESSION_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:@+=-]{0,127}\Z")
@@ -2459,7 +2459,7 @@ class Maintenance(object):
             worker.started, worker.started_at = self.clock(), iso(now_utc())
             worker.cycle_started = worker.cycle_started_at = worker.phase = None
             worker.thread = threading.Thread(target=self._run, args=(worker,), daemon=True,
-                                             name="yobiru-maintenance-" + worker.name)
+                                             name="ishoni-maintenance-" + worker.name)
             thread = worker.thread
         try:
             thread.start()

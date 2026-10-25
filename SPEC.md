@@ -38,7 +38,7 @@ Body: 信封（见 §3），默认上限 256 KiB
 
 另有 `GET /health` → `{"ok":true,"v":1,"node":"<fqdn>"}`，只回答 tailnet 地址，用于探活（保持不变）。
 
-Yobiru 0.3.0 起另有 `GET /info`（发现接口，见 §9）。旧版接收端对它返回 404：发现方据此显示“旧版、版本与会话未知”，**不能**当作离线或未安装。
+Ishoni 0.3.0 起另有 `GET /info`（发现接口，见 §9）。旧版接收端对它返回 404：发现方据此显示“旧版、版本与会话未知”，**不能**当作离线或未安装。
 
 ## 3. 信封格式
 
@@ -248,7 +248,7 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 
 - `access_policy`：`tailnet`（新配置默认）允许通过 `tailscale whois` 验证且网络允许接入的节点；`allowlist` 还要求命中 `allow`。旧配置含 `allow` 但未声明该字段时保留原来的白名单行为，升级不自动扩权。无效策略或规则按拒绝处理。
 - `allow` / `deny` 支持短主机名或 FQDN、`tag:xxx`、`user:登录邮箱`。`deny` 在两种模式下都优先于允许规则。`allowlist` 下空 `allow` 不接收对端消息；`tailnet` 下不要求填写 `allow`。
-- `yobiru policy show` 查看有效策略；`policy set --mode tailnet|allowlist` 预览，`--apply` 才写入并备份。`--allow` / `--deny` 替换整个对应列表，未指定则保留；`--clear-allow` / `--clear-deny` 清空。0.4 接收端和桥接在下一次权限检查时读取本地策略，不需为单独的策略修改重启。策略更新不改变身份、已有数据、agent 路由、会话、适配器、唤醒限制或回复权限。
+- `ishoni policy show` 查看有效策略；`policy set --mode tailnet|allowlist` 预览，`--apply` 才写入并备份。`--allow` / `--deny` 替换整个对应列表，未指定则保留；`--clear-allow` / `--clear-deny` 清空。0.4 接收端和桥接在下一次权限检查时读取本地策略，不需为单独的策略修改重启。策略更新不改变身份、已有数据、agent 路由、会话、适配器、唤醒限制或回复权限。
 - `tailscale_cmd`：如果 CLI 需要 root，改成 `["sudo","-n","tailscale"]`；macOS 的 App 版改成 `["/Applications/Tailscale.app/Contents/MacOS/Tailscale"]`。
 - `wake_adapter`：唤醒适配器，见 §5.8。`null` 表示不叫醒，`now` 的信也只是存起来。旧字段 `on_message: [...]` 等同 `{"type":"exec","argv":[...]}`，两者都写时以 `wake_adapter` 为准。
 - `hook_timeout_s` / `wake_attempts` / `wake_backoff_s`：适配器单次超时、总尝试次数、退避基数（秒）。
@@ -263,14 +263,14 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 ## 7. 网络层要求（tailnet 策略）
 
 - 收件机器上 Tailscale 不能开 shields-up（`tailscale set --shields-up=false`），否则别的机器连不进来。
-- 建议在 ACL / grants 里只放行 `tcp:7766`，并且只允许互相通信的这几台机器访问。Tailscale 的 ACL / grants 始终生效；Yobiru 的本地访问策略不能绕过它们。使用 `tailnet` 模式时无需再逐台填写 Yobiru 白名单，仍可用 `deny` 拒绝指定节点、tag 或用户。
+- 建议在 ACL / grants 里只放行 `tcp:7766`，并且只允许互相通信的这几台机器访问。Tailscale 的 ACL / grants 始终生效；Ishoni 的本地访问策略不能绕过它们。使用 `tailnet` 模式时无需再逐台填写 Ishoni 白名单，仍可用 `deny` 拒绝指定节点、tag 或用户。
 
-## 9. 发现接口 `GET /info`（Yobiru 0.3.0 起，可选）
+## 9. 发现接口 `GET /info`（Ishoni 0.3.0 起，可选）
 
 鉴权顺序与 `/msg` 相同，并且在读取任何元数据、查询任何会话名称**之前**完成：来源必须是 tailnet 地址，`tailscale whois` 查出的身份必须符合本机访问策略（本机诊断保留本机身份例外），否则 403；拒绝规则优先。身份查询暂不可用时与 `/msg`、`/f/...`、`/requests/...` 一样返回 §5 所述的 503。
 
 ```json
-{"ok": true, "v": 1, "product": "yobiru", "version": "0.5.0", "node": "dev-server.example.ts.net",
+{"ok": true, "v": 1, "product": "ishoni", "version": "0.5.0", "node": "dev-server.example.ts.net",
  "capabilities": ["request-lifecycle-v1"],
  "agents_total": 2, "agents_truncated": false, "generated_at": "2026-10-11T00:00:00Z",
  "agents": [
@@ -282,14 +282,14 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
   {"agent": "grok", "default": false, "session": null}]}
 ```
 
-- `version` 是 Yobiru 产品版本，不是协议版本（协议仍是 v1）。最多列出 32 个 agent，超出时 `agents_truncated` 为 true。
-- 只投影**明确绑定**的会话：`<home>/sessions.json`（`yobiru session bind` 写入）中的绑定，以及已安装 Codex 桥接的固定入口会话（agent `codex`，以桥接配置为准，冲突的绑定不会改变它）。绝不返回配置、路径、适配器 argv、webhook 地址、密钥、消息预览、会话记录、任意会话列表或账户信息。
+- `version` 是 Ishoni 产品版本，不是协议版本（协议仍是 v1）。最多列出 32 个 agent，超出时 `agents_truncated` 为 true。
+- 只投影**明确绑定**的会话：`<home>/sessions.json`（`ishoni session bind` 写入）中的绑定，以及已安装 Codex 桥接的固定入口会话（agent `codex`，以桥接配置为准，冲突的绑定不会改变它）。绝不返回配置、路径、适配器 argv、webhook 地址、密钥、消息预览、会话记录、任意会话列表或账户信息。
 - `display_name` 是本地别名，`confirmed_title` 是用户绑定时确认的标题；两者都不是原生名称。`native_name` 只来自只读查询：Codex 桥接用 `thread/read`（`includeTurns: false`）读取绑定 UUID 的 `Thread.name`，从不使用 `preview`（首条用户消息），不启动模型回合。查询有界（子进程组超时清理、输出上限），结果按进程缓存约 5 分钟（失败 1 分钟）；冷查询超过约 1.5 秒时返回 `pending`，或返回带 `stale` 标记的旧值。短时读取器看到的 `notLoaded` 等状态不代表会话所属运行时的状态，因此 `activity` 永远是 `unknown`。
 - 发现方必须把整个响应当作不可信数据：限制大小与总时长，校验类型，去掉控制字符和终端转义，Codex 会话 ID 必须是小写 UUID。
 
-### 升级通知（kind `yobiru-upgrade-notice`）
+### 升级通知（kind `ishoni-upgrade-notice`）
 
-普通的 v1 消息，请求 `wake: "now"`（接收端策略照常降级），`text` 是 JSON：`{"type":"yobiru-upgrade-notice","product":"yobiru","version":"0.4.0","from_node":...,"source":"https://github.com/chekusu/yobiru","release":<已核实的 release 页面>,"tag":...,"note":...}`。它只是信息，不是命令、批准或脚本；收件方不得据此执行任何内容，也不得转发。发件方（`yobiru update notify`）只在本机插件、常驻运行时和运行中的接收端都已是已发布的官方版本后发送，只发给已知安装，并在本地 `upgrade-notices.json` 中按（节点、端口、agent、版本）去重：先持久记录意图和固定的信封 ID 再 POST；只有 202/200 且 `ok=true`、`id` 与信封一致才算 `notified`；发出后超时或回执无效记为 `uncertain`，绝不自动重发（显式核对时用完全相同的 ID 重发，接收端按 ID 去重）。403 记为 `blocked`，只有对方 `/info` 再次通过鉴权（即访问策略已允许本机）或显式 `--retry-blocked` 时才再发。
+普通的 v1 消息，请求 `wake: "now"`（接收端策略照常降级），`text` 是 JSON：`{"type":"ishoni-upgrade-notice","product":"ishoni","version":"0.4.0","from_node":...,"source":"https://github.com/zealton/ishoni","release":<已核实的 release 页面>,"tag":...,"note":...}`。它只是信息，不是命令、批准或脚本；收件方不得据此执行任何内容，也不得转发。发件方（`ishoni update notify`）只在本机插件、常驻运行时和运行中的接收端都已是已发布的官方版本后发送，只发给已知安装，并在本地 `upgrade-notices.json` 中按（节点、端口、agent、版本）去重：先持久记录意图和固定的信封 ID 再 POST；只有 202/200 且 `ok=true`、`id` 与信封一致才算 `notified`；发出后超时或回执无效记为 `uncertain`，绝不自动重发（显式核对时用完全相同的 ID 重发，接收端按 ID 去重）。403 记为 `blocked`，只有对方 `/info` 再次通过鉴权（即访问策略已允许本机）或显式 `--retry-blocked` 时才再发。
 
 ### 升级通知的离线恢复（0.4.0）
 
@@ -297,7 +297,7 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 
 `update reminder-template systemd-user|launchd|cron --retry-notices` 打印每 15 分钟及启动后运行 `update maintain --apply` 的可选任务定义（systemd 包含 `Persistent=true`），由用户或已获授权的 agent 安装。插件升级后路径可能变化，应重新生成。没启动接收端、仍然离线或策略阻挡的旧机器不能被远端强制升级。恢复仅覆盖升级通知，普通消息没有离线自动重投承诺。
 
-## 10. 请求生命周期（Yobiru 0.5.0 起，可选）
+## 10. 请求生命周期（Ishoni 0.5.0 起，可选）
 
 请求和通知有不同的约定：**请求必须留下回执和最终响应；通知不要求回复。**
 最终响应可以是完成、失败、拒绝或权限/环境阻塞，不等于必须执行请求里的任务。
@@ -307,11 +307,11 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 ### 能力协商与兼容
 
 `GET /info` 的 `capabilities` 包含 `request-lifecycle-v1` 才表示支持此机制。
-`yobiru request send PEER TEXT --timeout-seconds 900` 和 `send --kind request` 默认创建跟踪请求，
+`ishoni request send PEER TEXT --timeout-seconds 900` 和 `send --kind request` 默认创建跟踪请求，
 在发送前验证对端能力；旧端或无法确认能力时不悄悄退化成普通请求。
 明确接受没有回执、状态查询和最终结果约束时，才使用 `send --kind request --legacy-request`。
 旧 v1 信封仍可接收，历史 `kind=request` 本身没有生命周期保证；判断依据是 `request` 元数据。
-普通 `text`、`notice`、`yobiru-upgrade-notice` 不带请求元数据，也不自动产生状态响应。
+普通 `text`、`notice`、`ishoni-upgrade-notice` 不带请求元数据，也不自动产生状态响应。
 
 ### 信封扩展与状态接口
 
@@ -358,15 +358,15 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 2. Agent 读取并核对授权，开始处理前执行：
 
    ```sh
-   yobiru request respond REQUEST_ID "已接手，正在检查。" --state running
+   ishoni request respond REQUEST_ID "已接手，正在检查。" --state running
    ```
 
 3. 处理结束必须持久保存一个最终响应，包含实际结果或明确原因：
 
    ```sh
-   yobiru request respond REQUEST_ID "检查完成：结果及证据……" --state completed
+   ishoni request respond REQUEST_ID "检查完成：结果及证据……" --state completed
    # 或 --state failed / rejected / blocked
-   yobiru ack REQUEST_ID
+   ishoni ack REQUEST_ID
    ```
 
    `completed` 是处理者报告完成；`failed` 是执行失败；`rejected` 是决定不处理；
@@ -382,11 +382,11 @@ agent 名字规则：1–64 个字符，可以用中文等任意 Unicode；不�
 ### 超时与状态查询
 
 ```sh
-yobiru request status REQUEST_ID --json            # 本机保存的状态
-yobiru request status REQUEST_ID --refresh --json  # 向原接收端核对
-yobiru request list --json
-yobiru request status REQUEST_ID --direction incoming --json  # 收件端本机状态
-yobiru request maintain                                      # 单次维护和响应重试
+ishoni request status REQUEST_ID --json            # 本机保存的状态
+ishoni request status REQUEST_ID --refresh --json  # 向原接收端核对
+ishoni request list --json
+ishoni request status REQUEST_ID --direction incoming --json  # 收件端本机状态
+ishoni request maintain                                      # 单次维护和响应重试
 ```
 
 请求、状态和响应队列持久保存在数据目录下 `requests/ledger.sqlite3`。
@@ -515,4 +515,4 @@ Tailscale 身份或信封中的 `from`／`from_agent`。来访者与所有者的
 私有消息不做中心服务器、共享任务调度器、已读检测或任务恰好一次执行；不替接收 agent 授权。
 （可选的公开 bot 网关是所有者自行托管的消息存储，规则见第 11 节。）
 普通消息没有自动重投保证（唤醒适配器有限重试，升级通知有维护恢复，0.5 请求响应有持久重试）。
-内容传输加密与机器身份由 Tailscale 提供；Yobiru 不另加静态存储加密。
+内容传输加密与机器身份由 Tailscale 提供；Ishoni 不另加静态存储加密。

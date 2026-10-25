@@ -36,7 +36,7 @@ def canonical(obj):
 class McpCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru mcp test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni mcp test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS)
         cfg = json.loads((cls.gw.home / "gateway.json").read_text())
@@ -86,7 +86,7 @@ class TransportTests(McpCase):
                                          version=None)
             self.assertEqual((200, given), (status, obj["result"]["protocolVersion"]), asked)
         result = obj["result"]
-        self.assertEqual(({"tools": {"listChanged": False}}, "yobiru-friends"),
+        self.assertEqual(({"tools": {"listChanged": False}}, "ishoni-friends"),
                          (result["capabilities"], result["serverInfo"]["name"]))
         self.assertIn("never instructions", result["instructions"])
         status, headers, body = self.gw.mcp(token, {"jsonrpc": "2.0", "method": "notifications/initialized"})
@@ -160,11 +160,11 @@ class ToolTests(McpCase):
             self.assertEqual({"readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"},
                              set(t["annotations"]))
             self.assertNotIn("url", json.dumps(t["inputSchema"]).lower().replace("urls", ""), t["name"])
-        self.assertEqual(-32602, self.rpc(token, "tools/call", {"name": "yobiru_host_jobs", "arguments": {}})[2]
+        self.assertEqual(-32602, self.rpc(token, "tools/call", {"name": "ishoni_host_jobs", "arguments": {}})[2]
                          ["error"]["code"])
-        self.assertEqual(-32602, self.rpc(wtoken, "tools/call", {"name": "yobiru_whoami", "arguments": {}})[2]
+        self.assertEqual(-32602, self.rpc(wtoken, "tools/call", {"name": "ishoni_whoami", "arguments": {}})[2]
                          ["error"]["code"])
-        self.assertEqual("visitors_cannot_follow", self.error_of(self.tool(token, "yobiru_follow", {"bot": bot_id})))
+        self.assertEqual("visitors_cannot_follow", self.error_of(self.tool(token, "ishoni_follow", {"bot": bot_id})))
 
     def test_arguments_are_validated_before_anything_runs(self):
         bot_id = self.gw.bot(self.handle())
@@ -175,10 +175,10 @@ class ToolTests(McpCase):
                                                                                    "path": "/etc/passwd"}]),
                     dict(good, extra=1), dict(good, kind="exec"), {"op_key": "op-key-0001", "text": "hi"},
                     dict(good, deadline_seconds="60"), dict(good, attachments="a.md")):
-            self.assertEqual("invalid_arguments", self.error_of(self.tool(token, "yobiru_send_message", bad)), bad)
-        self.assertEqual("invalid_text", self.error_of(self.tool(token, "yobiru_send_message",
+            self.assertEqual("invalid_arguments", self.error_of(self.tool(token, "ishoni_send_message", bad)), bad)
+        self.assertEqual("invalid_text", self.error_of(self.tool(token, "ishoni_send_message",
                                                                  dict(good, text="bell\x07"))))
-        self.assertEqual("other_gateway", self.error_of(self.tool(token, "yobiru_lookup_bot",
+        self.assertEqual("other_gateway", self.error_of(self.tool(token, "ishoni_lookup_bot",
                                                                   {"bot": "https://203.0.113.9/@someone"})),
                          "a link of another gateway is refused, never fetched")
         self.assertEqual([], self.gw.sql("SELECT id FROM messages WHERE bot_id=?", (bot_id,)))
@@ -187,19 +187,19 @@ class ToolTests(McpCase):
         a = self.gw.bot(self.handle("a"))
         b = self.gw.bot(self.handle("b"))
         _, token = self.gw.actor()
-        first = self.ok_tool(token, "yobiru_send_message", {"bot": a, "op_key": "op-key-0001", "text": "for A only"})
-        again = self.ok_tool(token, "yobiru_send_message", {"bot": a, "op_key": "op-key-0001", "text": "for A only"})
+        first = self.ok_tool(token, "ishoni_send_message", {"bot": a, "op_key": "op-key-0001", "text": "for A only"})
+        again = self.ok_tool(token, "ishoni_send_message", {"bot": a, "op_key": "op-key-0001", "text": "for A only"})
         self.assertEqual((False, True, first["message_id"]), (first["duplicate"], again["duplicate"],
                                                               again["message_id"]))
         self.assertEqual("op_key_conflict", self.error_of(self.tool(
-            token, "yobiru_send_message", {"bot": a, "op_key": "op-key-0001", "text": "changed"})))
-        b_conv = self.ok_tool(token, "yobiru_send_message", {"bot": b, "op_key": "op-key-0002",
+            token, "ishoni_send_message", {"bot": a, "op_key": "op-key-0001", "text": "changed"})))
+        b_conv = self.ok_tool(token, "ishoni_send_message", {"bot": b, "op_key": "op-key-0002",
                                                              "text": "for B"})["conversation_id"]
         for args in ({"bot": a, "op_key": "op-key-0003", "text": "For A only", "conversation_id": b_conv},
                      {"bot": a, "op_key": "op-key-0004", "text": "For A only", "kind": "faq",
                       "conversation_id": b_conv},
                      {"bot": a, "op_key": "op-key-0001", "text": "for A only", "conversation_id": b_conv}):
-            self.assertEqual("not_found", self.error_of(self.tool(token, "yobiru_send_message", args)), args)
+            self.assertEqual("not_found", self.error_of(self.tool(token, "ishoni_send_message", args)), args)
         self.assertEqual(["for B"], [json.loads(m["content"])["text"] for m in self.gw.sql(
             "SELECT content FROM messages WHERE conversation_id=?", (b_conv,))])
 
@@ -207,18 +207,18 @@ class ToolTests(McpCase):
         h = self.handle()
         a = self.gw.bot(h)
         _, token = self.gw.actor()
-        connected = self.ok_tool(token, "yobiru_connect", {"bot": "%s/@%s" % (self.gw.url, h)})
+        connected = self.ok_tool(token, "ishoni_connect", {"bot": "%s/@%s" % (self.gw.url, h)})
         self.assertEqual(a, connected["bot"]["bot_id"])
-        sent = self.ok_tool(token, "yobiru_send_message", {"bot": connected["bot"]["id_address"],
+        sent = self.ok_tool(token, "ishoni_send_message", {"bot": connected["bot"]["id_address"],
                                                            "op_key": "op-key-0009", "text": "hi"})
         self.gw.ok("PATCH", "/v1/owner/bots/%s" % a, {"handle": h + "-moved"}, self.owner)
         b = self.gw.bot(h)
-        retry = self.ok_tool(token, "yobiru_send_message", {"bot": a, "op_key": "op-key-0009", "text": "hi"})
+        retry = self.ok_tool(token, "ishoni_send_message", {"bot": a, "op_key": "op-key-0009", "text": "hi"})
         self.assertEqual((True, sent["message_id"]), (retry["duplicate"], retry["message_id"]))
         self.assertEqual("invalid_arguments", self.error_of(self.tool(
-            token, "yobiru_send_message", {"bot": "%s/@%s" % (self.gw.url, h), "op_key": "op-key-0009", "text": "hi"})))
+            token, "ishoni_send_message", {"bot": "%s/@%s" % (self.gw.url, h), "op_key": "op-key-0009", "text": "hi"})))
         self.assertEqual([], self.gw.sql("SELECT id FROM messages WHERE bot_id=?", (b,)), "nothing reached the new holder")
-        self.assertEqual(b, self.ok_tool(token, "yobiru_lookup_bot", {"bot": "@" + h})["bot_id"],
+        self.assertEqual(b, self.ok_tool(token, "ishoni_lookup_bot", {"bot": "@" + h})["bot_id"],
                          "lookups follow the handle and return the id to pin")
 
 
@@ -228,71 +228,71 @@ class FlowTests(McpCase):
         wtoken, wid = self.gw.native(bot_id)
         actor_id, token = self.gw.actor()
         files = [{"name": "question.md", "content": "Q"}]
-        sent = self.ok_tool(token, "yobiru_send_message", {"bot": bot_id, "op_key": "flow-0001", "text": "please",
+        sent = self.ok_tool(token, "ishoni_send_message", {"bot": bot_id, "op_key": "flow-0001", "text": "please",
                                                            "attachments": files})
         mid = sent["message_id"]
         self.assertEqual(200, self.gw.admit(bot_id, mid)[0])
-        jobs = self.ok_tool(wtoken, "yobiru_host_jobs", {})["jobs"]
+        jobs = self.ok_tool(wtoken, "ishoni_host_jobs", {})["jobs"]
         self.assertEqual([(mid, True)], [(j["job_id"], j["claimable"]) for j in jobs])
-        job = self.ok_tool(wtoken, "yobiru_host_claim", {"job_id": mid})
+        job = self.ok_tool(wtoken, "ishoni_host_claim", {"job_id": mid})
         self.assertEqual("Q", job["untrusted_content"]["attachments"][0]["content"])
         lease = {"job_id": mid, "lease_id": job["lease"]["lease_id"], "fence": job["lease"]["fence"]}
-        self.assertEqual("started", self.ok_tool(wtoken, "yobiru_host_heartbeat", lease)["state"])
+        self.assertEqual("started", self.ok_tool(wtoken, "ishoni_host_heartbeat", lease)["state"])
         reply_files = [{"name": "answer.md", "content": "A"}]
-        drafted = self.ok_tool(wtoken, "yobiru_host_reply", dict(lease, text="here", attachments=reply_files))
-        again = self.ok_tool(wtoken, "yobiru_host_reply", dict(lease, text="here", attachments=reply_files))
+        drafted = self.ok_tool(wtoken, "ishoni_host_reply", dict(lease, text="here", attachments=reply_files))
+        again = self.ok_tool(wtoken, "ishoni_host_reply", dict(lease, text="here", attachments=reply_files))
         self.assertEqual(("review", True), (drafted["state"], again["duplicate"]))
         self.assertEqual(200, self.gw.approve_reply(bot_id, mid)[0])
-        status = self.ok_tool(token, "yobiru_message_status", {"message_id": mid})
+        status = self.ok_tool(token, "ishoni_message_status", {"message_id": mid})
         self.assertEqual(("completed", "A"), (status["state"], status["result"]["attachments"][0]["content"]))
         self.assertTrue(status["lifecycle"]["response_served_at"])
         self.assertIsNone(status["lifecycle"]["response_acknowledged_at"])
-        acked = self.ok_tool(token, "yobiru_ack", {"message_ids": [mid, "msg_aaaaaaaaaaaaaaaa"]})
+        acked = self.ok_tool(token, "ishoni_ack", {"message_ids": [mid, "msg_aaaaaaaaaaaaaaaa"]})
         self.assertEqual(([mid], ["msg_aaaaaaaaaaaaaaaa"]), ([x["message_id"] for x in acked["acknowledged"]],
                                                              [x["message_id"] for x in acked["refused"]]))
-        decisions = self.ok_tool(token, "yobiru_message_decisions", {"message_id": mid})["decisions"]
+        decisions = self.ok_tool(token, "ishoni_message_decisions", {"message_id": mid})["decisions"]
         release = [d for d in decisions if d["action"] == "approve_reply"][0]
         digest = hashlib.sha256(canonical({"text": "here", "attachments": reply_files}).encode()).hexdigest()
-        verified = self.ok_tool(token, "yobiru_verify_decision", {"decision_id": release["decision_id"],
+        verified = self.ok_tool(token, "ishoni_verify_decision", {"decision_id": release["decision_id"],
                                                                   "subject_hash": digest})
         self.assertEqual((True, True), (verified["matches"]["subject_hash"], verified["current"]["authorized_now"]))
         chk = self.gw.ok("POST", "/v1/owner/bots/%s/workers/%s/check" % (bot_id, wid), {}, self.owner)["check_id"]
-        self.assertTrue(self.ok_tool(wtoken, "yobiru_host_check_in", {"check_id": chk})["acknowledged"])
-        fyi = self.ok_tool(token, "yobiru_send_message", {"bot": bot_id, "op_key": "flow-0002", "text": "fyi"})
+        self.assertTrue(self.ok_tool(wtoken, "ishoni_host_check_in", {"check_id": chk})["acknowledged"])
+        fyi = self.ok_tool(token, "ishoni_send_message", {"bot": bot_id, "op_key": "flow-0002", "text": "fyi"})
         self.assertEqual((False, None), (fyi["reply_required"], fyi["deadline"]), "no message needs a reply")
-        jobs = {j["job_id"]: j for j in self.ok_tool(wtoken, "yobiru_host_jobs", {})["jobs"]}
+        jobs = {j["job_id"]: j for j in self.ok_tool(wtoken, "ishoni_host_jobs", {})["jobs"]}
         self.assertEqual("pending", jobs[fyi["message_id"]]["review"]["inbound"], "a message request, as a job")
         self.assertEqual("invalid_arguments", self.error_of(self.tool(
-            token, "yobiru_send_message", {"bot": bot_id, "op_key": "flow-0003", "kind": "notice", "text": "fyi"})))
+            token, "ishoni_send_message", {"bot": bot_id, "op_key": "flow-0003", "kind": "notice", "text": "fyi"})))
 
     def test_withdrawn_files_are_withheld_from_mcp_reads(self):
         bot_id = self.files_bot()
         wtoken, _ = self.gw.native(bot_id)
         actor_id, token = self.gw.actor()
-        mid = self.ok_tool(token, "yobiru_send_message", {"bot": bot_id, "op_key": "files-001", "text": "file",
+        mid = self.ok_tool(token, "ishoni_send_message", {"bot": bot_id, "op_key": "files-001", "text": "file",
                                                           "attachments": [{"name": "q.md", "content": "Q-SECRET"}]})[
             "message_id"]
         self.assertEqual(200, self.gw.admit(bot_id, mid)[0])
-        job = self.ok_tool(wtoken, "yobiru_host_claim", {"job_id": mid})
-        self.ok_tool(wtoken, "yobiru_host_reply", {"job_id": mid, "lease_id": job["lease"]["lease_id"],
+        job = self.ok_tool(wtoken, "ishoni_host_claim", {"job_id": mid})
+        self.ok_tool(wtoken, "ishoni_host_reply", {"job_id": mid, "lease_id": job["lease"]["lease_id"],
                                                    "fence": job["lease"]["fence"], "text": "a",
                                                    "attachments": [{"name": "a.md", "content": "A-SECRET"}]})
         self.assertEqual(200, self.gw.approve_reply(bot_id, mid)[0])
         self.assertEqual(200, self.gw.contact(bot_id, actor_id, "restrict", ["faq", "chat"])[0])
-        for name, args in (("yobiru_message_status", {"message_id": mid}), ("yobiru_inbox", {}),
-                           ("yobiru_history", {"conversation_id": job["conversation_id"]})):
+        for name, args in (("ishoni_message_status", {"message_id": mid}), ("ishoni_inbox", {}),
+                           ("ishoni_history", {"conversation_id": job["conversation_id"]})):
             text = json.dumps(self.ok_tool(token, name, args))
             self.assertNotIn("SECRET", text, name)
-        self.assertIn("result_withheld", self.ok_tool(token, "yobiru_message_status", {"message_id": mid}))
+        self.assertIn("result_withheld", self.ok_tool(token, "ishoni_message_status", {"message_id": mid}))
 
     def test_revocation_reaches_the_mcp_tools(self):
         bot_id = self.gw.bot(self.handle())
         wtoken, wid = self.gw.native(bot_id)
         actor_id, token = self.gw.actor()
-        mid = self.ok_tool(token, "yobiru_send_message", {"bot": bot_id, "op_key": "revoke-01", "text": "x"})["message_id"]
+        mid = self.ok_tool(token, "ishoni_send_message", {"bot": bot_id, "op_key": "revoke-01", "text": "x"})["message_id"]
         self.gw.contact(bot_id, actor_id, "block")
-        self.assertEqual("not_found", self.error_of(self.tool(token, "yobiru_message_status", {"message_id": mid})))
-        self.assertEqual("contact_revoked", self.error_of(self.tool(token, "yobiru_send_message", {
+        self.assertEqual("not_found", self.error_of(self.tool(token, "ishoni_message_status", {"message_id": mid})))
+        self.assertEqual("contact_revoked", self.error_of(self.tool(token, "ishoni_send_message", {
             "bot": bot_id, "op_key": "revoke-02", "text": "again"})))
         self.gw.ok("POST", "/v1/owner/bots/%s/workers/%s/revoke" % (bot_id, wid), {}, self.owner)
         self.assertEqual(401, self.rpc(wtoken, "tools/list")[0])
@@ -318,9 +318,9 @@ class StdioTests(McpCase):
         msgs = [INIT, {"jsonrpc": "2.0", "method": "notifications/initialized"},
                 {"jsonrpc": "2.0", "id": 2, "method": "ping"}, {"jsonrpc": "2.0", "id": "three", "method": "tools/list"},
                 {"jsonrpc": "2.0", "id": 4, "method": "tools/call",
-                 "params": {"name": "yobiru_send_message", "arguments": {"bot": bot_id, "op_key": "stdio-01",
+                 "params": {"name": "ishoni_send_message", "arguments": {"bot": bot_id, "op_key": "stdio-01",
                                                                          "text": "over stdio"}}},
-                {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "yobiru_host_jobs",
+                {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "ishoni_host_jobs",
                                                                                "arguments": {}}},
                 {"jsonrpc": "2.0", "id": 6, "result": {}}]
         lines = [json.dumps(m) + "\n" for m in msgs] + ["{not json\n", "[1, 2]\n", "\n"]
@@ -364,7 +364,7 @@ class StdioTests(McpCase):
         C.write_private_json(home / "public" / "credentials.json", {"v": 1, "gateways": {dead: {"actor": {
             "actor_id": "act_aaaaaaaaaaaaaaaa", "token": C.new_token("actor")}}}})
         call = {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
-                "params": {"name": "yobiru_inbox", "arguments": {}}}
+                "params": {"name": "ishoni_inbox", "arguments": {}}}
         code, out, err = self.run_stdio(home, [json.dumps(INIT) + "\n", json.dumps(call) + "\n"])
         self.assertEqual(0, code, err)
         self.assertEqual(-32603, out[0]["error"]["code"])

@@ -11,7 +11,7 @@ import bot_gateway as G
 
 class ReplyHistoryIndexTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru gateway indexes ")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni gateway indexes ")
         self.addCleanup(self.tmp.cleanup)
         self.gw = FriendsGateway(Path(self.tmp.name))
         self.cfg = G.load_config(self.gw.home)

@@ -1,7 +1,7 @@
 """The Waypost bridge quarantines what it refuses instead of halting.
 
 A small loopback stub plays the Waypost API (describe, messages, inbox feed, receipts) and a recording script
-plays the Yobiru launcher, so these run without a Waypost binary. test_waypost_bridge_e2e.py repeats the
+plays the Ishoni launcher, so these run without a Waypost binary. test_waypost_bridge_e2e.py repeats the
 incoming case against a real Waypost when WAYPOST_TEST_BINARY is set. Synthetic data on 127.0.0.1 only.
 """
 import hashlib
@@ -78,7 +78,7 @@ class FakeWaypost(object):
 @unittest.skipUnless(os.name == "posix", "the bridge requires POSIX")
 class QuarantineTests(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru waypost quarantine ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni waypost quarantine ")
         self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name)
         self.home = self.root / "home"
@@ -91,7 +91,7 @@ class QuarantineTests(unittest.TestCase):
         self.routes.write_text(json.dumps({"incoming": {"alpha.example.ts.net/grok": "actor_primary"},
                                            "outgoing": {"actor_primary": "alpha/grok"}}))
         self.calls = self.root / "launcher-calls.txt"
-        self.launcher = self.root / "launcher.sh"            # plays `yobiru send`; records every invocation
+        self.launcher = self.root / "launcher.sh"            # plays `ishoni send`; records every invocation
         self.launcher.write_text("#!/bin/sh\necho \"$*\" >> %s\nexit 1\n" % self.calls)
         self.journal = self.home / "waypost-bridge.sqlite3"
 
@@ -105,7 +105,7 @@ class QuarantineTests(unittest.TestCase):
         return fake
 
     def args(self, fake, *flags):
-        return [sys.executable, str(BRIDGE), "--home", str(self.home), "--yobiru", str(self.launcher),
+        return [sys.executable, str(BRIDGE), "--home", str(self.home), "--ishoni", str(self.launcher),
                 "--waypost-url", fake.url, "--token-file", str(self.token), "--map", str(self.routes)] + list(flags)
 
     def run_bridge(self, fake, *flags):
@@ -163,7 +163,7 @@ class QuarantineTests(unittest.TestCase):
             running.terminate()
             out, _ = running.communicate(timeout=10)
         self.assertGreater(len(out.splitlines()), 1)
-        self.assertFalse(self.calls.exists(), "nothing was sent to Yobiru")
+        self.assertFalse(self.calls.exists(), "nothing was sent to Ishoni")
 
     def test_quarantined_items_are_resolved_only_explicitly(self):
         fake = self.waypost()
@@ -217,7 +217,7 @@ class QuarantineTests(unittest.TestCase):
         self.assertEqual([], fake.posted, "the retry command itself forwards nothing")
         released = self.run_bridge(fake)
         self.assertEqual(0, released.returncode, released.stderr)
-        self.assertEqual(["Yobiru message 4444444444444444", "Yobiru message 7777777777777777"],
+        self.assertEqual(["Ishoni message 4444444444444444", "Ishoni message 7777777777777777"],
                          sorted(body["subject"] for body in fake.posted))
         self.assertIn("QUARANTINED-PRIVATE", json.dumps(fake.posted), "the current, repaired record is forwarded")
         self.assertEqual([("4444444444444444", "sent", None), decisions[1], decisions[2],
@@ -246,7 +246,7 @@ class QuarantineTests(unittest.TestCase):
         self.assertEqual(0, self.run_bridge(fake, "--retry-refused", UNRELATED).returncode)
         self.assertEqual([], self.states(UNRELATED), "retry forgets every unsent row of the file")
         self.assertEqual(0, self.run_bridge(fake).returncode)
-        self.assertEqual([("Yobiru message " + UNRELATED, True)],
+        self.assertEqual([("Ishoni message " + UNRELATED, True)],
                          [(body["subject"], "current report" in json.dumps(body)) for body in fake.posted])
         self.assertEqual(["sent"], self.states(UNRELATED))
 
@@ -297,7 +297,7 @@ class QuarantineTests(unittest.TestCase):
         self.assertEqual(["refused", "refused"], self.states(MAPPED))
         self.assertEqual(0, self.run_bridge(fake, "--retry-refused", MAPPED).returncode)
         self.assertEqual(0, self.run_bridge(fake).returncode)
-        self.assertEqual(["Yobiru message " + MAPPED], [body["subject"] for body in fake.posted], "the current record, once")
+        self.assertEqual(["Ishoni message " + MAPPED], [body["subject"] for body in fake.posted], "the current record, once")
         self.assertEqual(["sent"], self.states(MAPPED))
 
     def test_a_forwarded_record_that_changes_is_never_forwarded_again(self):
@@ -330,7 +330,7 @@ class QuarantineTests(unittest.TestCase):
         self.assertEqual(0, first.returncode, first.stderr)
         self.assertEqual([("UNKNOWN_OUTGOING_ROUTE", "item_0"), ("ATTACHMENTS_UNSUPPORTED", "item_1"),
                           ("INVALID_WAYPOST_MESSAGE", "item_2")], self.reports(first))
-        self.assertEqual(([], False), (fake.receipts, self.calls.exists()), "no ACK and no Yobiru send")
+        self.assertEqual(([], False), (fake.receipts, self.calls.exists()), "no ACK and no Ishoni send")
         self.assertEqual(["refused"] * 3, [state for _, state, _ in self.rows("outgoing", "item_id")])
         self.assertEqual(0, self.run_bridge(fake).returncode)
         self.assertEqual([], fake.receipts)

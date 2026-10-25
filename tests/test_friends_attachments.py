@@ -36,7 +36,7 @@ def item(name="notes.md", content="hello", size=None):
 class AttachmentCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru attachments test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni attachments test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
         cls.owner = cls.gw.owner_token

@@ -25,7 +25,7 @@ LIMITS = {"min_deadline_seconds": 1, "read_timeout_seconds": 5, "messages_per_mi
 class RoutingCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru routing test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni routing test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
         cls.owner = cls.gw.owner_token
@@ -159,7 +159,7 @@ class DirectoryTests(RoutingCase):
         callers = json.dumps([self.gw.ok("GET", "/@" + h), self.gw.ok("GET", "/v1/bots/" + bot_id),
                               self.gw.relation(token, bot_id),
                               self.gw.ok("GET", "/v1/conversations/%s" % cid, None, token),
-                              self.gw.tool(token, "yobiru_lookup_bot", {"bot": "@" + h})])
+                              self.gw.tool(token, "ishoni_lookup_bot", {"bot": "@" + h})])
         agent = json.dumps([self.gw.ok("GET", "/v1/worker/jobs", None, wtoken), job,
                             self.gw.ok("GET", "/v1/worker", None, wtoken)])
         for private in ("LABEL-PRIVATE", "NOTE-PRIVATE", "codex", "session_note"):

@@ -34,7 +34,7 @@ def load(name, path):
 
 core = load("tailmsg_discovery_under_test", REPO / "tailmsg.py")
 legacy = load("tailmsg_pre_agents_fixture", REPO / "tests" / "fixtures" / "tailmsg_v1_pre_agents.py")
-Y = load("yobiru_cli_under_test", REPO / "plugins" / "yobiru" / "scripts" / "yobiru.py")
+Y = load("ishoni_cli_under_test", REPO / "plugins" / "ishoni" / "scripts" / "ishoni.py")
 for mod in (core, legacy):
     mod.log = lambda *a: None
     mod.TAILNET_NETS.append(ipaddress.ip_network("127.0.0.0/8"))
@@ -123,7 +123,7 @@ class InfoEndpointTests(unittest.TestCase):
         for secret in ("/opt/private", "/srv/private", "--token", "PRIVATE_URL_ENV", "PRIVATE MESSAGE BODY",
                        "allow_replies", "wake_adapter", "private_note", "alpha", "unix://"):
             self.assertNotIn(secret, text)
-        self.assertEqual(("yobiru", core.PRODUCT_VERSION, 1, "bravo.example.ts.net"),
+        self.assertEqual(("ishoni", core.PRODUCT_VERSION, 1, "bravo.example.ts.net"),
                          (body["product"], body["version"], body["v"], body["node"]))
         agents = {a["agent"]: a for a in body["agents"]}
         self.assertEqual(["codex", "grok", "helper"], [a["agent"] for a in body["agents"]])
@@ -364,7 +364,7 @@ class PeerServer(object):
 
 
 def info_body(**over):
-    body = {"ok": True, "v": 1, "product": "yobiru", "version": "0.3.0", "node": "bravo.example.ts.net",
+    body = {"ok": True, "v": 1, "product": "ishoni", "version": "0.3.0", "node": "bravo.example.ts.net",
             "agents": [{"agent": "codex", "default": True, "session": {
                 "runtime": "codex", "id": UUID, "id_source": "codex-bridge", "display_name": None,
                 "confirmed_title": None, "native_name": "Triage", "native_name_status": "ok",

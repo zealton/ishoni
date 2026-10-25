@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="#1c2129"/>
+  <!-- bubble one: off-white, upper left, tail down-left -->
+  <path d="M232 300 q0-64 64-64 h300 q64 0 64 64 v180 q0 64-64 64 h-200 l-92 84 v-84 h-8 q-64 0-64-64 z" fill="#f4f1ea"/>
+  <!-- bubble two: orange, lower right, tail up-right -->
+  <path d="M364 540 q0-64 64-64 h300 q64 0 64 64 v180 q0 64-64 64 h-300 q-64 0-64-64 z M640 784 l52 92 l-120-92 z" fill="#ff5b1f"/>
+  <!-- the orange bubble replies: three dots -->
+  <circle cx="460" cy="630" r="22" fill="#1c2129"/>
+  <circle cx="540" cy="630" r="22" fill="#1c2129"/>
+  <circle cx="620" cy="630" r="22" fill="#1c2129"/>
+  <!-- the off-white bubble spoke: two short lines -->
+  <rect x="300" y="300" width="240" height="30" rx="15" fill="#1c2129"/>
+  <rect x="300" y="372" width="160" height="30" rx="15" fill="#1c2129"/>
+</svg>

@@ -2,8 +2,8 @@ name: Release
 
 # Push a tag v<version> (the version in packaging/product.json) on the commit to release. This workflow checks and
 # tests that commit, builds the archives, publishes the GitHub release with the CHANGELOG.md entry as its notes, and
-# for a stable version deploys it to the official gateway https://bots.yobiru.com after approval on the
-# `bots.yobiru.com` environment. See docs/RELEASING.md.
+# for a stable version deploys it to the official gateway https://bots.example.com after approval on the
+# `bots.example.com` environment. See docs/RELEASING.md.
 on:
   push:
     tags: ["v*"]
@@ -13,7 +13,7 @@ on:
         description: "Existing tag to (re)publish, e.g. v0.7.3"
         required: true
       deploy:
-        description: "Also deploy it to bots.yobiru.com"
+        description: "Also deploy it to bots.example.com"
         type: boolean
         default: true
 
@@ -106,10 +106,10 @@ jobs:
             # Published by hand already: keep its notes and flags, replace the assets with these builds.
             gh release upload "$TAG" dist/* --clobber
           elif [ "$PRERELEASE" = true ]; then
-            gh release create "$TAG" dist/* --verify-tag --title "Yobiru $VERSION" \
+            gh release create "$TAG" dist/* --verify-tag --title "Ishoni $VERSION" \
               --notes-file release-notes.md --prerelease --latest=false
           else
-            gh release create "$TAG" dist/* --verify-tag --title "Yobiru $VERSION" \
+            gh release create "$TAG" dist/* --verify-tag --title "Ishoni $VERSION" \
               --notes-file release-notes.md --latest
           fi
           gh release view "$TAG" --json url,assets --jq '.url, (.assets[].name)'
@@ -117,31 +117,31 @@ jobs:
   deploy-gateway:
     needs: [build, publish]
     if: needs.build.outputs.prerelease == 'false' && (github.event_name == 'push' || inputs.deploy)
-    # The repository's own runner on the gateway's server (label yobiru-gateway; the org's tyo-node runners span more
+    # The repository's own runner on the gateway's server (label ishoni-gateway; the org's tyo-node runners span more
     # than one host). The job checks out nothing: the root-owned deploy script installed there
-    # (deploy/yobiru-gateway-deploy.sh) takes only the tag and fetches it from GitHub itself.
-    runs-on: [self-hosted, yobiru-gateway]
+    # (deploy/ishoni-gateway-deploy.sh) takes only the tag and fetches it from GitHub itself.
+    runs-on: [self-hosted, ishoni-gateway]
     environment:
-      name: bots.yobiru.com
-      url: https://bots.yobiru.com
+      name: bots.example.com
+      url: https://bots.example.com
     timeout-minutes: 20
     concurrency:
-      group: yobiru-gateway-deploy
+      group: ishoni-gateway-deploy
       cancel-in-progress: false
     steps:
       - name: Deploy
-        run: sudo -n /usr/local/sbin/yobiru-gateway-deploy "$TAG"
+        run: sudo -n /usr/local/sbin/ishoni-gateway-deploy "$TAG"
 
       - name: Public check
         run: |
           set -euo pipefail
           for i in 1 2 3 4 5 6; do
-            if curl -fsS https://bots.yobiru.com/v1/health; then
+            if curl -fsS https://bots.example.com/v1/health; then
               echo
-              curl -fsS https://bots.yobiru.com/.well-known/yobiru
+              curl -fsS https://bots.example.com/.well-known/ishoni
               exit 0
             fi
             sleep 5
           done
-          echo "::error::https://bots.yobiru.com/v1/health is not answering"
+          echo "::error::https://bots.example.com/v1/health is not answering"
           exit 1

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Friends Beta acceptance run: the twelve checks of docs/UPGRADING-0.6.md (section 5, "Acceptance
-checklist"), driven through the real `yobiru` CLI with fresh synthetic data in one new work directory.
+checklist"), driven through the real `ishoni` CLI with fresh synthetic data in one new work directory.
 
 Each role has its own data home under the work directory. Every command runs with HOME set to the work directory,
 so nothing reads ~/.tailmsg, $TAILMSG_HOME or a real inbox, calendar or contact.
@@ -44,7 +44,7 @@ from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-DEFAULT_YOBIRU = REPO / "plugins" / "yobiru" / "scripts" / "yobiru"
+DEFAULT_ISHONI = REPO / "plugins" / "ishoni" / "scripts" / "ishoni"
 TOKEN_PATTERN = re.compile(r"yb[oawvtcsn]_[A-Za-z0-9_-]{43}")
 BOT, A_BOT, B_BOT = "smoke-bot", "a-bot", "b-bot"
 MENU, SECRET = "acc-menu", "acc-secret"
@@ -118,8 +118,8 @@ class Acceptance(object):
     def __init__(self, a):
         self.a = a
         self.remote = a.host == "remote"
-        self.yobiru = str(Path(a.yobiru).resolve())
-        self.work = Path(tempfile.mkdtemp(prefix="yobiru-friends-acceptance-"))
+        self.ishoni = str(Path(a.ishoni).resolve())
+        self.work = Path(tempfile.mkdtemp(prefix="ishoni-friends-acceptance-"))
         self.homes = {r: self.work / r for r in ("owner", "host", "a", "b")}
         self.files = {r: self.work / ("%s-files" % r) for r in ("host", "a", "b")}
         for d in self.files.values():
@@ -129,7 +129,7 @@ class Acceptance(object):
             self.handoff.mkdir(mode=0o700, parents=True)
         self.env = {"HOME": str(self.work), "PATH": os.environ.get("PATH", "/usr/bin:/bin"), "PYTHONUTF8": "1",
                     "PYTHONIOENCODING": "utf-8", "PYTHONDONTWRITEBYTECODE": "1"}
-        for name in ("LANG", "LC_ALL", "YOBIRU_PYTHON", "SSL_CERT_FILE"):
+        for name in ("LANG", "LC_ALL", "ISHONI_PYTHON", "SSL_CERT_FILE"):
             if os.environ.get(name):
                 self.env[name] = os.environ[name]
         self.services = {}
@@ -155,17 +155,17 @@ class Acceptance(object):
         return r.returncode, obj, r.stderr
 
     def y(self, role, *args):
-        """A `yobiru public` command in one role's data home that must succeed -> parsed JSON."""
-        return self.run(["sh", self.yobiru, "--home", str(self.homes[role]), "public"] + list(args))[1]
+        """A `ishoni public` command in one role's data home that must succeed -> parsed JSON."""
+        return self.run(["sh", self.ishoni, "--home", str(self.homes[role]), "public"] + list(args))[1]
 
     def refused(self, role, *args):
-        """A `yobiru public` command that must be refused -> the error text (stdout and stderr)."""
-        _, obj, err = self.run(["sh", self.yobiru, "--home", str(self.homes[role]), "public"] + list(args),
+        """A `ishoni public` command that must be refused -> the error text (stdout and stderr)."""
+        _, obj, err = self.run(["sh", self.ishoni, "--home", str(self.homes[role]), "public"] + list(args),
                                expect_ok=False)
         return json.dumps(obj) + err
 
     def tool(self, *args):
-        return self.run(["sh", self.yobiru] + list(args))[1]
+        return self.run(["sh", self.ishoni] + list(args))[1]
 
     def check(self, item, what, ok, detail=None):
         self.checks.append({"item": item, "check": what, "ok": bool(ok), "at": now(),
@@ -248,7 +248,7 @@ class Acceptance(object):
         if self.a.public_url:
             init += ["--public-url", self.a.public_url.rstrip("/")]
         self.tool(*init)
-        self.services["gateway"] = Service(["sh", self.yobiru, "gateway", "--gateway-home", str(gw), "serve"],
+        self.services["gateway"] = Service(["sh", self.ishoni, "gateway", "--gateway-home", str(gw), "serve"],
                                            self.env, self.work / "gateway.log").start()
         self.ports = {"gateway": port}
         self.url = self.a.public_url.rstrip("/") if self.a.public_url else self.services["gateway"].url
@@ -301,7 +301,7 @@ class Acceptance(object):
             src.write_text(text)
             self.tool("resource-service", "add", "--dir", str(rdir), rid, "--file", str(src))
         self.y("owner", "verifier", "bind", BOT, "--token-file", str(rdir / "verifier.token"), "--label", "resources")
-        serve = ["sh", self.yobiru, "resource-service", "serve", "--dir", str(rdir)]
+        serve = ["sh", self.ishoni, "resource-service", "serve", "--dir", str(rdir)]
         if self.a.resource_port:
             serve += ["--port", str(self.a.resource_port)]
         self.services["resources"] = Service(serve, self.env, self.work / "resources.log").start()
@@ -570,7 +570,7 @@ class Acceptance(object):
         home, files = self.a.host_home, self.a.host_files
         text = """# Friends acceptance run: instructions for the agent bound to @smoke-bot
 
-From the owner of this run. Synthetic data only. `Y` is the 0.6.0-beta.1 plugin's `scripts/yobiru` on your
+From the owner of this run. Synthetic data only. `Y` is the 0.6.0-beta.1 plugin's `scripts/ishoni` on your
 device. Never paste a credential into a chat, a message or a reply; the two token files below are copied to
 your device separately.
 
@@ -624,7 +624,7 @@ Delete `{home}`, `{home}-handoff` and `{files}`. The binding is revoked at the e
         started = now()
         result, error = "pass", None
         version = self.tool("version")
-        print("yobiru %s; host: %s; work directory: %s" % (version.get("raw", version), self.a.host, self.work),
+        print("ishoni %s; host: %s; work directory: %s" % (version.get("raw", version), self.a.host, self.work),
               flush=True)
         try:
             self.item1()
@@ -653,7 +653,7 @@ Delete `{home}`, `{home}-handoff` and `{files}`. The binding is revoked at the e
             self.item12()
         if result == "pass" and not all(c["ok"] for c in self.checks):
             result, error = "fail", "cleanup"
-        report = {"started_at": started, "finished_at": now(), "yobiru": version.get("raw", version),
+        report = {"started_at": started, "finished_at": now(), "ishoni": version.get("raw", version),
                   "host": self.a.host, "host_kind": self.a.host_kind, "gateway": self.url, "result": result,
                   "error": error, "ids": self.ids, "reviews": dict(self.reviews), "checks": self.checks}
         path = Path(self.a.report or "friends-acceptance-%s.json" % started.replace(":", "")).resolve()
@@ -665,8 +665,8 @@ Delete `{home}`, `{home}-handoff` and `{files}`. The binding is revoked at the e
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--yobiru", default=str(DEFAULT_YOBIRU),
-                    help="the plugin's scripts/yobiru (default: this checkout's)")
+    ap.add_argument("--ishoni", default=str(DEFAULT_ISHONI),
+                    help="the plugin's scripts/ishoni (default: this checkout's)")
     ap.add_argument("--host", choices=("scripted", "remote"), default="scripted")
     ap.add_argument("--host-kind", default=None, help="the binding's --host (default: other, or grok when remote)")
     ap.add_argument("--session-note", default="Friends acceptance run")

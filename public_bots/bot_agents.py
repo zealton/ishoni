@@ -1,6 +1,6 @@
 """The personal agents an owner shows on a bot's page: their names and product marks.
 
-An owner may list the agents they use with Yobiru; the card stores their ids (`agents`) and the page shows each with
+An owner may list the agents they use with Ishoni; the card stores their ids (`agents`) and the page shows each with
 its mark, the first one also on the picture. The list is what the owner says, like the links: the gateway does not
 check it, and the private host kind of a native binding is never copied into it.
 

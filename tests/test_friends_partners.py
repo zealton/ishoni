@@ -28,7 +28,7 @@ SECRET = "pinku-test-secret-0123456789abcdef0123456789"
 class PartnerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru partners ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni partners ")
         cls.gw = FriendsGateway(Path(cls._tmp.name), limits=LIMITS)
         secret = cls.gw.home / "pinku.secret"
         secret.write_text(SECRET + "\n")
@@ -62,7 +62,7 @@ class PartnerTests(unittest.TestCase):
         return status, obj, owner, source
 
     def test_the_gateway_advertises_its_partners(self):
-        enrollment = self.gw.ok("GET", "/.well-known/yobiru")["enrollment"]
+        enrollment = self.gw.ok("GET", "/.well-known/ishoni")["enrollment"]
         self.assertEqual(["pinku"], enrollment["email_attestation_partners"])
 
     def test_an_attested_address_enrolls_without_a_code_once(self):

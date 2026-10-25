@@ -75,7 +75,7 @@ def snapshot(path):
 
 class LinuxInstallerTests(unittest.TestCase):
     def setUp(self):
-        self.root = Path(tempfile.mkdtemp(prefix="yobiru-linux-")).resolve()
+        self.root = Path(tempfile.mkdtemp(prefix="ishoni-linux-")).resolve()
         self.addCleanup(shutil.rmtree, str(self.root), True)
         os.chmod(str(self.root), 0o700)
         self.fakes = self.root / "fakes"

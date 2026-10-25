@@ -1,7 +1,7 @@
 """Resolve current Tailscale peers without stale IPs or ambiguous short-name routing.
 
 All status responses and receiver probes are injected. These tests never query the real tailnet,
-send messages, or read the user's Yobiru home.
+send messages, or read the user's Ishoni home.
 """
 import importlib.util
 import io
@@ -22,7 +22,7 @@ def load(name, path):
 
 
 core = load("tailmsg_peer_resolution_under_test", REPO / "tailmsg.py")
-Y = load("yobiru_peer_resolution_under_test", REPO / "plugins/yobiru/scripts/yobiru.py")
+Y = load("ishoni_peer_resolution_under_test", REPO / "plugins/ishoni/scripts/ishoni.py")
 
 
 def node(name, ip, online=True, hostname="research-box"):

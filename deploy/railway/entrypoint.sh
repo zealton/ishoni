@@ -5,28 +5,28 @@
 #
 # Environment (Railway service variables):
 #   PORT                      the port the platform routes to (Railway sets it)
-#   YOBIRU_PUBLIC_URL         https://gateway.example.com  (the public base URL the gateway prints in cards)
-#   YOBIRU_OWNER_LABEL        label of the administrator owner created on first boot (default "Team admin")
-#   YOBIRU_ALLOW_VISITORS     "true" to let anonymous visitor identities enroll (default false: team only)
-#   YOBIRU_ALLOW_SELF_ENROLL  "true" to let anyone enroll a bot (default false: the administrator adds owners)
+#   ISHONI_PUBLIC_URL         https://gateway.example.com  (the public base URL the gateway prints in cards)
+#   ISHONI_OWNER_LABEL        label of the administrator owner created on first boot (default "Team admin")
+#   ISHONI_ALLOW_VISITORS     "true" to let anonymous visitor identities enroll (default false: team only)
+#   ISHONI_ALLOW_SELF_ENROLL  "true" to let anyone enroll a bot (default false: the administrator adds owners)
 #   LITESTREAM_REPLICA_URL    s3://bucket/path (or empty: no replication); LITESTREAM_ACCESS_KEY_ID,
 #                             LITESTREAM_SECRET_ACCESS_KEY and optionally LITESTREAM_ENDPOINT, LITESTREAM_REGION
 #
 # The administrator's owner credential is created once, printed to the deploy log on that first boot only, and
-# written to $YOBIRU_GATEWAY_HOME/owner.token on the volume. Copy it to the admin device, then delete the file:
-#   railway run cat /data/gw/owner.token   (or the platform's shell)   ->   yobiru public owner login URL --token-file F
+# written to $ISHONI_GATEWAY_HOME/owner.token on the volume. Copy it to the admin device, then delete the file:
+#   railway run cat /data/gw/owner.token   (or the platform's shell)   ->   ishoni public owner login URL --token-file F
 set -eu
 umask 077
 
-HOME_DIR="${YOBIRU_GATEWAY_HOME:-/data/gw}"
+HOME_DIR="${ISHONI_GATEWAY_HOME:-/data/gw}"
 # The platform mounts the volume owned by root: give it to the gateway's user once, then continue as that user.
 if [ "$(id -u)" = "0" ]; then
   mkdir -p "$HOME_DIR"
-  chown -R yobiru:yobiru "$(dirname "$HOME_DIR")"
-  exec setpriv --reuid=yobiru --regid=yobiru --init-groups "$0" "$@"
+  chown -R ishoni:ishoni "$(dirname "$HOME_DIR")"
+  exec setpriv --reuid=ishoni --regid=ishoni --init-groups "$0" "$@"
 fi
 PORT="${PORT:-7780}"
-PUBLIC_URL="${YOBIRU_PUBLIC_URL:-http://127.0.0.1:$PORT}"
+PUBLIC_URL="${ISHONI_PUBLIC_URL:-http://127.0.0.1:$PORT}"
 PY="python3 /app/public_bots/bot_gateway.py --gateway-home $HOME_DIR"
 DB="$HOME_DIR/gateway.sqlite3"
 mkdir -p "$HOME_DIR"
@@ -39,7 +39,7 @@ fi
 
 if [ ! -f "$HOME_DIR/gateway.json" ] && [ ! -f "$DB" ]; then
   echo "==> first boot: initializing the gateway home"
-  $PY init --port "$PORT" --public-url "$PUBLIC_URL" --owner-label "${YOBIRU_OWNER_LABEL:-Team admin}"
+  $PY init --port "$PORT" --public-url "$PUBLIC_URL" --owner-label "${ISHONI_OWNER_LABEL:-Team admin}"
   echo "==> the administrator's owner credential is in $HOME_DIR/owner.token: copy it to the admin device and delete it here"
 elif [ ! -f "$HOME_DIR/gateway.json" ]; then
   echo "==> restored database without gateway.json: writing one"
@@ -58,8 +58,8 @@ flag = lambda name: os.environ.get(name, "").strip().lower() in ("1", "true", "y
 cfg.update({"v": 1, "bind": "0.0.0.0", "port": port, "public_base_url": public, "allow_non_loopback_bind": True,
             "trust_forwarded_for": "private", "external_checkpoints": bool(os.environ.get("LITESTREAM_REPLICA_URL"))})
 enrollment = cfg.get("enrollment") or {}
-enrollment.update({"visitors": flag("YOBIRU_ALLOW_VISITORS"), "bots": flag("YOBIRU_ALLOW_SELF_ENROLL"),
-                   "self_enrolled_publish": flag("YOBIRU_ALLOW_SELF_ENROLL"), "email_verification": False})
+enrollment.update({"visitors": flag("ISHONI_ALLOW_VISITORS"), "bots": flag("ISHONI_ALLOW_SELF_ENROLL"),
+                   "self_enrolled_publish": flag("ISHONI_ALLOW_SELF_ENROLL"), "email_verification": False})
 cfg["enrollment"] = enrollment
 tmp = path + ".tmp"
 with open(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as f:

@@ -48,7 +48,7 @@ class GatewayCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru gateway test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni gateway test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = Gateway(cls.root, limits=cls.LIMITS).start()
 
@@ -149,7 +149,7 @@ class AdministrationTests(GatewayCase):
         self.assertEqual((409, "handle_unavailable"),
                          (lambda s, o: (s, o["error"]))(*self.gw.call("POST", "/v1/owner/bots",
                                                                       {"handle": h, "display_name": "Dup"}, owner)))
-        for bad, code in (("admin", 409), ("yobiru", 409), ("ab", 400), ("Bad Handle", 400), ("x--y", 400),
+        for bad, code in (("admin", 409), ("ishoni", 409), ("ab", 400), ("Bad Handle", 400), ("x--y", 400),
                           ("trailing-", 400), ("9lives", 400)):
             self.assertEqual(code, self.gw.call("POST", "/v1/owner/bots", {"handle": bad, "display_name": "x"},
                                                 owner)[0], bad)
@@ -255,11 +255,11 @@ class ProfilePageTests(GatewayCase):
         self.assertIn('rel="alternate" type="application/json" href="%s.json"' % card["address"], text)
         self.assertIn("%s.json" % card["address"], hdrs["link"])
         comment = text.split("<!--", 1)[1].split("-->", 1)[0]
-        self.assertIn("yobiru public connect " + card["address"], comment, "agents find the steps in a comment")
-        self.assertNotIn("yobiru public connect", text.split("</head>", 1)[1].replace(comment, ""))
+        self.assertIn("ishoni public connect " + card["address"], comment, "agents find the steps in a comment")
+        self.assertNotIn("ishoni public connect", text.split("</head>", 1)[1].replace(comment, ""))
         self.assertNotIn("<script>alert", text, "the description is escaped")
         self.assertIn("Hi &lt;script&gt;alert(1)&lt;/script&gt; &amp; welcome", text)
-        embedded = text.split('<script type="application/json" id="yobiru-card">', 1)[1].split("</script>", 1)[0]
+        embedded = text.split('<script type="application/json" id="ishoni-card">', 1)[1].split("</script>", 1)[0]
         self.assertEqual({k: v for k, v in card.items() if k != "ok"}, json.loads(embedded))
         nonce = hdrs["content-security-policy"].split("'nonce-", 1)[1].split("'", 1)[0]
         self.assertEqual(2, text.count('nonce="%s"' % nonce), "only the page's own style and script run")

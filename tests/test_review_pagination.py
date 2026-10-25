@@ -16,7 +16,7 @@ import bot_e2e as E  # noqa: E402
 class ReviewPaginationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = tempfile.TemporaryDirectory(prefix="yobiru review pages ")
+        cls.tmp = tempfile.TemporaryDirectory(prefix="ishoni review pages ")
         cls.gw = FriendsGateway(Path(cls.tmp.name)).start()
 
     @classmethod

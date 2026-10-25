@@ -65,7 +65,7 @@ class RepositoryTests(unittest.TestCase):
 
     def test_claude_code_manifest_runs_the_bundled_mcp_server(self):
         manifest = json.loads((REPO / P["pluginDir"] / ".claude-plugin" / "plugin.json").read_text())
-        self.assertEqual({"yobiru": {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/yobiru", "mcp"]}},
+        self.assertEqual({"ishoni": {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/ishoni", "mcp"]}},
                          manifest["mcpServers"])
         self.assertNotIn("skills", manifest)                     # default discovery finds skills/
         for shared in ("mcp.json", ".mcp.json"):                 # other hosts would read a shared file
@@ -90,13 +90,13 @@ class RepositoryTests(unittest.TestCase):
 
     def test_skills_are_discoverable_and_locate_the_bundled_command(self):
         skills = sorted((REPO / P["pluginDir"] / "skills").iterdir())
-        self.assertTrue({"yobiru-grok-bot", "yobiru-inbox", "yobiru-send", "yobiru-sessions", "yobiru-setup", "yobiru-upgrade",
-                         "yobiru-wake"}.issubset({s.name for s in skills}))
+        self.assertTrue({"ishoni-grok-bot", "ishoni-inbox", "ishoni-send", "ishoni-sessions", "ishoni-setup", "ishoni-upgrade",
+                         "ishoni-wake"}.issubset({s.name for s in skills}))
         for s in skills:
             text = (s / "SKILL.md").read_text()
             self.assertTrue(text.startswith("---\nname: %s\n" % s.name))
-            self.assertIn("../../scripts/yobiru", text)
-            self.assertTrue((s / ".." / ".." / "scripts" / "yobiru").resolve().is_file())
+            self.assertIn("../../scripts/ishoni", text)
+            self.assertTrue((s / ".." / ".." / "scripts" / "ishoni").resolve().is_file())
 
 
 class ArchiveTests(unittest.TestCase):
@@ -118,11 +118,11 @@ class ArchiveTests(unittest.TestCase):
         expected = ["%s/%s" % (P["id"], rel) for rel in B.plugin_files(P)]
         self.assertEqual(expected, names)
         for rel in ("plugin.json", ".codex-plugin/plugin.json", ".cursor-plugin/plugin.json", "README.md",
-                    "LICENSE", "scripts/yobiru", "scripts/yobiru.py", "scripts/tailmsg.py",
+                    "LICENSE", "scripts/ishoni", "scripts/ishoni.py", "scripts/tailmsg.py",
                     "scripts/codex_bridge/install_codex_bridge.py", "assets/icon.png",
-                    "skills/yobiru-setup/SKILL.md", "skills/yobiru-send/SKILL.md",
-                    "skills/yobiru-inbox/SKILL.md", "skills/yobiru-wake/SKILL.md",
-                    "skills/yobiru-sessions/SKILL.md", "skills/yobiru-upgrade/SKILL.md"):
+                    "skills/ishoni-setup/SKILL.md", "skills/ishoni-send/SKILL.md",
+                    "skills/ishoni-inbox/SKILL.md", "skills/ishoni-wake/SKILL.md",
+                    "skills/ishoni-sessions/SKILL.md", "skills/ishoni-upgrade/SKILL.md"):
             self.assertIn("%s/%s" % (P["id"], rel), names)
 
     def test_archive_has_no_runtime_state_or_junk(self):
@@ -160,7 +160,7 @@ class ArchiveTests(unittest.TestCase):
         root = "%s-marketplace/" % P["id"]
         for rel in (".agents/plugins/marketplace.json", ".cursor-plugin/marketplace.json",
                     ".claude-plugin/marketplace.json", "LICENSE", P["pluginDir"] + "/.claude-plugin/plugin.json",
-                    P["pluginDir"] + "/.codex-plugin/plugin.json", P["pluginDir"] + "/skills/yobiru-setup/SKILL.md"):
+                    P["pluginDir"] + "/.codex-plugin/plugin.json", P["pluginDir"] + "/skills/ishoni-setup/SKILL.md"):
             self.assertIn(root + rel, names)
 
 
@@ -270,7 +270,7 @@ class FixtureTests(unittest.TestCase):
     def test_runtime_state_and_private_data_are_rejected(self):
         # Synthetic values only (made-up tailnet, address, user and key) that the scanner must reject.
         (self.base / "scripts" / "config.json").write_text("{}")
-        (self.base / "skills" / "yobiru-send" / "notes.md").write_text(
+        (self.base / "skills" / "ishoni-send" / "notes.md").write_text(
             "ping laptop.tail1a2b3c.ts.net at 100.101.102.103 for /home/alice/.tailmsg, token tskey-abcdef123456\n")
         errors = "\n".join(B.validate(P, self.root))
         for needle in ("config.json", "tailnet MagicDNS", "Tailscale IPv4", "home directory", "auth key"):
@@ -280,11 +280,11 @@ class FixtureTests(unittest.TestCase):
         deny = Path(self.tmp.name) / "deny.txt"
         deny.write_text("my-secret-hostname\n")
         (self.base / "README.md").write_text((self.base / "README.md").read_text() + "\nmy-secret-hostname\n")
-        os.environ["YOBIRU_PRIVATE_DENYLIST"] = str(deny)
+        os.environ["ISHONI_PRIVATE_DENYLIST"] = str(deny)
         try:
             self.assertTrue(any("private marker" in e for e in B.validate(P, self.root)))
         finally:
-            del os.environ["YOBIRU_PRIVATE_DENYLIST"]
+            del os.environ["ISHONI_PRIVATE_DENYLIST"]
 
     def test_versions_are_strict_semver_and_a_prerelease_links_its_own_privacy_notice(self):
         def errors(version, privacy=None):
@@ -296,7 +296,7 @@ class FixtureTests(unittest.TestCase):
         for bad in ("0.6.0-beta.01", "0.6.0-beta..1", "0.6.0-", "0.6", "v0.6.0", "0.6.0-beta_1"):
             self.assertIn("version must be SemVer 2.0", errors(bad), bad)
         self.assertNotIn("SemVer 2.0", errors("0.6.0-beta.1"))
-        policy = "https://github.com/chekusu/yobiru/blob/%s/docs/PRIVACY.md"
+        policy = "https://github.com/zealton/ishoni/blob/%s/docs/PRIVACY.md"
         for wrong in ("main", "v0.6.0-beta.1"):           # the stable branch, or an earlier prerelease's tag
             self.assertIn("must point into its own tag", errors("0.6.0-beta.2", policy % wrong), wrong)
         self.assertNotIn("must point into its own tag", errors("0.6.0-beta.2", policy % "v0.6.0-beta.2"))
@@ -306,14 +306,14 @@ class FixtureTests(unittest.TestCase):
         path = self.base / ".claude-plugin" / "plugin.json"
         good = path.read_text()
         for server in ({"command": "npx", "args": ["some-server"]},
-                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/yobiru", "mcp", "${HOME}"]},
-                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/yobiru", "serve"]},
-                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/yobiru", "mcp"], "env": {"X": "1"}}):
+                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/ishoni", "mcp", "${HOME}"]},
+                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/ishoni", "serve"]},
+                       {"command": "sh", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/ishoni", "mcp"], "env": {"X": "1"}}):
             with self.subTest(server=server):
                 manifest = json.loads(good)
-                manifest["mcpServers"]["yobiru"] = server
+                manifest["mcpServers"]["ishoni"] = server
                 path.write_text(json.dumps(manifest))
-                self.assertTrue(any("mcpServers.yobiru must run" in e for e in B.validate(P, self.root)))
+                self.assertTrue(any("mcpServers.ishoni must run" in e for e in B.validate(P, self.root)))
         path.write_text(good)
         (self.base / ".mcp.json").write_text("{}")
         self.assertTrue(any("no shared MCP config" in e for e in B.validate(P, self.root)))
@@ -322,9 +322,9 @@ class FixtureTests(unittest.TestCase):
         m = self.base / ".cursor-plugin" / "plugin.json"
         m.write_text(m.read_text().replace('"license": "MIT"', '"license": "Apache-2.0"'))
         self.assertTrue(any(".cursor-plugin/plugin.json is out of date" in e for e in B.drift(P, self.root)))
-        skill = self.base / "skills" / "yobiru-send" / "SKILL.md"
-        skill.write_text(skill.read_text().replace("name: yobiru-send", "name: send"))
-        self.assertTrue(any("skills/yobiru-send" in e for e in B.validate(P, self.root)))
+        skill = self.base / "skills" / "ishoni-send" / "SKILL.md"
+        skill.write_text(skill.read_text().replace("name: ishoni-send", "name: send"))
+        self.assertTrue(any("skills/ishoni-send" in e for e in B.validate(P, self.root)))
 
 
 if __name__ == "__main__":

@@ -52,10 +52,10 @@ def snapshot(path):
 
 
 class Package(object):
-    """The plugin archive unpacked into '<tmp>/Plugin Cache/with spaces/yobiru', far from the checkout."""
+    """The plugin archive unpacked into '<tmp>/Plugin Cache/with spaces/ishoni', far from the checkout."""
 
     def __init__(self):
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru test ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni test ")
         self.root = Path(self._tmp.name).resolve()
         builder = load_builder()
         self.product = builder.load_product()
@@ -67,8 +67,8 @@ class Package(object):
         with zipfile.ZipFile(str(self.zip_path)) as z:      # like most unzip tools: no file modes
             z.extractall(str(self.cache))
         self.plugin = self.cache / self.product["id"]
-        self.launcher = self.plugin / "scripts" / "yobiru"
-        self.entry = self.plugin / "scripts" / "yobiru.py"
+        self.launcher = self.plugin / "scripts" / "ishoni"
+        self.entry = self.plugin / "scripts" / "ishoni.py"
         self.core = self.plugin / "scripts" / "tailmsg.py"
         self.bin = self.root / "bin"                          # only what the launcher needs
         self.bin.mkdir()

@@ -91,7 +91,7 @@ class PrimitiveTests(unittest.TestCase):
 class E2ECase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru e2e ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni e2e ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
 
@@ -257,7 +257,7 @@ class GatewayGuardTests(E2ECase):
         _, actor = self.gw.actor()
         cid = self.gw.conversation(bot_id, actor)
         stranger = E.generate()
-        env = E.seal(b'{"text":"x"}', stranger[0], [stranger[1]], "yobiru-e2e/1")
+        env = E.seal(b'{"text":"x"}', stranger[0], [stranger[1]], "ishoni-e2e/1")
         status, obj = self.gw.call("POST", "/v1/conversations/%s/messages" % cid,
                                    {"op_key": "sealed-wrong-1", "kind": "chat", "sealed": env}, actor)
         self.assertEqual((409, "sealed_recipient_missing"), (status, obj["error"]))
@@ -267,7 +267,7 @@ class GatewayGuardTests(E2ECase):
         self.assertTrue(self.y("owner", "bot", "edit", self.handle, "--require-e2e", "on")["policy"]["require_e2e"])
         status, obj = self.gw.send(cid, actor, kind="chat", text="plain text")
         self.assertEqual((403, "e2e_required"), (status, obj["error"]))
-        ok = E.seal(b'{"text":"x"}', stranger[0], [key["key"]], "yobiru-e2e/1")
+        ok = E.seal(b'{"text":"x"}', stranger[0], [key["key"]], "ishoni-e2e/1")
         status, obj = self.gw.call("POST", "/v1/conversations/%s/messages" % cid,
                                    {"op_key": "sealed-ok-1", "kind": "chat", "sealed": ok}, actor)
         self.assertEqual(202, status, obj)
@@ -282,7 +282,7 @@ class GatewayGuardTests(E2ECase):
         self.assertEqual("plain as before", json.loads(self.stored(sent["message_id"])["content"])["text"])
         _, actor = self.gw.actor()
         cid = self.gw.conversation(legacy, actor)
-        env = E.seal(b"{}", E.generate()[0], [E.generate()[1]], "yobiru-e2e/1")
+        env = E.seal(b"{}", E.generate()[0], [E.generate()[1]], "ishoni-e2e/1")
         status, obj = self.gw.call("POST", "/v1/conversations/%s/messages" % cid,
                                    {"op_key": "sealed-legacy", "kind": "chat", "sealed": env}, actor)
         self.assertEqual((409, "e2e_unavailable"), (status, obj["error"]))

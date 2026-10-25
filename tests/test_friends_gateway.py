@@ -30,7 +30,7 @@ LIMITS = {"min_deadline_seconds": 1, "read_timeout_seconds": 5, "wake_retry_seco
 class FriendsCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls._tmp = tempfile.TemporaryDirectory(prefix="yobiru friends test ")
+        cls._tmp = tempfile.TemporaryDirectory(prefix="ishoni friends test ")
         cls.root = Path(cls._tmp.name)
         cls.gw = FriendsGateway(cls.root, limits=LIMITS).start()
 
@@ -147,7 +147,7 @@ class IdentityTests(FriendsCase):
                 "POST", "/v1/actors", {"display_name": "Late"}, C.new_token("actor"))))
             self.assertEqual({"visitors": False, "bots": False, "email_verification": False, "email_code": None,
                               "email_attestation_partners": []},
-                             gw.ok("GET", "/.well-known/yobiru")["enrollment"])
+                             gw.ok("GET", "/.well-known/ishoni")["enrollment"])
         finally:
             gw.stop()
 
@@ -162,7 +162,7 @@ class ShareLinkTests(FriendsCase):
         card = self.gw.ok("GET", "/@" + self.handle())
         self.assertEqual(card, self.gw.ok("GET", "/@" + bot_id))
         self.assertEqual(card, self.gw.ok("GET", "/v1/bots/" + bot_id))
-        self.assertEqual((self.gw.url, bot_id, "yobiru.bot"), (card["issuer"], card["bot_id"], card["type"]))
+        self.assertEqual((self.gw.url, bot_id, "ishoni.bot"), (card["issuer"], card["bot_id"], card["type"]))
         self.assertEqual("%s/@%s" % (self.gw.url, self.handle()), card["address"])
         self.assertTrue(card["chat"]["agent_connected"] and card["chat"]["replies_reviewed_by_owner"])
         text = json.dumps(card)
@@ -171,7 +171,7 @@ class ShareLinkTests(FriendsCase):
         self.gw.ok("POST", "/v1/owner/bots/%s/unpublish" % bot_id, {}, self.gw.owner_token)
         for path in ("/@" + self.handle(), "/@" + bot_id, "/@@" + self.handle(), "/@..%2Fadmin", "/@bot_aaaaaaaaaaaaaaaa"):
             self.assertEqual((404, "not_found"), self.err(self.gw.call("GET", path)), path)
-        known = self.gw.ok("GET", "/.well-known/yobiru")
+        known = self.gw.ok("GET", "/.well-known/ishoni")
         self.assertEqual((self.gw.url, "none: identities are scoped to this gateway"), (known["issuer"],
                                                                                          known["federation"]))
 
@@ -771,7 +771,7 @@ class MigrationTests(unittest.TestCase):
     """Real schema-1 databases made by the schema-1 gateway (tests/fixtures/bot_gateway_v1.py)."""
 
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory(prefix="yobiru migration ")
+        self._tmp = tempfile.TemporaryDirectory(prefix="ishoni migration ")
         self.addCleanup(self._tmp.cleanup)
         self.root = Path(self._tmp.name)
         self.v1dir = self.root / "v1code"

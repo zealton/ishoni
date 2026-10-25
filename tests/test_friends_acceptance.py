@@ -21,7 +21,7 @@ TOKEN_PATTERN = re.compile(r"yb[oawvtcsn]_[A-Za-z0-9_-]{43}")
 
 class AcceptanceToolTests(unittest.TestCase):
     def run_tool(self, *args, timeout=600):
-        tmp = tempfile.TemporaryDirectory(prefix="yobiru acceptance ")
+        tmp = tempfile.TemporaryDirectory(prefix="ishoni acceptance ")
         self.addCleanup(tmp.cleanup)
         report = Path(tmp.name) / "report.json"
         r = subprocess.run([sys.executable, str(TOOL), "--report", str(report)] + list(args), capture_output=True,
@@ -39,7 +39,7 @@ class AcceptanceToolTests(unittest.TestCase):
 
     def test_a_remote_host_that_never_acts_is_a_timeout_after_a_full_cleanup(self):
         gw, res = free_port(), free_port()
-        handoff = tempfile.TemporaryDirectory(prefix="yobiru handoff ")
+        handoff = tempfile.TemporaryDirectory(prefix="ishoni handoff ")
         self.addCleanup(handoff.cleanup)
         r, report, _ = self.run_tool("--host", "remote", "--public-url", "http://127.0.0.1:%d" % gw,
                                      "--gateway-port", str(gw), "--resource-public-url", "http://127.0.0.1:%d" % res,

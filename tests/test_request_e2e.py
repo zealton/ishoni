@@ -37,7 +37,7 @@ def whois(name):
 
 class RequestWorkflowTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory(prefix="yobiru request e2e ")
+        self.tmp = tempfile.TemporaryDirectory(prefix="ishoni request e2e ")
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         user = self.root / "isolated user home"
@@ -392,7 +392,7 @@ class RequestWorkflowTests(unittest.TestCase):
 
         class LegacyHandler(BaseHTTPRequestHandler):
             def do_GET(self):
-                body = json.dumps({"ok": True, "v": 1, "product": "yobiru", "version": "0.4.4",
+                body = json.dumps({"ok": True, "v": 1, "product": "ishoni", "version": "0.4.4",
                                    "node": "bravo.example.ts.net", "agents": []}).encode()
                 self.send_response(200)
                 self.send_header("Content-Length", str(len(body)))

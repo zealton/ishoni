@@ -3,7 +3,7 @@
 # Credentials and the endpoint come from the environment: LITESTREAM_ACCESS_KEY_ID, LITESTREAM_SECRET_ACCESS_KEY,
 # LITESTREAM_ENDPOINT (for R2, B2, MinIO), LITESTREAM_REGION.
 dbs:
-  - path: ${YOBIRU_GATEWAY_HOME}/gateway.sqlite3
+  - path: ${ISHONI_GATEWAY_HOME}/gateway.sqlite3
     replicas:
       - url: ${LITESTREAM_REPLICA_URL}
         endpoint: ${LITESTREAM_ENDPOINT}

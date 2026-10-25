@@ -12,7 +12,7 @@
 
 这些是宿主 agent 使用现有工具时遵守的工作流规则。bridge 只负责持久通知队列，不自动实现业务会话路由、资源锁或子任务恢复；宿主能力需要逐项核实。
 
-通用规则维护在 Git 中：本文件是 dispatcher 模板源，`plugins/yobiru/skills/yobiru-inbox/SKILL.md` 和 `plugins/yobiru/skills/yobiru-wake/SKILL.md` 是对应技能源。修改后运行 `python3 tools/build_plugin.py sync` 与 `check`，同步打包副本及来源哈希，不直接修改生成副本。现有安装的本地 dispatcher 文件会被安装器保留，更新时对照模板合并并保留本机权限、路径与固定会话；插件缓存中的本地覆盖不能代替源码提交。
+通用规则维护在 Git 中：本文件是 dispatcher 模板源，`plugins/ishoni/skills/ishoni-inbox/SKILL.md` 和 `plugins/ishoni/skills/ishoni-wake/SKILL.md` 是对应技能源。修改后运行 `python3 tools/build_plugin.py sync` 与 `check`，同步打包副本及来源哈希，不直接修改生成副本。现有安装的本地 dispatcher 文件会被安装器保留，更新时对照模板合并并保留本机权限、路径与固定会话；插件缓存中的本地覆盖不能代替源码提交。
 
 ## 默认按事项分流
 

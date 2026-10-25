@@ -176,7 +176,7 @@ class UnixSocketFixture(unittest.TestCase):
 
     def setUp(self):
         # AF_UNIX paths are short; mkdtemp in the system temp dir keeps them under the limit.
-        self.root = Path(tempfile.mkdtemp(prefix="yobiru-sock-")).resolve()
+        self.root = Path(tempfile.mkdtemp(prefix="ishoni-sock-")).resolve()
         self.addCleanup(shutil.rmtree, str(self.root), True)
         os.chmod(str(self.root), 0o700)
         self.thread = str(uuid.uuid4())
