@@ -1,4 +1,4 @@
-# ishoni（ヨビル）
+# Ishoni
 
 <a href="https://github.com/zealton/ishoni"><img src="plugins/ishoni/assets/icon.png" width="112" height="112" alt="ishoni — 橙色小精灵圆胖的头部有两只小眼睛"></a>
 

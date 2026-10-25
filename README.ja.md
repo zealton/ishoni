@@ -1,4 +1,4 @@
-# ishoni（ヨビル）
+# Ishoni
 
 <a href="https://github.com/zealton/ishoni"><img src="plugins/ishoni/assets/icon.png" width="112" height="112" alt="ishoni — オレンジ色の精霊の丸い頭に、小さな二つの目"></a>
 

@@ -1,4 +1,4 @@
-# ishoni (ヨビル) plugin
+# Ishoni plugin
 
 <a href="https://github.com/zealton/ishoni"><img src="assets/icon.png" width="112" height="112" alt="ishoni — two small eyes in the orange spirit's rounded head"></a>
 
