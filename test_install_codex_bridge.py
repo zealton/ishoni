@@ -194,7 +194,9 @@ class InstallTests(unittest.TestCase):
         with contextlib.redirect_stdout(out):
             installer.install(self.args)
         plan = json.loads(out.getvalue())
-        self.assertEqual((True, "/usr/bin/true", custom["dispatcher_instructions"], ["routed-kind"]),
+        # the installer stores the resolved path: on a runner where /usr/bin/true is a symlink (Ubuntu 26's
+        # coreutils alternatives point it at /usr/bin/gnutrue) that differs from the configured spelling
+        self.assertEqual((True, str(Path("/usr/bin/true").resolve()), custom["dispatcher_instructions"], ["routed-kind"]),
                          (plan["allow_replies"], plan["codex_path"], plan["dispatcher_instructions"], plan["excluded_kinds"]))
         self.args.dry_run = False
         self.install()
