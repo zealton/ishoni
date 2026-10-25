@@ -34,7 +34,7 @@ than its own unless you add `--allow-downgrade`, and `doctor` and `update check`
 
 ## 1. Install the plugin
 
-Every install route in the [README](../README.md#install) gives you 0.6.1. To pin the exact version instead:
+Every install route in the [README](GUIDE.md#install) gives you 0.6.1. To pin the exact version instead:
 
 **Release archive** (any host, CLI-only installs, Cursor local plugins, the Grok Bot `/workspace` fallback). From
 <https://github.com/zealton/ishoni/releases/tag/v0.6.1> download `ishoni-0.6.1-plugin.zip` and

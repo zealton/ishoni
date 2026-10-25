@@ -15,11 +15,10 @@ Everything is plain Python 3.8+ with the standard library; no network access is 
 - Host-specific behavior stays in the shared skills: `ishoni-grok-bot` handles the conversation's
   computer and rebuild recovery, while setup, sending and wake configuration use the existing
   skills and runtime. Do not fork the protocol for a marketplace or invent an undocumented manifest.
-- `plugins/ishoni/assets/icon.png` is the approved Image Generation master, shared byte-for-byte
-  with the mark on [github.com/zealton/ishoni](https://github.com/zealton/ishoni). Both plugin manifests and all READMEs use this
-  same asset. Preserve its three petals and the two black eyes at the rounded lower end of the
-  orange petal. Replace it with the approved master when the brand changes; do not redraw it.
-  The demo image's brand edit is recorded in `docs/assets/ishoni-demo.brand-update.prompt.txt`.
+- `plugins/ishoni/assets/icon.png` is the Ishoni mark: two speech bubbles (off-white and orange) on a dark
+  rounded square, rendered from `docs/assets/ishoni-icon.svg`. Both plugin manifests and all READMEs use this
+  same asset; `docs/assets/ishoni-banner.png` is the README banner built from the same mark. Replace both
+  together when the brand changes.
 
 ## Commands
 

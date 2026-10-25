@@ -10,7 +10,7 @@
 
 **Existing configurations keep their previous access policy.** Updating the plugin alone neither
 changes a running receiver nor widens an existing allow list. Migrate each installation deliberately.
-The commands below use the new package's launcher; resolve `Y` as in the [README](../README.md#install).
+The commands below use the new package's launcher; resolve `Y` as in the [README](GUIDE.md#install).
 Add `--home DIR` before each command if this installation uses a non-default data home.
 
 ### Upgrade and select the policy locally

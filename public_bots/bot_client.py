@@ -2303,6 +2303,79 @@ def cmd_bot_link(base, token, bot_id, a):
          "links": link_view(obj.get("links", links))})
 
 
+def cmd_join(st, a):
+    """One command for a colleague's own device: log in with the owner credential the administrator handed over,
+    create (or reuse) a bot with an end-to-end key, bind this device as the bot's native host, and accept every room
+    invitation waiting for the bot. Running it again accepts new invitations only."""
+    import bot_room_client
+    base = norm_url(a.url)
+    try:
+        token = C.read_token_file(a.token_file, "owner")
+    except ValueError as e:
+        die(str(e))
+    me = call(base, "GET", "/v1/owner", None, token)
+
+    def save(creds):
+        creds["gateways"].setdefault(base, {})["owner"] = {"owner_id": me["owner_id"], "token": token,
+                                                          "label": me["label"]}
+    st.update("credentials.json", save)
+    handle = (a.handle or "").strip().lower()
+    if not C.HANDLE_RE.match(handle):
+        die("--handle: 3-32 of a-z 0-9 and single dashes, starting with a letter (your name or your agent's)")
+    bots = call(base, "GET", "/v1/owner/bots", None, token)["bots"]
+    mine = [b for b in bots if (b.get("handle") or "").lstrip("@") == handle]
+    created = False
+    if mine:
+        bot_id = mine[0]["bot_id"]
+    else:
+        obj = call(base, "POST", "/v1/owner/bots", {"handle": handle, "display_name": a.name or handle}, token)
+        bot_id, created = obj["bot_id"], True
+    key = enable_bot_key(st, base, token, bot_id)["e2e"] if gateway_e2e(base) else None
+    worker = ((st.creds()["gateways"].get(base) or {}).get("workers") or {}).get(bot_id)
+    bound = False
+    if not worker or worker.get("adapter") != "native":
+        status, obj = C.api_call(base, "POST", "/v1/owner/bots/%s/workers" % bot_id,
+                                 {"label": a.label, "replace": True, "adapter": "native"}, token)
+        if obj.get("ok") is not True:
+            out(dict(obj, http_status=status))
+            sys.exit(2)
+        store_worker(st, base, bot_id, {"worker_id": obj["worker_id"], "token": obj["token"], "epoch": obj["epoch"],
+                                        "handle": handle, "adapter": "native"})
+        bound = True
+    joined = []
+    for room in call(base, "GET", "/v1/owner/rooms", None, token)["rooms"]:
+        view = call(base, "GET", "/v1/owner/rooms/%s" % room["room_id"], None, token)
+        for m in view.get("members") or []:
+            if m["bot_id"] == bot_id and m["state"] == "invited":
+                res = call(base, "POST", "/v1/owner/rooms/%s/members/%s" % (room["room_id"], bot_id),
+                           {"action": "accept", "mode": a.mode}, token)
+                bot_room_client.pin_members(st, base, res.get("room") or {})
+                joined.append({"room_id": room["room_id"], "name": room["name"], "epoch": res["room"]["epoch"]})
+    rooms = [{"room_id": r["room_id"], "name": r["name"]} for r in call(base, "GET", "/v1/rooms", None,
+                                                                     worker_token(st, base, bot_id))["rooms"]]
+    here = Path(__file__).resolve().parent
+    skill = next((x for x in (here.parent.parent / "skills" / "ishoni-team-room" / "SKILL.md",
+                              here.parent / "plugins" / "ishoni" / "skills" / "ishoni-team-room" / "SKILL.md")
+                  if x.is_file()), "plugins/ishoni/skills/ishoni-team-room/SKILL.md")
+    out({"ok": True, "gateway": base, "bot_id": bot_id, "handle": "@" + handle, "created": created,
+         "e2e": key, "bound_this_device": bound, "joined_now": joined, "rooms": rooms,
+         "tell_your_administrator": "my bot id is %s" % bot_id if not rooms else None,
+         "next": ["ishoni public room sync %s ROOM --mark-read   (every few minutes; a room id is in `rooms`)"
+                  % bot_id,
+                  "ishoni public room post %s ROOM --text ...   (status cards: room status; tasks: room task)"
+                  % bot_id,
+                  "read the team-room skill: %s" % skill],
+         "note": "owner credential, bot key and native binding are all stored in %s on this device"
+                 % st.path("credentials.json")})
+
+
+def worker_token(st, base, bot_id):
+    w = ((st.creds()["gateways"].get(base) or {}).get("workers") or {}).get(bot_id) or {}
+    if not w.get("token"):
+        die("no native binding for %s on this device" % bot_id)
+    return w["token"]
+
+
 def cmd_bot(st, a):
     base, token = owner_session(st, a)
     if a.bot_cmd == "create":
@@ -4189,6 +4262,15 @@ def main(argv=None):
     p.add_argument("--conversation")
     p.add_argument("--as", dest="as_ref")
 
+    pj = sp.add_parser("join", help="colleague: one command that logs in, creates your bot with its key, binds "
+                                   "this device as its host and accepts the room invitations waiting for it")
+    pj.add_argument("url", help="the team gateway, e.g. https://ishoni.example.com")
+    pj.add_argument("--token-file", required=True, help="the owner credential file your administrator gave you")
+    pj.add_argument("--handle", required=True, help="your bot's handle: 3-32 of a-z 0-9 - (your name works)")
+    pj.add_argument("--name", help="display name (default: the handle)")
+    pj.add_argument("--label", default="my agent", help="how this device is described to the gateway")
+    pj.add_argument("--mode", choices=("direct", "review"), default="direct",
+                    help="direct: your agent's posts go out at once; review: you release each by hash")
     po = sp.add_parser("owner", help="owner administration through the owner credential")
     os_ = po.add_subparsers(dest="owner_cmd")
     os_.required = True
@@ -4561,7 +4643,7 @@ def main(argv=None):
                 "unfollow": cmd_unfollow, "following": cmd_following, "contacts": cmd_contacts,
                 "request-friend": cmd_request_friend, "relationship": cmd_relationship, "chat": cmd_chat,
                 "slots": cmd_slots, "status": cmd_status, "pending": cmd_pending, "resend": cmd_resend,
-                "history": cmd_history, "owner": cmd_owner, "bot": cmd_bot, "worker": cmd_worker, "job": cmd_job,
+                "history": cmd_history, "owner": cmd_owner, "join": cmd_join, "bot": cmd_bot, "worker": cmd_worker, "job": cmd_job,
                 "connector": cmd_connector, "binding": cmd_binding, "review": cmd_review, "verifier": cmd_verifier,
                 "e2e": cmd_e2e,
                 "responder": cmd_responder, "inbox": cmd_inbox, "ack": cmd_ack, "decisions": cmd_decisions,

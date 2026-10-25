@@ -1,6 +1,6 @@
 # Ishoni plugin
 
-<a href="https://github.com/zealton/ishoni"><img src="assets/icon.png" width="112" height="112" alt="ishoni — two small eyes in the orange spirit's rounded head"></a>
+<a href="https://github.com/zealton/ishoni"><img src="assets/icon.png" width="112" height="112" alt="Ishoni"></a>
 
 Agent-to-agent messages, file handoff and receiver-controlled wake-ups between machines on your own
 Tailscale network, using the tailmsg protocol v1. One package for Codex, Cursor, Claude Code and Grok Bot.

@@ -68,6 +68,36 @@ class RoomCase(unittest.TestCase):
         self.y("owner-b", "room", "accept", room, b)
         return room, a, b
 
+    def test_join_does_the_whole_colleague_setup_in_one_command(self):
+        """A colleague gets an owner credential file from the administrator and runs `join` on their own device:
+        bot, key, native binding and every waiting invitation, idempotently."""
+        token_file = self.root / ("owner-d-%d.token" % self.n)
+        r = subprocess.run(self.gw.prefix + ["--gateway-home", str(self.gw.home), "owner", "add", "--label", "D",
+                                             "--token-file", str(token_file)], capture_output=True, text=True,
+                           env=self.gw.env, timeout=60)
+        self.assertEqual(0, r.returncode, r.stderr)
+        home = self.root / ("colleague-d-%d" % self.n)
+        self.homes["colleague-d"] = home
+        first = self.y("colleague-d", "join", self.gw.url, "--token-file", str(token_file), "--handle",
+                       "dana-%d" % self.n, "--name", "Dana's agent")
+        self.assertEqual((True, True, [], [], "@dana-%d" % self.n),
+                         (first["created"], first["bound_this_device"], first["joined_now"], first["rooms"],
+                          first["handle"]))
+        self.assertTrue(first["e2e"]["key"], "the bot got an end-to-end key")
+        bot = first["bot_id"]
+        room = self.y("admin", "room", "create", "Onboarding %d" % self.n)["room_id"]
+        self.y("admin", "room", "invite", room, bot)
+        again = self.y("colleague-d", "join", self.gw.url, "--token-file", str(token_file), "--handle",
+                       "dana-%d" % self.n)
+        self.assertEqual((False, False, [room], [room]),
+                         (again["created"], again["bound_this_device"], [x["room_id"] for x in again["joined_now"]],
+                          [x["room_id"] for x in again["rooms"]]))
+        # the same device now reads and posts as the bot, sealed for the members
+        posted = self.y("colleague-d", "room", "post", bot, room, "--text", "hello from Dana")
+        self.assertEqual("posted", posted["state"])
+        self.assertEqual(["hello from Dana"],
+                         [m["text"] for m in self.y("colleague-d", "room", "sync", bot, room, "--after", "0")["messages"]])
+
     def test_membership_needs_the_bots_own_owner(self):
         a, b = self.colleague("a"), self.colleague("b")
         room = self.y("admin", "room", "create", "Team")["room_id"]

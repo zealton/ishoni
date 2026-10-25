@@ -5,6 +5,14 @@ opt-in: the stable update channel, plugin pages and the repository marketplace n
 
 ## Unreleased (fork zealton/ishoni, branch team-rooms)
 
+### Ishoni (this fork)
+
+- `ishoni public join URL --token-file F --handle NAME`: one command on a colleague's own device that logs in,
+  creates the bot with its end-to-end key, binds the device as the bot's host and accepts the room invitations
+  waiting for it; safe to repeat.
+- README rewritten by audience (colleague, administrator), the long version moved to `docs/GUIDE*.md`;
+  new Ishoni mark, banner and screenshots.
+
 Additive: the gateway creates the room tables when they are missing, the schema stays 8, and an older client never
 sees a room. Tested with local gateway processes and synthetic homes (`tests/test_rooms.py`); no real Grok Bot or
 Muse has used a room yet.
