@@ -3397,6 +3397,12 @@ def cmd_friend(st, a):
 
 
 # ---------------------------------------------------------------- connector: wakes the native host
+def cmd_room(st, a):
+    """Team rooms (bot_room_client.py): the owner administers and reviews, the bot's native binding reads and posts."""
+    import bot_room_client
+    bot_room_client.run(st, a, sys.modules[__name__])
+
+
 def cmd_connector(st, a):
     if a.connector_cmd == "bind":
         base, token = owner_session(st, a)
@@ -3725,9 +3731,9 @@ def mcp_identity(st, a):
         if w.get("adapter") != "native":
             die("%s has no native binding credential in this data home (worker login with the binding token)" % a.host)
         colocated_owner(st, base, a)
-        return base, token, "native binding of %s" % bot_id
+        return base, token, "native binding of %s" % bot_id, bot_id
     base, principal, token = caller_session(st, a)
-    return base, token, principal
+    return base, token, principal, None
 
 
 def cmd_mcp(st, a):
@@ -3735,7 +3741,7 @@ def cmd_mcp(st, a):
     the /mcp endpoint of the exact gateway the credential belongs to, with that credential: the agent never sees
     it. ping is answered here; notifications need no answer. stdout carries only protocol messages (one per line);
     everything else goes to stderr."""
-    base, token, label = mcp_identity(st, a)
+    base, token, label, host_bot = mcp_identity(st, a)
     proto = os.fdopen(os.dup(1), "wb", buffering=0)
     os.dup2(2, 1)                                     # a stray print can never corrupt the protocol stream
     sys.stdout = sys.stderr
@@ -3776,6 +3782,27 @@ def cmd_mcp(st, a):
         if msg["method"] == "ping":
             send(M.result(msg["id"], {}))
             continue
+        params = msg.get("params") or {}
+        tool_name = params.get("name") if msg["method"] == "tools/call" else None
+        if host_bot and tool_name == "yobiru_room_post":
+            # sealed here, with this device's keys, for the room's current members: the gateway sees ciphertext
+            import bot_room_client
+            tool = M.TOOL_INDEX.get(("host", tool_name))
+            args = params.get("arguments") or {}
+            err = M.schema_error(tool["inputSchema"], args)
+            if err:
+                send(M.result(msg["id"], M.tool_error("invalid_arguments", err)))
+                continue
+            try:
+                status, body = bot_room_client.mcp_post(st, base, host_bot, token, args)
+            except (C.ApiError, ValueError) as e:
+                detail = e.code if isinstance(e, C.ApiError) else "invalid answer"
+                send(M.result(msg["id"], M.tool_error("gateway_unreachable", "the gateway could not be reached (%s): "
+                                                      "the outcome is unknown; retry with the same arguments" % detail,
+                                                      503)))
+                continue
+            send(M.result(msg["id"], M.tool_result(status, body)))
+            continue
         headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json",
                    "Accept": "application/json, text/event-stream"}
         if msg["method"] != "initialize":
@@ -3798,7 +3825,13 @@ def cmd_mcp(st, a):
         if msg["method"] == "initialize" and isinstance(answer.get("result"), dict):
             version = answer["result"].get("protocolVersion")
         result = answer.get("result")
-        if msg["method"] == "tools/call" and isinstance(result, dict) and not result.get("isError") and \
+        if host_bot and tool_name in M.ROOM_TOOLS and isinstance(result, dict) and not result.get("isError"):
+            import bot_room_client
+            data = bot_room_client.mcp_open(st, base, tool_name, params.get("arguments") or {},
+                                            result["structuredContent"])
+            answer["result"] = dict(result, structuredContent=data, content=[
+                {"type": "text", "text": json.dumps(data, ensure_ascii=False, sort_keys=True)}])
+        elif msg["method"] == "tools/call" and isinstance(result, dict) and not result.get("isError") and \
                 json.dumps(result.get("structuredContent")).find('"sealed"') >= 0:
             # sealed bodies are opened here, with this device's keys: the agent reads text, never envelopes
             data = unseal(st, base, result["structuredContent"])
@@ -4506,6 +4539,9 @@ def main(argv=None):
     p.add_argument("--label", default="calendar")
     p.add_argument("--gateway")
 
+    import bot_room_client
+    bot_room_client.add_parser(sp)
+
     pr = sp.add_parser("responder", help="the deterministic responder's owner-written answers")
     rs = pr.add_subparsers(dest="responder_cmd")
     rs.required = True
@@ -4529,7 +4565,8 @@ def main(argv=None):
                 "connector": cmd_connector, "binding": cmd_binding, "review": cmd_review, "verifier": cmd_verifier,
                 "e2e": cmd_e2e,
                 "responder": cmd_responder, "inbox": cmd_inbox, "ack": cmd_ack, "decisions": cmd_decisions,
-                "verify": cmd_verify, "attachments": cmd_attachments, "mcp": cmd_mcp, "friend": cmd_friend}
+                "verify": cmd_verify, "attachments": cmd_attachments, "mcp": cmd_mcp, "friend": cmd_friend,
+                "room": cmd_room}
     handlers[a.cmd](st, a)
     return 0
 

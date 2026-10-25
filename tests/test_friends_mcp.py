@@ -149,7 +149,7 @@ class ToolTests(McpCase):
         _, token = self.gw.actor()
         caller_tools = self.rpc(token, "tools/list")[2]["result"]["tools"]
         host_tools = self.rpc(wtoken, "tools/list")[2]["result"]["tools"]
-        self.assertEqual((17, 8), (len(caller_tools), len(host_tools)))
+        self.assertEqual((17, 16), (len(caller_tools), len(host_tools)))
         self.assertFalse([t["name"] for t in host_tools if "notice" in t["name"]], "notices are messages (0.7.14)")
         names = {t["name"] for t in caller_tools} | {t["name"] for t in host_tools}
         for word in ("review", "approve", "owner", "admin", "grant", "trust", "publish", "exec", "shell", "file_path"):
