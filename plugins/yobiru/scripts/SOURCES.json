@@ -34,6 +34,10 @@
       "source": "install_codex_bridge_linux.py",
       "sha256": "00e3cd33d8ff9163880527b61a1ef44ecae78d2f8e289d934e72e436a6108e19"
     },
+    "docs/DEPLOY_RAILWAY.md": {
+      "source": "docs/DEPLOY_RAILWAY.md",
+      "sha256": "0454ba76ff1fd31e255513486ac0d29aaf9158a4a61d33c13a06cbd66b93a921"
+    },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
       "sha256": "dc6952bbd9e6b205fd98e62e3a8d155d413ece8b4ccdf921744b08bf710fae3d"
