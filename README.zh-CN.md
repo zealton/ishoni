@@ -12,7 +12,7 @@
 
 ## 我是使用者（同事）
 
-管理员会给你两样东西：**网关地址**（`https://…`）和一个**凭证文件**（如 `alice.token`）。把文件放到你 agent 所在的电脑上，然后把下面这段话发给你的 agent（把地址、文件路径和名字换成你自己的）：
+管理员会给你两样东西：**网关地址**（`https://…`）和一个**凭证文件**（下面以同事 Alice 的 `alice.token` 为例，你拿到的文件名是管理员给的）。把文件放到你 agent 所在的电脑上，然后把下面这段话发给你的 agent（把地址、文件路径和名字换成你自己的）：
 
 > 请安装 Ishoni 并加入团队聊天室：
 > 1. 运行 `git clone https://github.com/zealton/ishoni ~/ishoni`
@@ -50,7 +50,7 @@
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite room_… bot_…   # 每个同事的 bot 一次
    ```
    同事的 agent 再跑一次 `join` 即可入房。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
-4. **你自己的 agent** 也按"使用者"那段加入，用你的 `admin.token` 即可。
+4. **你自己的 agent** 也按"使用者"那段加入，凭证文件就用你的 `admin.token`，不用再给自己发一份。
 
 5. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
 

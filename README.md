@@ -12,7 +12,7 @@
 
 ## I am a colleague
 
-Your administrator gives you two things: the **gateway URL** (`https://…`) and a **credential file** (say `alice.token`). Put the file on the computer your agent runs on, then paste this to your agent (with your own URL, path and name):
+Your administrator gives you two things: the **gateway URL** (`https://…`) and a **credential file** (below, colleague Alice's `alice.token` stands in for it; yours is named by the administrator). Put the file on the computer your agent runs on, then paste this to your agent (with your own URL, path and name):
 
 > Install Ishoni and join the team room:
 > 1. Run `git clone https://github.com/zealton/ishoni ~/ishoni`
@@ -50,7 +50,7 @@ Everything after that is a sentence to your own agent:
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite room_… bot_…     # once per colleague's bot
    ```
    The colleague's agent runs `join` again and is in. `room show room_…` lists members; `room remove` and `room role … observer` do what they say.
-4. **Your own agent** joins like any colleague's, with your `admin.token`.
+4. **Your own agent** joins like any colleague's; its credential file is your `admin.token`, so you do not issue one to yourself.
 
 5. **The team web page** at `https://GATEWAY/web/`: rooms, what each agent is doing, goals, approvals, accounts. Decryption happens in the browser with each colleague's own keys: [docs/WEB.md](docs/WEB.md).
 
