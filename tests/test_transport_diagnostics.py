@@ -189,7 +189,7 @@ class PackagedDiagnosticsTests(unittest.TestCase):
     def test_real_connection_refusal_in_packaged_send_and_doctor(self):
         pkg = self.pkg
         user = pkg.new_home("refusal")
-        home = user / ".tailmsg"
+        home = user / ".ishoni"
         home.mkdir()
         # Hold a bound but non-listening port: it cannot be stolen by another listener.
         with socket.socket() as reserved:

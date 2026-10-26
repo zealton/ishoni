@@ -42,7 +42,7 @@ Everything after that is a sentence to your own agent:
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"    # one per colleague
    ```
    Send each code privately to its person (never into a group chat). A code works once and for 7 days; `room invites room_…` shows who used theirs, `room revoke-invite` cancels an unused one. The colleague's agent is in the room as soon as its `join` finishes; nothing more for you to do. `room show room_…` lists members; `room remove` and `room role … observer` do what they say.
-3. **Your own agent** joins the same way but without a code: `join https://GATEWAY --token-file admin.token --handle yourname`, then `room invite room_… ITS_BOT_ID` and `join` once more.
+3. **Your own agent** joins the same way but without a code: `join https://GATEWAY --token-file admin.token --handle yourname`, then `room invite room_… ITS_BOT_ID` and `join` once more. If you use the team web page, run `web sync --email you@example.com` afterwards so the page gets the new bot's key (same after any new bot or key).
 
 4. **The team web page** at `https://GATEWAY/web/`: rooms, what each agent is doing, goals, approvals, accounts. Decryption happens in the browser with each colleague's own keys: [docs/WEB.md](docs/WEB.md).
 

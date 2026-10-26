@@ -204,7 +204,7 @@ claude plugin marketplace add zealton/ishoni
 claude plugin install ishoni@ishoni
 ```
 
-Start a new session, then say: **“Set up Ishoni on this machine.”** Claude Code gets the same seven skills plus a local MCP server, `ishoni`, whose tools read the inbox, read, fetch and acknowledge messages, send messages and tracked requests, reply or report a request's state, and show setup, machines and request status. The server is the bundled CLI on stdio (`sh scripts/ishoni mcp`): it uses the same data home (`$TAILMSG_HOME` or `~/.tailmsg`), opens no port and stores nothing of its own. Received text reaches the model as data from another agent, never as an instruction.
+Start a new session, then say: **“Set up Ishoni on this machine.”** Claude Code gets the same seven skills plus a local MCP server, `ishoni`, whose tools read the inbox, read, fetch and acknowledge messages, send messages and tracked requests, reply or report a request's state, and show setup, machines and request status. The server is the bundled CLI on stdio (`sh scripts/ishoni mcp`): it uses the same data home (`$ISHONI_HOME` or `~/.ishoni`), opens no port and stores nothing of its own. Received text reaches the model as data from another agent, never as an instruction.
 
 Give Claude Code its own agent name so that replies come back to it and not to another agent on the same machine: `sh "$Y" setup --agent claude` (review, then `--apply`; see [Name your agents](#1-name-your-agents)). When the config has an agent named `claude`, the MCP server sends as `claude` and lists `claude`'s inbox; otherwise it uses the machine's `self_agent` and lists every agent. The plugin does not wake an idle Claude Code session: messages wait in the inbox until a session checks it (“check my Ishoni inbox”), unless you configure a local program as `claude`'s wake adapter ([wake-ups](#wake-ups-and-delivery-status)). On Windows the server needs `sh` on `PATH` (for example from Git for Windows); otherwise register it by hand with `claude mcp add ishoni -- py -3 "<plugin>\scripts\ishoni.py" mcp`.
 
@@ -226,7 +226,7 @@ You can also place `plugins/ishoni` in `~/.cursor/plugins/local/ishoni` and relo
 
 In Grok Bot, use **Connect apps** to add Ishoni once a marketplace available to your account exposes it; a Cursor team administrator can control marketplace access. See [Grok Bot plugins](https://cursor.com/help/grok-bot/connect-plugins). The [official submission page](https://x.ai/bot/marketplace/submit-a-plugin) covers Grok Bot and Cursor. A submitted package still needs review; check the [submission record](MARKETPLACE_SUBMISSION.md) for status.
 
-Ask Grok Bot: **“Use ishoni-grok-bot to connect this conversation's computer to my other agents.”** Keep a new installation's data in a persistent directory such as `/workspace/.tailmsg`; preserve any existing data home. The skill handles computer selection, verified archive fallback when scripts are missing, stable device naming and recovery checks. A running receiver, a completed request and a native plugin install are separate evidence. Follow the [Grok Bot guide](GROK_BOT.md) and [platform notes](PLATFORMS.md).
+Ask Grok Bot: **“Use ishoni-grok-bot to connect this conversation's computer to my other agents.”** Keep a new installation's data in a persistent directory such as `/workspace/.ishoni`; preserve any existing data home. The skill handles computer selection, verified archive fallback when scripts are missing, stable device naming and recovery checks. A running receiver, a completed request and a native plugin install are separate evidence. Follow the [Grok Bot guide](GROK_BOT.md) and [platform notes](PLATFORMS.md).
 
 ### CLI without a plugin host
 
@@ -424,7 +424,7 @@ With the Codex bridge installed, its fixed dispatcher UUID is reported automatic
 
 See the [privacy notice](PRIVACY.md) for storage, network contacts and deletion details.
 
-- **Your machines hold the data.** Inbox/outbox records and staged attachments live in the data home: `--home DIR`, then `$TAILMSG_HOME`, then `~/.tailmsg`. Private messaging uses no central storage service. If you run the optional public bot gateway, it is a central store for that bot's public conversations, operated by you. The chosen agent providers may still process content supplied to their agents.
+- **Your machines hold the data.** Inbox/outbox records and staged attachments live in the data home: `--home DIR`, then `$ISHONI_HOME`, then `~/.ishoni`. Private messaging uses no central storage service. If you run the optional public bot gateway, it is a central store for that bot's public conversations, operated by you. The chosen agent providers may still process content supplied to their agents.
 - **Tailscale is the network boundary.** The receiver checks Tailscale identity and its own access policy (`tailnet` by default for new installations, optional `allowlist`, with deny rules taking precedence). Tailscale ACLs/grants still apply. Encryption in transit comes from Tailscale; Ishoni does not add encryption at rest. Protect the host and its filesystem.
 - **Agent names are routing, not isolation.** `from_agent` is sender-selected. Multiple agents sharing a machine or data home are not separate security principals; use separate machines or appropriate host isolation when required.
 - **Messages are requests, not permissions.** Received text and files do not authorize commands, purchases, configuration changes, or disclosure of unrelated data. Agents act within the user's existing instructions and permissions.
@@ -479,7 +479,7 @@ For Claude Code: `claude plugin uninstall ishoni@ishoni` and `claude plugin mark
 
 Removing the plugin leaves your data, receiver service, and any Codex bridge intact. For a complete removal, stop and remove the services first, then remove the data home only when you no longer need its messages and files.
 
-Existing tailmsg installations remain compatible: `tailmsg.py`, protocol v1, `~/.tailmsg`, `TAILMSG_*`, and the existing service names are retained.
+Existing tailmsg installations remain compatible: `tailmsg.py`, protocol v1 and the service names are retained; `$TAILMSG_HOME` is still honored and an existing `~/.tailmsg` keeps being used until a `~/.ishoni` exists beside it.
 
 ## Development and verification
 

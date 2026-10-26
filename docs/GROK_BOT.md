@@ -45,11 +45,11 @@ On that computer, use the verified plugin's absolute launcher path, represented 
 
 ```sh
 sh "$Y" paths
-sh "$Y" --home /workspace/.tailmsg onboard
-sh "$Y" --home /workspace/.tailmsg doctor
+sh "$Y" --home /workspace/.ishoni onboard
+sh "$Y" --home /workspace/.ishoni doctor
 ```
 
-`/workspace/.tailmsg` is a suggested new data home; preserve an existing installation's actual
+`/workspace/.ishoni` is a suggested new data home; preserve an existing installation's actual
 home. These checks identify missing Python, Tailscale, sign-in, receiver or delivery configuration.
 They do not install software or change permissions. Ishoni needs a usable Tailscale interface,
 not just a userspace proxy. If the computer lacks the required privileges or `/dev/net/tun`, follow
@@ -141,7 +141,7 @@ replacement for configuring an arbitrary Linux daemon.
 For a new setup, choose storage that this host confirms survives the relevant image update and is
 suitable for private daemon state. `/home/box` may be used only with that confirmation for the current
 installation; the cited official guidance does not guarantee it. Existing Ishoni data homes remain
-unchanged: `--home DIR` overrides `$TAILMSG_HOME`, otherwise the default is `~/.tailmsg`. Always pass
+unchanged: `--home DIR` overrides `$ISHONI_HOME` (or `$TAILMSG_HOME`), otherwise the default is `~/.ishoni`, or an existing `~/.tailmsg`. Always pass
 the selected absolute home in recovery commands; a different shell user can have a different default.
 
 For an existing installation, use this sequence only within the owner's migration/repair authorization:

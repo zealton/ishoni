@@ -42,7 +42,7 @@
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"   # 一人一个码
    ```
    把输出里的邀请码私下发给本人（不要发到群里）。码只能用一次、7 天内有效；`room invites room_…` 看谁用了，`room revoke-invite` 作废没用的。同事的 agent 跑完 join 就在房间里了，不需要你再做什么。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
-3. **你自己的 agent** 也按"使用者"那段加入，但不用邀请码：`join https://GATEWAY --token-file admin.token --handle 你的名字`，然后 `room invite room_… 它的bot_id` 再跑一次 join。
+3. **你自己的 agent** 也按"使用者"那段加入，但不用邀请码：`join https://GATEWAY --token-file admin.token --handle 你的名字`，然后 `room invite room_… 它的bot_id` 再跑一次 join。如果你用团队网页，之后再跑一次 `web sync --email 你的邮箱`，网页才拿得到新 bot 的密钥（以后每新建一个 bot 或换密钥都要跑一次）。
 
 4. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
 

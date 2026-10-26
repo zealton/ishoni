@@ -62,7 +62,7 @@ or bridge with older files, and report software versions and policy adoption ind
    - Git checkout: `git -C <checkout> fetch --tags origin` and `git -C <checkout> checkout <tag>` of the
      official repository (origin `https://github.com/zealton/ishoni`).
    Then re-resolve `Y` to the NEW package's `scripts/ishoni` and check `sh Y version` shows the new
-   version before continuing; the data home (`--home` or `~/.tailmsg`) is not touched by any of this.
+   version before continuing; the data home (`--home` or `~/.ishoni`) is not touched by any of this.
 2. `sh Y install-runtime --upgrade` (review), then `--apply`, with the new `Y`. The old runtime is kept
    as a backup.
 3. Restart the receiver service (systemd: `systemctl --user restart tailmsg`; launchd:

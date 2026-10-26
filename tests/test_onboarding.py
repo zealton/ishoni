@@ -142,7 +142,7 @@ class PlatformGuidanceTests(unittest.TestCase):
 class Base(unittest.TestCase):
     def setUp(self):
         self.user = PKG.new_home("home %s" % self.id().rsplit(".", 1)[-1])
-        self.home = self.user / ".tailmsg"
+        self.home = self.user / ".ishoni"
 
     def run_json(self, *args, **kw):
         return PKG.run_json(list(args), self.user, **kw)

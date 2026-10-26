@@ -24,7 +24,7 @@
     },
     "scripts/codex_bridge/CODEX_SANDBOX.md": {
       "source": "docs/CODEX_SANDBOX.md",
-      "sha256": "8c880885f8479115dbf78f80a82ad89999d4178b1696d3ae7fec6ad773578146"
+      "sha256": "36bb896f5ba430fdd1ad249c2035ec6259803e10e5cd59a74e4f074cd7ad380c"
     },
     "scripts/codex_bridge/install_codex_bridge.py": {
       "source": "install_codex_bridge.py",

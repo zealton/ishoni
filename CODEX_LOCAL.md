@@ -33,7 +33,7 @@ Tailscale 身份校验 → Tailmsg inbox
 python3 install_codex_bridge.py --thread-id <固定入口 UUID>
 ```
 
-安装器复制适配器到 `~/.tailmsg/codex-local/`，保存配置 `~/.tailmsg/codex-bridge.json`、状态 `~/.tailmsg/codex-bridge/bridge.sqlite3`，将 `agents.codex.wake_adapter` 指向快速入队命令，并安装 `dev.tailmsg.codex-bridge` LaunchAgent。既有 receiver 由 `dev.tailmsg` 继续管理，原来的 Codex GUI/Tailscale 门控不变。
+安装器复制适配器到 `~/.ishoni/codex-local/`，保存配置 `~/.ishoni/codex-bridge.json`、状态 `~/.ishoni/codex-bridge/bridge.sqlite3`，将 `agents.codex.wake_adapter` 指向快速入队命令，并安装 `dev.tailmsg.codex-bridge` LaunchAgent。既有 receiver 由 `dev.tailmsg` 继续管理，原来的 Codex GUI/Tailscale 门控不变。
 
 更新已有安装时仍使用同一 UUID；安装器拒绝用新 UUID 覆盖已有入口，避免把旧队列投给其他会话。安装器保留旧代码、指令、配置、安装回执和服务文件的时间戳备份，位置记在安装回执中。另一个 codex wake adapter 已存在时会拒绝覆盖。`--no-start` 可只安装而不重新加载服务。
 
@@ -42,15 +42,15 @@ python3 install_codex_bridge.py --thread-id <固定入口 UUID>
 ## 检查与恢复
 
 ```sh
-python3 ~/.tailmsg/codex-local/codex_bridge.py --config ~/.tailmsg/codex-bridge.json status
+python3 ~/.ishoni/codex-local/codex_bridge.py --config ~/.ishoni/codex-bridge.json status
 launchctl print gui/$(id -u)/dev.tailmsg.codex-bridge
-tail -30 ~/.tailmsg/codex-bridge/service.log
+tail -30 ~/.ishoni/codex-bridge/service.log
 tailmsg inbox --pending --agent codex
 ```
 
 `wake <inbox JSON路径>` 只入本地队列并快速返回；`scan` 补扫且执行到期投递；`daemon` 循环扫描；`status` 输出队列状态，不输出消息正文。`uncertain` 需要先检查官方入口的消息记录，确认是否入队，不能直接删除状态并重发。
 
-停止适配器：`launchctl bootout gui/$(id -u)/dev.tailmsg.codex-bridge`。完整回滚：先读取 `~/.tailmsg/codex-bridge/installation.json` 的 `backup` 路径，再运行 `python3 install_codex_bridge.py --rollback <backup路径>`。它恢复那一版代码、指令、配置和服务状态，重新加载既有 `dev.tailmsg`；不删除消息、队列、处理记录或入口会话。
+停止适配器：`launchctl bootout gui/$(id -u)/dev.tailmsg.codex-bridge`。完整回滚：先读取 `~/.ishoni/codex-bridge/installation.json` 的 `backup` 路径，再运行 `python3 install_codex_bridge.py --rollback <backup路径>`。它恢复那一版代码、指令、配置和服务状态，重新加载既有 `dev.tailmsg`；不删除消息、队列、处理记录或入口会话。
 
 ## Linux（user systemd + app-server）
 

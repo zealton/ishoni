@@ -30,7 +30,7 @@ def tearDownModule():
 class Base(unittest.TestCase):
     def setUp(self):
         self.user = PKG.new_home("home %s" % self.id().rsplit(".", 1)[-1])
-        self.home = self.user / ".tailmsg"
+        self.home = self.user / ".ishoni"
 
     def write_config(self, cfg, home=None):
         home = home or self.home
@@ -74,9 +74,22 @@ class LocateTests(Base):
                            capture_output=True, text=True)
         d = json.loads(r.stdout)
         self.assertEqual(str(self.user / "custom home"), d["home"])
-        self.assertEqual("$TAILMSG_HOME", d["home_source"])
+        self.assertEqual("$TAILMSG_HOME", d["home_source"], "the upstream variable still counts")
+        env = PKG.env(self.user, extra={"ISHONI_HOME": str(self.user / "new home"),
+                                        "TAILMSG_HOME": str(self.user / "custom home")})
+        r = subprocess.run([sys.executable, str(PKG.entry), "paths"], env=env, cwd=str(PKG.work),
+                           capture_output=True, text=True)
+        d = json.loads(r.stdout)
+        self.assertEqual((str(self.user / "new home"), "$ISHONI_HOME"), (d["home"], d["home_source"]))
         r, d = PKG.run_json(["--home", str(self.user / "explicit"), "paths"], self.user)
         self.assertEqual("--home", d["home_source"])
+        # a computer set up before the rename keeps its ~/.tailmsg until a ~/.ishoni exists beside it
+        (self.user / ".tailmsg").mkdir()
+        r, d = PKG.run_json(["paths"], self.user)
+        self.assertEqual((str(self.user / ".tailmsg"), "default (existing ~/.tailmsg)"), (d["home"], d["home_source"]))
+        (self.user / ".ishoni").mkdir()
+        r, d = PKG.run_json(["paths"], self.user)
+        self.assertEqual((str(self.user / ".ishoni"), "default"), (d["home"], d["home_source"]))
 
     def test_documented_skill_relative_path_reaches_the_command(self):
         for skill in sorted((PKG.plugin / "skills").iterdir()):

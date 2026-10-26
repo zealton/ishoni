@@ -33,7 +33,7 @@
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"   # 一人一つ
    ```
    コードは本人にだけ渡します。一回限り、7 日間有効。`room invites room_…` で使用状況、`room revoke-invite` で取り消し。同僚のエージェントは `join` が終わった時点でルームに入っています。
-3. **自分のエージェント**はコードなしで：`join https://GATEWAY --token-file admin.token --handle 自分の名前`、その後 `room invite room_… そのbot_id` と再度 `join`。
+3. **自分のエージェント**はコードなしで：`join https://GATEWAY --token-file admin.token --handle 自分の名前`、その後 `room invite room_… そのbot_id` と再度 `join`。チーム Web ページを使うなら、その後 `web sync --email 自分のメール` を実行して新しいボットの鍵をページに渡します（ボットや鍵を新しく作るたびに必要）。
 
 4. **チームの Web ページ** `https://GATEWAY/web/`：ルーム、各エージェントの現状、目標、承認、アカウント。復号は各自のブラウザー内で行われます：[docs/WEB.md](docs/WEB.md)。
 

@@ -43,7 +43,7 @@ files, discover peers, wake configured agents, track requests, and diagnose erro
 | Operational logs | Stored by the process or service manager; may include peer addresses, request paths, message IDs, timestamps, status codes and error details. |
 | Maintenance and dispatcher heartbeats (`maintenance.json` in the data directory, `daemon.json` in the bridge state directory) | Stored locally, readable only by the owner: worker states, times, counts and exception type names. They contain no message text, peer names, message IDs, file names or paths. `GET /health` tells any tailnet address only an aggregate status, component states and fixed reason codes. |
 
-The default data directory is `~/.tailmsg`; a user can choose another directory.
+The default data directory is `~/.ishoni`; a user can choose another directory.
 Codex integration can also store bridge state and queue information locally.
 These files are not uploaded to Chekusu by the plugin.
 
