@@ -16,9 +16,10 @@ COPY deploy/railway/entrypoint.sh /app/entrypoint.sh
 COPY deploy/railway/litestream.yml /app/litestream.yml
 RUN chmod 0755 /app/entrypoint.sh
 
-# The volume mounted here holds gateway.json, gateway.sqlite3, the gateway's own key files and blobs.
+# The platform's volume mounted at /data holds gateway.json, gateway.sqlite3, the gateway's own key files and blobs.
+# No VOLUME instruction: Railway rejects a Dockerfile that declares one ("use Railway Volumes"); other hosts mount /data
+# with their own `-v` or volume setting (see the local check in docs/DEPLOY_RAILWAY.md).
 ENV ISHONI_GATEWAY_HOME=/data/gw
-VOLUME ["/data"]
 EXPOSE 7780
 # No USER here: the entrypoint starts as root only to hand the volume to `ishoni`, then re-executes itself as that user.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
