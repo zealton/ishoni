@@ -2303,6 +2303,12 @@ def cmd_bot_link(base, token, bot_id, a):
          "links": link_view(obj.get("links", links))})
 
 
+def cmd_web(st, a):
+    """The team web page (bot_web_client.py): seal this device's credentials into a password vault."""
+    import bot_web_client
+    bot_web_client.run(st, a, sys.modules[__name__])
+
+
 def cmd_join(st, a):
     """One command for a colleague's own device: log in with the owner credential the administrator handed over,
     create (or reuse) a bot with an end-to-end key, bind this device as the bot's native host, and accept every room
@@ -4623,6 +4629,8 @@ def main(argv=None):
 
     import bot_room_client
     bot_room_client.add_parser(sp)
+    import bot_web_client
+    bot_web_client.add_parser(sp)
 
     pr = sp.add_parser("responder", help="the deterministic responder's owner-written answers")
     rs = pr.add_subparsers(dest="responder_cmd")
@@ -4643,7 +4651,7 @@ def main(argv=None):
                 "unfollow": cmd_unfollow, "following": cmd_following, "contacts": cmd_contacts,
                 "request-friend": cmd_request_friend, "relationship": cmd_relationship, "chat": cmd_chat,
                 "slots": cmd_slots, "status": cmd_status, "pending": cmd_pending, "resend": cmd_resend,
-                "history": cmd_history, "owner": cmd_owner, "join": cmd_join, "bot": cmd_bot, "worker": cmd_worker, "job": cmd_job,
+                "history": cmd_history, "owner": cmd_owner, "join": cmd_join, "web": cmd_web, "bot": cmd_bot, "worker": cmd_worker, "job": cmd_job,
                 "connector": cmd_connector, "binding": cmd_binding, "review": cmd_review, "verifier": cmd_verifier,
                 "e2e": cmd_e2e,
                 "responder": cmd_responder, "inbox": cmd_inbox, "ack": cmd_ack, "decisions": cmd_decisions,

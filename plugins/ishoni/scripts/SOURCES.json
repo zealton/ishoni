@@ -44,7 +44,19 @@
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "58b555e7c029346b5c4705b7e087335b8149f9a88e1a5b8434a654be04d14f05"
+      "sha256": "c60e65a9c8305fe02700e7f76f4526d252f72d2c146b23ff0fb362f50203112b"
+    },
+    "docs/WEB.md": {
+      "source": "docs/WEB.md",
+      "sha256": "7751a9619691af7c8d6758f15f8abc35eeda05f902c48ad15a7cf7462c305464"
+    },
+    "docs/assets/web-review.png": {
+      "source": "docs/assets/web-review.png",
+      "sha256": "e46aae93eb6416c8b07ba37fead814bb1467df00ddf7ba308beb55065f570e56"
+    },
+    "docs/assets/web-room.png": {
+      "source": "docs/assets/web-room.png",
+      "sha256": "e6d08b2e7fff197b673c0ac7a3bc025771c0836b49ff6fd0dcb86e2f438712de"
     },
     "scripts/public_bots/bot_agents.py": {
       "source": "public_bots/bot_agents.py",
@@ -60,11 +72,11 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "15de72c2c2809ef4e5815d6cf7d8fd7921237a9ce244e7bd721af99c73efa063"
+      "sha256": "75520742c6a462baefbd51d5b8a5627cb67f0d590f494f0c5f77fd507e4e0138"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",
-      "sha256": "8628565de251d1462734fc6d0fb8de16928f469165086ee30f51669ea9ca6235"
+      "sha256": "fbfebb060fa0bb00e9589eba3b118cc6e7897bd5abaa1e2a5ff46732d43f6536"
     },
     "scripts/public_bots/bot_e2e.py": {
       "source": "public_bots/bot_e2e.py",
@@ -72,7 +84,7 @@
     },
     "scripts/public_bots/bot_gateway.py": {
       "source": "public_bots/bot_gateway.py",
-      "sha256": "b3163a2fdd3e9f53466b9ce8c09fa1f1c2c920eb754562b4f5822f3d96f1042d"
+      "sha256": "de15641256cf5bb9771c73beeac0febb9f86fd0a156a0acfc09b4e6e4ff0411e"
     },
     "scripts/public_bots/bot_links.py": {
       "source": "public_bots/bot_links.py",
@@ -100,7 +112,31 @@
     },
     "scripts/public_bots/bot_rooms.py": {
       "source": "public_bots/bot_rooms.py",
-      "sha256": "ebeff196db3ee11bc27f1276b7aa8af004aa956f793ea3d808916b5e2850f58f"
+      "sha256": "9c24d785b69c1c55e092f5eaf6f6b08ac07f644f8bf0061f83a5299d13953bcd"
+    },
+    "scripts/public_bots/bot_web.py": {
+      "source": "public_bots/bot_web.py",
+      "sha256": "28b9e0321217d0e470ff822c30d8a5971ff598595ece237500e748b96bb4db1a"
+    },
+    "scripts/public_bots/bot_web_client.py": {
+      "source": "public_bots/bot_web_client.py",
+      "sha256": "9fb5a99f37a2142d47e15ed03aa5e0f640799b18377b2951d0fd0bc907681c8e"
+    },
+    "scripts/public_bots/web/app.css": {
+      "source": "public_bots/web/app.css",
+      "sha256": "358f8300722339da80c782d349d6d9224a920477b9ec0fbf15b5322d68acdc65"
+    },
+    "scripts/public_bots/web/app.js": {
+      "source": "public_bots/web/app.js",
+      "sha256": "a1753a152a53c85cab07917022bc60d3049e753204aec03e9e5476dd965655d6"
+    },
+    "scripts/public_bots/web/crypto.js": {
+      "source": "public_bots/web/crypto.js",
+      "sha256": "e2ceeb52569c19b4df98351af1c1c11df4a3ae28738c3fdbfc81c71bac279359"
+    },
+    "scripts/public_bots/web/index.html": {
+      "source": "public_bots/web/index.html",
+      "sha256": "017c1684c5fb25dbf2d874cd8f031b47bc012aa6748499ec7851c256941e657a"
     },
     "LICENSE": {
       "source": "LICENSE",

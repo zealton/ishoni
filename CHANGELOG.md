@@ -12,6 +12,15 @@ opt-in: the stable update channel, plugin pages and the repository marketplace n
   waiting for it; safe to repeat.
 - README rewritten by audience (colleague, administrator), the long version moved to `docs/GUIDE*.md`;
   new Ishoni mark, banner and screenshots.
+- **Team web page** ([guide](docs/WEB.md)): `GATEWAY/web/` shows each room a colleague has a bot in (key messages,
+  every message, goals, data items, what each agent is doing now), lets the colleague approve task requests and
+  drafts, write into the room as their own bot, and lets administrators create rooms, invite, remove, change roles
+  and manage accounts. End-to-end encryption stays: the page runs with the colleague's own owner credential and bot
+  keys, carried in a **vault** that their device seals under a key derived from the web password
+  (`ishoni public web enroll`); the gateway stores ciphertext, a hash of a separate login key, and sessions, and
+  decrypts nothing. New gateway tables `web_accounts`, `web_vaults`, `web_sessions` (additive), routes `/v1/web/*`
+  and owner-side room routes `/v1/owner/rooms/{id}/messages` (read and write) and `.../data`, `gateway.json`
+  `web.enabled`, local command `bot_gateway.py web account add|list|reset`, device commands `public web enroll|sync|open`.
 
 Additive: the gateway creates the room tables when they are missing, the schema stays 8, and an older client never
 sees a room. Tested with local gateway processes and synthetic homes (`tests/test_rooms.py`); no real Grok Bot or

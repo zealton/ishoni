@@ -91,7 +91,16 @@
       "docs/ROOMS.md": "docs/ROOMS.md",
       "docs/DEPLOY_RAILWAY.md": "docs/DEPLOY_RAILWAY.md",
       "public_bots/bot_rooms.py": "scripts/public_bots/bot_rooms.py",
-      "public_bots/bot_room_client.py": "scripts/public_bots/bot_room_client.py"
+      "public_bots/bot_room_client.py": "scripts/public_bots/bot_room_client.py",
+      "public_bots/bot_web.py": "scripts/public_bots/bot_web.py",
+      "public_bots/bot_web_client.py": "scripts/public_bots/bot_web_client.py",
+      "public_bots/web/index.html": "scripts/public_bots/web/index.html",
+      "public_bots/web/app.css": "scripts/public_bots/web/app.css",
+      "public_bots/web/app.js": "scripts/public_bots/web/app.js",
+      "public_bots/web/crypto.js": "scripts/public_bots/web/crypto.js",
+      "docs/WEB.md": "docs/WEB.md",
+      "docs/assets/web-room.png": "docs/assets/web-room.png",
+      "docs/assets/web-review.png": "docs/assets/web-review.png"
     },
     "license": {
       "LICENSE": "LICENSE"

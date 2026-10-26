@@ -119,17 +119,35 @@ ROUTES = [
     ("GET", r"/v1/owner/rooms/(?P<rid>%s)/reviews" % ROOM_ID, "room_reviews", ("owner",)),
     ("POST", r"/v1/owner/rooms/(?P<rid>%s)/messages/(?P<mid>%s)/review" % (ROOM_ID, RMSG_ID), "room_review",
      ("owner",)),
+    # the owner's own reading and writing (the team web page, an admin device): the same windows as its bots
+    ("GET", r"/v1/owner/rooms/(?P<rid>%s)/messages" % ROOM_ID, "room_owner_sync", ("owner",)),
+    ("GET", r"/v1/owner/rooms/(?P<rid>%s)/messages/after/(?P<after>[0-9]{1,12})" % ROOM_ID, "room_owner_sync",
+     ("owner",)),
+    ("POST", r"/v1/owner/rooms/(?P<rid>%s)/messages" % ROOM_ID, "room_owner_post", ("owner",)),
+    ("GET", r"/v1/owner/rooms/(?P<rid>%s)/data" % ROOM_ID, "room_owner_data_list", ("owner",)),
+    ("GET", r"/v1/owner/rooms/(?P<rid>%s)/data/(?P<name>[a-z0-9][a-z0-9_.-]{0,63})" % ROOM_ID, "room_owner_data_get",
+     ("owner",)),
 ]
 
 
 def ensure_tables(db):
     for statement in ROOM_TABLES + ROOM_TRIGGERS:
         db.execute(statement)
+    # additive columns: room_messages.author ('owner' for a post the bot's owner wrote themselves),
+    # room_members.to_seq (the room's seq when a membership ended: the owner reads up to there)
+    for table, column in (("room_messages", "author TEXT"), ("room_members", "to_seq INTEGER")):
+        have = {row[1] for row in db.execute("PRAGMA table_info(%s)" % table)}
+        if column.split()[0] not in have:
+            try:
+                db.execute("ALTER TABLE %s ADD COLUMN %s" % (table, column))
+            except Exception as e:              # noqa: BLE001 - another gateway process added it first
+                if "duplicate column" not in str(e):
+                    raise
 
 
 def body_limit(db, limits, name, params, subject):
     """Room posts carry an envelope per member (and attachments where the member may post them)."""
-    if name != "room_post":
+    if name not in ("room_post", "room_owner_post"):
         return None
     sealed = G.sealed_text_bytes(limits) * 4 // 3 + 1024 + 2 * limits["room_max_members"] * 160
     return max(limits["max_body_bytes"], limits["max_attachment_body_bytes"]) + sealed
@@ -194,6 +212,8 @@ def message_view(db, row, viewer=None, withhold=False):
             v[{"target": "to"}.get(key, key)] = row[key]
     if row["kind"] == "task_request" and row["task_decision"]:
         v["task_decision"] = row["task_decision"]
+    if row["author"]:
+        v["author"] = row["author"]
     if withhold:
         v["withheld"] = {"reason": "awaiting_owner_approval" if row["task_state"] == "pending" else
                          "task_" + (row["task_state"] or "withheld"), "detail": WITHHELD_TASK}
@@ -257,8 +277,9 @@ class RoomsMixin(object):
         if room["owner_id"] == owner["id"]:
             return room
         if db.execute("SELECT 1 FROM room_members m JOIN bots b ON b.id=m.bot_id WHERE m.room_id=? AND "
-                      "b.owner_id=? AND m.state IN ('active','invited')", (rid, owner["id"])).fetchone():
-            return room
+                      "b.owner_id=? AND (m.state IN ('active','invited') OR m.from_seq IS NOT NULL)",
+                      (rid, owner["id"])).fetchone():
+            return room                                     # a past member still reads what it was there for
         raise G.Fail(404, "not_found")
 
     # ---- owner side
@@ -321,7 +342,7 @@ class RoomsMixin(object):
                        (room["id"], bot_id, role, int(now)))
         else:
             db.execute("UPDATE room_members SET role=?, state='invited', invited_ts=?, joined_ts=NULL, ended_ts=NULL, "
-                       "from_seq=NULL WHERE room_id=? AND bot_id=?", (role, int(now), room["id"], bot_id))
+                       "from_seq=NULL, to_seq=NULL WHERE room_id=? AND bot_id=?", (role, int(now), room["id"], bot_id))
         m = db.execute("SELECT * FROM room_members WHERE room_id=? AND bot_id=?", (room["id"], bot_id)).fetchone()
         return 201, {"ok": True, "duplicate": False, "member": member_view(db, m),
                      "next": "the bot's owner accepts: ishoni public room accept ROOM BOT"}
@@ -367,8 +388,8 @@ class RoomsMixin(object):
             if m["state"] not in ("active", "invited"):
                 raise G.Fail(409, "not_a_member")
             was_active = m["state"] == "active"
-            db.execute("UPDATE room_members SET state=?, ended_ts=? WHERE room_id=? AND bot_id=?",
-                       ("left" if action == "leave" else "removed", int(now), rid, bid))
+            db.execute("UPDATE room_members SET state=?, ended_ts=?, to_seq=? WHERE room_id=? AND bot_id=?",
+                       ("left" if action == "leave" else "removed", int(now), room["seq"], rid, bid))
             if was_active:
                 self.new_epoch(db, room, now)
         elif action == "mode":
@@ -454,6 +475,79 @@ class RoomsMixin(object):
         msg = db.execute("SELECT * FROM room_messages WHERE id=?", (msg["id"],)).fetchone()
         return 200, {"ok": True, "duplicate": False, "message_id": msg["id"], "state": msg["state"],
                      "seq": msg["seq"], "task_state": msg["task_state"], "decision_id": dec}
+
+    def owner_window(self, db, owner, room):
+        """What this owner may read of a room: everything as its administrator, else the spans of its own bots'
+        memberships (from the join, until a leave or removal). None means everything."""
+        if room["owner_id"] == owner["id"]:
+            return None
+        rows = db.execute("SELECT m.from_seq, m.to_seq FROM room_members m JOIN bots b ON b.id=m.bot_id WHERE "
+                          "m.room_id=? AND b.owner_id=? AND m.from_seq IS NOT NULL", (room["id"], owner["id"])).fetchall()
+        return [(x["from_seq"], x["to_seq"]) for x in rows]
+
+    def readable(self, window, row):
+        return window is None or any(row["seq"] is not None and row["seq"] >= f and (t is None or row["seq"] <= t)
+                                     for f, t in window)
+
+    def owner_bots_in(self, db, owner, room):
+        rows = db.execute("SELECT m.* FROM room_members m JOIN bots b ON b.id=m.bot_id WHERE m.room_id=? AND "
+                          "b.owner_id=? ORDER BY m.invited_ts", (room["id"], owner["id"])).fetchall()
+        return [dict(member_view(db, m), from_seq=m["from_seq"], cursor=m["cursor"]) for m in rows]
+
+    def room_owner_sync(self, db, r):
+        """The room as its owner reads it on an admin device or the web page: no cursor moves, nothing is withheld
+        (the owner is who approves task requests to its bots), only the spans its bots were members for."""
+        owner = r.subject
+        room = self.owner_room(db, owner, r.params["rid"])
+        window = self.owner_window(db, owner, room)
+        after = int(r.params["after"]) if r.params.get("after") is not None else 0
+        limit = self.limits["room_sync_max"]
+        rows = db.execute("SELECT * FROM room_messages WHERE room_id=? AND state='posted' AND seq>? ORDER BY seq "
+                          "LIMIT ?", (room["id"], after, limit + 1)).fetchall()
+        more = len(rows) > limit
+        rows = rows[:limit]
+        return 200, {"ok": True, "room_id": room["id"], "epoch": room["epoch"], "seq": room["seq"], "more": more,
+                     "last_seq": rows[-1]["seq"] if rows else after, "admin": room["owner_id"] == owner["id"],
+                     "bots": self.owner_bots_in(db, owner, room),
+                     "messages": [message_view(db, x) for x in rows if self.readable(window, x)]}
+
+    def room_owner_data_list(self, db, r):
+        owner = r.subject
+        room = self.owner_room(db, owner, r.params["rid"])
+        window = self.owner_window(db, owner, room)
+        rows = db.execute("SELECT d.*, x.seq, x.posted_ts FROM room_data d JOIN room_messages x ON x.id=d.message_id "
+                          "WHERE d.room_id=? ORDER BY d.name", (room["id"],)).fetchall()
+        return 200, {"ok": True, "room_id": room["id"], "data": [
+            {"name": d["name"], "publisher": bot_brief(db, d["bot_id"]), "version": d["version"],
+             "message_id": d["message_id"], "seq": d["seq"], "updated_at": C.iso(d["updated_ts"]),
+             "readable": self.readable(window, d)} for d in rows]}
+
+    def room_owner_data_get(self, db, r):
+        owner = r.subject
+        room = self.owner_room(db, owner, r.params["rid"])
+        window = self.owner_window(db, owner, room)
+        d = db.execute("SELECT * FROM room_data WHERE room_id=? AND name=?", (room["id"], r.params["name"])).fetchone()
+        x = db.execute("SELECT * FROM room_messages WHERE id=?", (d["message_id"],)).fetchone() if d else None
+        if x is None:
+            raise G.Fail(404, "not_found")
+        if not self.readable(window, x):
+            raise G.Fail(409, "published_before_you_joined", "this version was sealed before your bot joined")
+        return 200, dict(message_view(db, x), ok=True)
+
+    def room_owner_post(self, db, r):
+        """A post the owner writes themselves, as one of its member bots, sealed in the owner's browser or admin
+        device with that bot's key. Marked author 'owner'; it never waits for a review (the owner is the reviewer)."""
+        owner = r.subject
+        G.fields(r.body, ("bot_id", "op_key", "kind", "epoch", "mentions", "to", "ref", "name", "status", "cause",
+                          "text", "attachments", "sealed", "sealed_files", "files"), ("bot_id", "op_key", "kind",
+                                                                                      "epoch"))
+        bot_id = r.body["bot_id"]
+        bot = db.execute("SELECT * FROM bots WHERE id=?", (bot_id,)).fetchone() if isinstance(bot_id, str) else None
+        if bot is None or bot["owner_id"] != owner["id"]:
+            raise G.Fail(404, "not_found")
+        room, m = self.membership(db, r.params["rid"], bot_id)
+        body = {k: v for k, v in r.body.items() if k != "bot_id"}
+        return self.post_as(db, r, body, room, m, bot_id, automated=0, author="owner")
 
     def publish(self, db, room, msg, now):
         """Give a message its place in the room (the next seq) and, for a data item, make it the current version."""
@@ -554,9 +648,13 @@ class RoomsMixin(object):
         """A member's message. Its sender is the credential's bot, never a body field."""
         bot_id = member_bot_id(r.subject)
         room, m = self.membership(db, r.params["rid"], bot_id)
-        body, now, L = r.body, r.now, self.limits
-        G.fields(body, ("op_key", "kind", "epoch", "mentions", "to", "ref", "name", "status", "cause", "text",
-                        "attachments", "sealed", "sealed_files", "files"), ("op_key", "kind", "epoch"))
+        G.fields(r.body, ("op_key", "kind", "epoch", "mentions", "to", "ref", "name", "status", "cause", "text",
+                          "attachments", "sealed", "sealed_files", "files"), ("op_key", "kind", "epoch"))
+        return self.post_as(db, r, r.body, room, m, bot_id, automated=1 if r.subject.get("kind") != "bot" else 0,
+                            author=None)
+
+    def post_as(self, db, r, body, room, m, bot_id, automated, author):
+        now, L = r.now, self.limits
         op_key = G.op_key_field(body)
         kind = body["kind"]
         if kind not in ROOM_KINDS:
@@ -638,10 +736,11 @@ class RoomsMixin(object):
                    (mid, room["id"], bot_id, kind, op_key, request_hash, self.body(db, content, now),
                     json.dumps(mentions), meta.get("to"), meta.get("ref"), meta.get("name"), version,
                     meta.get("status"), room["epoch"], hop, cause,
-                    "pending" if kind == "task_request" else None, 1 if r.subject.get("kind") != "bot" else 0,
-                    nbytes, int(now)))
+                    "pending" if kind == "task_request" else None, automated, nbytes, int(now)))
+        if author:
+            db.execute("UPDATE room_messages SET author=? WHERE id=?", (author, mid))
         msg = db.execute("SELECT * FROM room_messages WHERE id=?", (mid,)).fetchone()
-        if m["mode"] == "direct":
+        if m["mode"] == "direct" or author == "owner":
             self.publish(db, room, msg, now)
             msg = db.execute("SELECT * FROM room_messages WHERE id=?", (mid,)).fetchone()
         return 201, self.post_receipt(msg, duplicate=False)

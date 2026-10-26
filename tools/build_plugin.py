@@ -33,7 +33,7 @@ JUNK_SUFFIXES = (".pyc", ".pyo")
 FORBIDDEN_NAMES = {"config.json", "codex-bridge.json", "installation.json", ".env", "inbox", "outbox",
                    "test-run", ".live-test", ".tailmsg", "backups"}
 FORBIDDEN_SUFFIXES = (".sqlite3", ".sqlite", ".db", ".pem", ".key", ".p12", ".log", ".bak")
-TEXT_SUFFIXES = (".md", ".json", ".py", ".txt", ".svg", ".yaml", ".yml", ".sh", "")
+TEXT_SUFFIXES = (".md", ".json", ".py", ".txt", ".svg", ".yaml", ".yml", ".sh", ".html", ".css", ".js", "")
 # Generic markers of private data; maintainers can add personal markers (one regex per line) in a file
 # named by $ISHONI_PRIVATE_DENYLIST that is never committed.
 DENY_PATTERNS = [
