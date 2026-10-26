@@ -38,6 +38,10 @@
       "source": "docs/DEPLOY_RAILWAY.md",
       "sha256": "db8ee5476c1e734952352817b97c8a4e1fc39847c078ac46d190575f97fd808c"
     },
+    "docs/MUSE.md": {
+      "source": "docs/MUSE.md",
+      "sha256": "349af1065cf263e4c2bd8fcfd5efb117983a79546f831f5917b5b4c2eab82d67"
+    },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
       "sha256": "8886408ed5940cffab6c2e368669241115722cf897122e926508fa7093b16ac7"
