@@ -2315,24 +2315,47 @@ def cmd_join(st, a):
     invitation waiting for the bot. Running it again accepts new invitations only."""
     import bot_room_client
     base = norm_url(a.url)
-    try:
-        token = C.read_token_file(a.token_file, "owner")
-    except ValueError as e:
-        die(str(e))
+    handle = (a.handle or "").strip().lower().lstrip("@")
+    if not C.HANDLE_RE.match(handle):
+        die("--handle: 3-32 of a-z 0-9 and single dashes, starting with a letter (your name or your agent's)")
+    redeemed = None
+    stored = ((st.creds()["gateways"].get(base) or {}).get("owner") or {}).get("token")
+    if a.invite:
+        # One-time code from the room's administrator: the gateway creates this colleague's owner identity, the
+        # bot and the invitation together; the credential arrives here once and is kept in this data home.
+        code = a.invite.strip()
+        status, obj = C.api_call(base, "POST", "/v1/invites/redeem",
+                                 {"code": code, "handle": handle, "display_name": a.name or handle})
+        if obj.get("ok") is True:
+            redeemed, token = obj, obj["owner"]["token"]
+        elif stored and obj.get("error") == "invalid_invite":
+            token = stored                                 # the code was spent by an earlier run on this device
+        else:
+            out(dict(obj, http_status=status))
+            sys.exit(2)
+    elif a.token_file:
+        try:
+            token = C.read_token_file(a.token_file, "owner")
+        except ValueError as e:
+            die(str(e))
+    elif stored:
+        token = stored
+    else:
+        die("give --invite CODE (from the room's administrator) or --token-file FILE (an owner credential)")
     me = call(base, "GET", "/v1/owner", None, token)
 
     def save(creds):
         creds["gateways"].setdefault(base, {})["owner"] = {"owner_id": me["owner_id"], "token": token,
                                                           "label": me["label"]}
     st.update("credentials.json", save)
-    handle = (a.handle or "").strip().lower()
-    if not C.HANDLE_RE.match(handle):
-        die("--handle: 3-32 of a-z 0-9 and single dashes, starting with a letter (your name or your agent's)")
     bots = call(base, "GET", "/v1/owner/bots", None, token)["bots"]
     mine = [b for b in bots if (b.get("handle") or "").lstrip("@") == handle]
     created = False
     if mine:
         bot_id = mine[0]["bot_id"]
+        created = bool(redeemed) and redeemed["bot_id"] == bot_id     # made by this very run, through the code
+    elif redeemed:
+        bot_id, created = redeemed["bot_id"], True
     else:
         obj = call(base, "POST", "/v1/owner/bots", {"handle": handle, "display_name": a.name or handle}, token)
         bot_id, created = obj["bot_id"], True
@@ -4380,7 +4403,9 @@ def main(argv=None):
     pj = sp.add_parser("join", help="colleague: one command that logs in, creates your bot with its key, binds "
                                    "this device as its host and accepts the room invitations waiting for it")
     pj.add_argument("url", help="the team gateway, e.g. https://ishoni.example.com")
-    pj.add_argument("--token-file", required=True, help="the owner credential file your administrator gave you")
+    pj.add_argument("--invite", metavar="CODE", help="the one-time invite code (ishoni-invite-...) from the room's "
+                    "administrator: makes your owner identity and bot and puts it in the room")
+    pj.add_argument("--token-file", help="instead of a code: an owner credential file your administrator gave you")
     pj.add_argument("--handle", required=True, help="your bot's handle: 3-32 of a-z 0-9 - (your name works)")
     pj.add_argument("--name", help="display name (default: the handle)")
     pj.add_argument("--label", default="my agent", help="how this device is described to the gateway")

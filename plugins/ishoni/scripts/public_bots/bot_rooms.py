@@ -54,7 +54,48 @@ ROOM_TABLES = (
     "owner_id TEXT NOT NULL, bot_id TEXT NOT NULL, action TEXT NOT NULL, subject_hash TEXT NOT NULL, "
     "epoch INTEGER NOT NULL, decided_ts INTEGER NOT NULL)",
     "CREATE INDEX IF NOT EXISTS room_decisions_room ON room_decisions(room_id, decided_ts)",
+    # one-time invite codes: a colleague redeems one from their own device to get an owner identity, a bot and
+    # a pending invitation into the room, in one step (the code itself is kept only as a hash)
+    "CREATE TABLE IF NOT EXISTS room_invites (id TEXT PRIMARY KEY, room_id TEXT NOT NULL, owner_id TEXT NOT NULL, "
+    "label TEXT NOT NULL, role TEXT NOT NULL, code_hash TEXT NOT NULL UNIQUE, created_ts INTEGER NOT NULL, "
+    "expires_ts INTEGER NOT NULL, used_ts INTEGER, used_owner_id TEXT, used_bot_id TEXT, revoked_ts INTEGER)",
+    "CREATE INDEX IF NOT EXISTS room_invites_room ON room_invites(room_id, created_ts)",
 )
+
+INVITE_ID = r"inv_[a-z0-9]{8,32}"
+INVITE_DAYS, INVITE_MAX_DAYS = 7, 30
+
+
+def new_invite_code():
+    import secrets
+    return "ishoni-invite-" + secrets.token_urlsafe(24)
+
+
+def invite_hash(code):
+    import hashlib
+    return hashlib.sha256(("room-invite|" + code).encode("utf-8")).hexdigest()
+
+
+def invite_state(row, now):
+    if row["used_ts"]:
+        return "used"
+    if row["revoked_ts"]:
+        return "revoked"
+    if row["expires_ts"] <= now:
+        return "expired"
+    return "pending"
+
+
+def invite_view(db, row, now):
+    v = {"invite_id": row["id"], "label": row["label"], "role": row["role"], "state": invite_state(row, now),
+         "created_at": C.iso(row["created_ts"]), "expires_at": C.iso(row["expires_ts"])}
+    if row["used_ts"]:
+        v["used_at"] = C.iso(row["used_ts"])
+        v["bot_id"] = row["used_bot_id"]
+        bot = db.execute("SELECT handle FROM bots WHERE id=?", (row["used_bot_id"],)).fetchone()
+        if bot is not None:
+            v["handle"] = "@" + bot["handle"]
+    return v
 
 
 def _bump_members(where):
@@ -115,6 +156,11 @@ ROUTES = [
     ("GET", r"/v1/owner/rooms", "room_owner_list", ("owner",)),
     ("GET", r"/v1/owner/rooms/(?P<rid>%s)" % ROOM_ID, "room_owner_view", ("owner",)),
     ("POST", r"/v1/owner/rooms/(?P<rid>%s)/invite" % ROOM_ID, "room_invite", ("owner",)),
+    ("POST", r"/v1/owner/rooms/(?P<rid>%s)/invites" % ROOM_ID, "room_invite_create", ("owner",)),
+    ("GET", r"/v1/owner/rooms/(?P<rid>%s)/invites" % ROOM_ID, "room_invite_list", ("owner",)),
+    ("POST", r"/v1/owner/rooms/(?P<rid>%s)/invites/(?P<iid>%s)" % (ROOM_ID, INVITE_ID), "room_invite_action",
+     ("owner",)),
+    ("POST", r"/v1/invites/redeem", "room_invite_redeem", None),
     ("POST", r"/v1/owner/rooms/(?P<rid>%s)/members/(?P<bid>%s)" % (ROOM_ID, BOT_ID), "room_member_action", ("owner",)),
     ("GET", r"/v1/owner/rooms/(?P<rid>%s)/reviews" % ROOM_ID, "room_reviews", ("owner",)),
     ("POST", r"/v1/owner/rooms/(?P<rid>%s)/messages/(?P<mid>%s)/review" % (ROOM_ID, RMSG_ID), "room_review",
@@ -346,6 +392,99 @@ class RoomsMixin(object):
         m = db.execute("SELECT * FROM room_members WHERE room_id=? AND bot_id=?", (room["id"], bot_id)).fetchone()
         return 201, {"ok": True, "duplicate": False, "member": member_view(db, m),
                      "next": "the bot's owner accepts: ishoni public room accept ROOM BOT"}
+
+    # ---- one-time invite codes
+    def admin_room(self, db, owner, rid):
+        room = self.room_of(db, rid)
+        if room["owner_id"] != owner["id"]:
+            raise G.Fail(404, "not_found")
+        return room
+
+    def room_invite_create(self, db, r):
+        """The room's administrator mints a code for one colleague: shown once, kept as a hash, one use, expiry."""
+        G.fields(r.body, ("label", "role", "days"), ("label",))
+        owner, now = r.subject, r.now
+        room = self.admin_room(db, owner, r.params["rid"])
+        if room["state"] != "open":
+            raise G.Fail(409, "room_closed")
+        label = C.clean_label(G.text_field(r.body, "label", 60))
+        role = r.body.get("role", "member")
+        if role not in ROLES:
+            raise G.Fail(400, "invalid_role", "role: member or observer")
+        days = r.body.get("days", INVITE_DAYS)
+        if not isinstance(days, int) or isinstance(days, bool) or not 1 <= days <= INVITE_MAX_DAYS:
+            raise G.Fail(400, "invalid_days", "days: 1 to %d" % INVITE_MAX_DAYS)
+        pending = db.execute("SELECT COUNT(*) FROM room_invites WHERE room_id=? AND used_ts IS NULL AND "
+                             "revoked_ts IS NULL AND expires_ts>?", (room["id"], int(now))).fetchone()[0]
+        if pending >= self.limits["room_max_members"]:
+            raise G.Fail(429, "too_many_invites", "revoke or let old codes expire first")
+        iid, code = C.new_id("inv"), new_invite_code()
+        db.execute("INSERT INTO room_invites(id, room_id, owner_id, label, role, code_hash, created_ts, expires_ts) "
+                   "VALUES(?,?,?,?,?,?,?,?)", (iid, room["id"], owner["id"], label, role, invite_hash(code), int(now),
+                                              int(now) + days * 86400))
+        row = db.execute("SELECT * FROM room_invites WHERE id=?", (iid,)).fetchone()
+        return 201, dict(invite_view(db, row, now), ok=True, code=code, room_id=room["id"], room_name=room["name"],
+                         join="ishoni public join %s --invite %s --handle NAME" % (self.cfg["public_base_url"], code))
+
+    def room_invite_list(self, db, r):
+        room = self.admin_room(db, r.subject, r.params["rid"])
+        rows = db.execute("SELECT * FROM room_invites WHERE room_id=? ORDER BY created_ts", (room["id"],)).fetchall()
+        return 200, {"ok": True, "invites": [invite_view(db, x, r.now) for x in rows]}
+
+    def room_invite_action(self, db, r):
+        G.fields(r.body, ("action",), ("action",))
+        room = self.admin_room(db, r.subject, r.params["rid"])
+        row = db.execute("SELECT * FROM room_invites WHERE id=? AND room_id=?", (r.params["iid"], room["id"])).fetchone()
+        if row is None:
+            raise G.Fail(404, "not_found")
+        if r.body["action"] != "revoke":
+            raise G.Fail(400, "invalid_action", "action: revoke")
+        if invite_state(row, r.now) == "pending":
+            db.execute("UPDATE room_invites SET revoked_ts=? WHERE id=?", (int(r.now), row["id"]))
+            row = db.execute("SELECT * FROM room_invites WHERE id=?", (row["id"],)).fetchone()
+        return 200, dict(invite_view(db, row, r.now), ok=True)
+
+    def room_invite_redeem(self, db, r):
+        """Anonymous, from the colleague's own device: the code becomes an owner identity (its credential is
+        returned once, over this connection only), a bot under it and a pending invitation into the room. The
+        caller's `join` then adds the end-to-end key, binds the device and accepts. Guessing is throttled per
+        address; the code space (24 random bytes) makes it hopeless anyway."""
+        G.fields(r.body, ("code", "handle", "display_name"), ("code", "handle"))
+        now = r.now
+        if not G.take(db, "invite:ip:%s" % r.client_ip, self.limits.get("invite_redeems_per_hour_per_ip", 20),
+                      3600, now):
+            raise G.Fail(429, "too_many_attempts")
+        code = r.body["code"]
+        if not isinstance(code, str) or not 20 <= len(code) <= 128:
+            raise G.Fail(401, "invalid_invite", "unknown or spent invite code (the room's administrator issues one)")
+        row = db.execute("SELECT * FROM room_invites WHERE code_hash=?", (invite_hash(code),)).fetchone()
+        if row is None or invite_state(row, now) != "pending":
+            raise G.Fail(401, "invalid_invite", "unknown or spent invite code (the room's administrator issues one)")
+        room = db.execute("SELECT * FROM rooms WHERE id=?", (row["room_id"],)).fetchone()
+        if room is None or room["state"] != "open":
+            raise G.Fail(409, "room_closed")
+        handle = G.handle_field(r.body["handle"])
+        name = C.clean_label(G.text_field(r.body, "display_name", 80, required=False) or row["label"])
+        if db.execute("SELECT 1 FROM handles WHERE handle=?", (handle,)).fetchone():
+            raise G.Fail(409, "handle_unavailable", "this handle is taken on this gateway; pick another --handle")
+        if len(active_members(db, room["id"])) >= self.limits["room_max_members"]:
+            raise G.Fail(429, "room_full")
+        owner_id, token = G.new_owner(db, row["label"], now)
+        owner = db.execute("SELECT * FROM owners WHERE id=?", (owner_id,)).fetchone()
+        bot_id = C.new_id("bot")
+        self.claim_handle(db, owner, handle, bot_id, now)
+        db.execute("INSERT INTO bots(id, owner_id, handle, display_name, description, policy, state, worker_epoch, "
+                   "created_ts, updated_ts) VALUES(?,?,?,?,'',?,'draft',0,?,?)",
+                   (bot_id, owner_id, handle, name, G.canonical(json.loads(json.dumps(G.DEFAULT_POLICY))), int(now),
+                    int(now)))
+        db.execute("INSERT INTO room_members(room_id, bot_id, role, state, invited_ts) VALUES(?,?,?,'invited',?)",
+                   (room["id"], bot_id, row["role"], int(now)))
+        db.execute("UPDATE room_invites SET used_ts=?, used_owner_id=?, used_bot_id=? WHERE id=?",
+                   (int(now), owner_id, bot_id, row["id"]))
+        return 201, {"ok": True, "owner": {"owner_id": owner_id, "token": token, "label": row["label"]},
+                     "bot_id": bot_id, "handle": "@" + handle, "role": row["role"],
+                     "room": {"room_id": room["id"], "name": room["name"]},
+                     "next": "accept the invitation with the owner credential: ishoni public join ... does it"}
 
     def new_epoch(self, db, room, now):
         db.execute("UPDATE rooms SET epoch=epoch+1, updated_ts=? WHERE id=?", (int(now), room["id"]))
