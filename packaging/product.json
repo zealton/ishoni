@@ -100,7 +100,8 @@
       "public_bots/web/crypto.js": "scripts/public_bots/web/crypto.js",
       "docs/WEB.md": "docs/WEB.md",
       "docs/assets/web-room.png": "docs/assets/web-room.png",
-      "docs/assets/web-review.png": "docs/assets/web-review.png"
+      "docs/assets/web-review.png": "docs/assets/web-review.png",
+      "docs/assets/web-invite.png": "docs/assets/web-invite.png"
     },
     "license": {
       "LICENSE": "LICENSE"
