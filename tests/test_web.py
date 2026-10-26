@@ -189,6 +189,10 @@ class WebCase(unittest.TestCase):
         for path in ("/web/../gateway.json", "/web/nope.js", "/web/app.js/x"):
             status, obj = C.api_call(self.gw.url, "GET", path)
             self.assertEqual(404, status, path)
+        for path, kind in (("/web/", "text/html"), ("/v1/health", "application/json")):
+            status, headers, body = self.gw.raw("HEAD", path)
+            self.assertEqual((200, b""), (status, body), "HEAD answers like GET without a body: %s" % path)
+            self.assertTrue(headers["content-type"].startswith(kind), (path, headers["content-type"]))
 
     def test_an_owner_reads_its_bots_rooms_and_writes_as_itself(self):
         a, email_a = self.colleague("alice")

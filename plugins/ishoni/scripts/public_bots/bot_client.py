@@ -3816,16 +3816,21 @@ def mcp_identity(st, a):
 
 
 def cmd_mcp(st, a):
-    """A local MCP server over stdio for one identity of this data home. Each JSON-RPC message is forwarded only to
-    the /mcp endpoint of the exact gateway the credential belongs to, with that credential: the agent never sees
-    it. ping is answered here; notifications need no answer. stdout carries only protocol messages (one per line);
-    everything else goes to stderr."""
+    """A local MCP server for one identity of this data home: over stdio (the default), or with --listen as a
+    Streamable HTTP endpoint on this device for a host that can only reach an MCP server by URL (a Muse connector
+    through a tunnel). Each JSON-RPC message is forwarded only to the /mcp endpoint of the exact gateway the
+    credential belongs to, with that credential: the agent never sees it. Sealed room bodies are opened here and
+    `ishoni_room_post` is sealed here, so the gateway and the tunnel carry ciphertext. ping is answered here;
+    notifications need no answer. stdout carries only protocol messages (one per line); everything else goes to
+    stderr."""
     base, token, label, host_bot = mcp_identity(st, a)
+    proxy = McpProxy(st, base, token, host_bot)
+    if a.listen:
+        return mcp_listen(st, a, proxy, label, base)
     proto = os.fdopen(os.dup(1), "wb", buffering=0)
     os.dup2(2, 1)                                     # a stray print can never corrupt the protocol stream
     sys.stdout = sys.stderr
     print("ishoni public mcp: %s at %s/mcp" % (label, base), file=sys.stderr, flush=True)
-    version = None
 
     def send(msg):
         proto.write(M.dumps(msg).encode("utf-8") + b"\n")
@@ -3843,24 +3848,37 @@ def cmd_mcp(st, a):
         line = raw.strip()
         if not line:
             continue
+        answer = proxy.answer_raw(line)
+        if answer is not None:
+            send(answer)
+
+
+class McpProxy(object):
+    """The proxy's logic, shared by the stdio loop and the HTTP listener: one JSON-RPC message in, one answer out
+    (None for a notification)."""
+
+    def __init__(self, st, base, token, host_bot):
+        self.st, self.base, self.token, self.host_bot = st, base, token, host_bot
+        self.version = None
+
+    def answer_raw(self, line):
         try:
             msg = C.strict_loads(line)
         except C.StrictJSONError as e:
-            send(M.error(None, M.PARSE_ERROR, "parse error: %s" % e))
-            continue
+            return M.error(None, M.PARSE_ERROR, "parse error: %s" % e)
+        return self.answer(msg)
+
+    def answer(self, msg):
+        st, base, token, host_bot = self.st, self.base, self.token, self.host_bot
         kind = M.classify(msg)
         if kind == "batch":
-            send(M.error(None, M.INVALID_REQUEST, "batches are not supported"))
-            continue
-        if kind in ("invalid", "response"):
-            if kind == "invalid":
-                send(M.error(M.request_id(msg), M.INVALID_REQUEST, "expected a JSON-RPC request or notification"))
-            continue
-        if kind == "notification":
-            continue
+            return M.error(None, M.INVALID_REQUEST, "batches are not supported")
+        if kind == "invalid":
+            return M.error(M.request_id(msg), M.INVALID_REQUEST, "expected a JSON-RPC request or notification")
+        if kind in ("response", "notification"):
+            return None
         if msg["method"] == "ping":
-            send(M.result(msg["id"], {}))
-            continue
+            return M.result(msg["id"], {})
         params = msg.get("params") or {}
         tool_name = params.get("name") if msg["method"] == "tools/call" else None
         if host_bot and tool_name == "ishoni_room_post":
@@ -3870,39 +3888,33 @@ def cmd_mcp(st, a):
             args = params.get("arguments") or {}
             err = M.schema_error(tool["inputSchema"], args)
             if err:
-                send(M.result(msg["id"], M.tool_error("invalid_arguments", err)))
-                continue
+                return M.result(msg["id"], M.tool_error("invalid_arguments", err))
             try:
                 status, body = bot_room_client.mcp_post(st, base, host_bot, token, args)
             except (C.ApiError, ValueError) as e:
                 detail = e.code if isinstance(e, C.ApiError) else "invalid answer"
-                send(M.result(msg["id"], M.tool_error("gateway_unreachable", "the gateway could not be reached (%s): "
-                                                      "the outcome is unknown; retry with the same arguments" % detail,
-                                                      503)))
-                continue
-            send(M.result(msg["id"], M.tool_result(status, body)))
-            continue
+                return M.result(msg["id"], M.tool_error("gateway_unreachable", "the gateway could not be reached (%s): "
+                                                        "the outcome is unknown; retry with the same arguments" % detail,
+                                                        503))
+            return M.result(msg["id"], M.tool_result(status, body))
         headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json",
                    "Accept": "application/json, text/event-stream"}
         if msg["method"] != "initialize":
-            headers["MCP-Protocol-Version"] = version or M.LATEST_VERSION
+            headers["MCP-Protocol-Version"] = self.version or M.LATEST_VERSION
         try:
             status, ctype, body = C.post_raw(base, "/mcp", M.dumps(msg).encode("utf-8"), headers)
             answer = C.strict_loads(body) if body else None
         except (C.ApiError, C.StrictJSONError, ValueError) as e:
             detail = e.code if isinstance(e, C.ApiError) else "invalid answer"
             if msg["method"] == "tools/call":
-                send(M.result(msg["id"], M.tool_error("gateway_unreachable", "the gateway could not be reached (%s): "
-                                                      "the outcome is unknown; retry with the same arguments (sends "
-                                                      "are deduplicated by op_key)" % detail, 503)))
-            else:
-                send(M.error(msg["id"], M.INTERNAL_ERROR, "gateway unreachable (%s)" % detail))
-            continue
+                return M.result(msg["id"], M.tool_error("gateway_unreachable", "the gateway could not be reached (%s): "
+                                                        "the outcome is unknown; retry with the same arguments (sends "
+                                                        "are deduplicated by op_key)" % detail, 503))
+            return M.error(msg["id"], M.INTERNAL_ERROR, "gateway unreachable (%s)" % detail)
         if not isinstance(answer, dict) or answer.get("jsonrpc") != "2.0" or answer.get("id") != msg["id"]:
-            send(M.error(msg["id"], M.INTERNAL_ERROR, "unexpected gateway answer (HTTP %s)" % status))
-            continue
+            return M.error(msg["id"], M.INTERNAL_ERROR, "unexpected gateway answer (HTTP %s)" % status)
         if msg["method"] == "initialize" and isinstance(answer.get("result"), dict):
-            version = answer["result"].get("protocolVersion")
+            self.version = answer["result"].get("protocolVersion")
         result = answer.get("result")
         if host_bot and tool_name in M.ROOM_TOOLS and isinstance(result, dict) and not result.get("isError"):
             import bot_room_client
@@ -3916,7 +3928,99 @@ def cmd_mcp(st, a):
             data = unseal(st, base, result["structuredContent"])
             answer["result"] = dict(result, structuredContent=data, content=[
                 {"type": "text", "text": json.dumps(data, ensure_ascii=False, sort_keys=True)}])
-        send(answer)
+        return answer
+
+
+def mcp_listen(st, a, proxy, label, base):
+    """Streamable HTTP (JSON responses, no SSE) on a local address, for a tunnel to a host that can only reach an MCP
+    server by URL. Every request must carry the bridge's own bearer secret (--bearer-file), which is a credential of
+    this bridge only: the gateway credential never leaves this process. Only POST /mcp is served; GET answers 405 as
+    the gateway does, and anything else 404."""
+    import http.server
+    import socketserver
+    try:
+        secret = C.read_private_text(a.bearer_file, 4096, "bearer file").strip() if a.bearer_file else None
+    except (OSError, ValueError) as e:
+        die("--bearer-file: %s" % e)
+    if not secret or len(secret) < 16 or not re.match(r"^[A-Za-z0-9._~+/=-]+$", secret):
+        die("--listen needs --bearer-file F holding one line of at least 16 characters (`openssl rand -hex 24 > F`)")
+    host, _, port = a.listen.rpartition(":")
+    try:
+        port = int(port)
+    except ValueError:
+        die("--listen takes HOST:PORT")
+    host = host or "127.0.0.1"
+    if host not in ("127.0.0.1", "::1", "localhost") and not a.allow_non_loopback:
+        die("--listen on a non-loopback address needs --allow-non-loopback (put a tunnel or TLS proxy in front)")
+    lock = __import__("threading").Lock()
+    expected = secret.encode("utf-8")
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+        server_version = "ishoni-mcp-bridge"
+        sys_version = ""
+
+        def log_message(self, fmt, *args):
+            print("ishoni public mcp: %s %s" % (self.address_string(), fmt % args), file=sys.stderr, flush=True)
+
+        def reply(self, status, obj=None, extra=None):
+            body = (M.dumps(obj).encode("utf-8") + b"\n") if obj is not None else b""
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            for k, v in (extra or {}).items():
+                self.send_header(k, v)
+            self.end_headers()
+            self.wfile.write(body)
+
+        def authorized(self):
+            auth = self.headers.get("Authorization") or ""
+            given = auth[7:].strip().encode("utf-8") if auth.startswith("Bearer ") else b""
+            return bool(given) and __import__("hmac").compare_digest(given, expected)
+
+        def do_GET(self):
+            if self.path.split("?")[0] == "/mcp":
+                self.reply(405, {"error": "method_not_allowed", "detail": "POST JSON-RPC messages to /mcp"},
+                           {"Allow": "POST"})
+            else:
+                self.reply(404, {"error": "not_found"})
+
+        do_DELETE = do_GET
+
+        def do_POST(self):
+            if self.path.split("?")[0] != "/mcp":
+                return self.reply(404, {"error": "not_found"})
+            if not self.authorized():
+                return self.reply(401, {"error": "unauthorized"}, {"WWW-Authenticate": 'Bearer realm="ishoni-mcp-bridge"'})
+            try:
+                length = int(self.headers.get("Content-Length") or "0")
+            except ValueError:
+                return self.reply(411, {"error": "length_required"})
+            if length <= 0 or length > M.MAX_LINE_BYTES:
+                return self.reply(413 if length > 0 else 411, {"error": "bad_length"})
+            raw = self.rfile.read(length)
+            with lock:
+                answer = proxy.answer_raw(raw)
+            if answer is None:
+                return self.reply(202)
+            self.reply(200, answer)
+
+    class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
+        daemon_threads = True
+        allow_reuse_address = True
+
+    Server.address_family = __import__("socket").AF_INET6 if ":" in host else __import__("socket").AF_INET
+    srv = Server((host, port), Handler)
+    print("ishoni public mcp: %s at %s/mcp, listening on http://%s:%d/mcp (bearer from %s)"
+          % (label, base, host, srv.server_address[1], a.bearer_file), file=sys.stderr, flush=True)
+    if a.ready_fd is not None:
+        os.write(a.ready_fd, (json.dumps({"port": srv.server_address[1]}) + "\n").encode("utf-8"))
+    try:
+        srv.serve_forever()
+    except KeyboardInterrupt:
+        return 0
+    return 0
 
 
 # ---------------------------------------------------------------- deterministic responder
@@ -4259,6 +4363,11 @@ def main(argv=None):
     who.add_argument("--as", dest="as_ref", help="the caller identity: visitor or @your-bot")
     who.add_argument("--host", metavar="BOT", help="serve the native binding tools of this bot instead")
     p.add_argument("--allow-owner-credential-here", action="store_true")
+    p.add_argument("--listen", metavar="HOST:PORT", help="serve Streamable HTTP on this address instead of stdio "
+                   "(a bridge for a host that only takes an MCP URL; put a tunnel in front)")
+    p.add_argument("--bearer-file", metavar="F", help="with --listen: the bridge's own bearer secret (one line)")
+    p.add_argument("--allow-non-loopback", action="store_true")
+    p.add_argument("--ready-fd", type=int, default=None, help=argparse.SUPPRESS)
     sp.add_parser("pending", help="sends with an unknown or refused outcome (inspect before any retry)")
     p = sp.add_parser("resend", help="repeat a recorded send: same op key, conversation and content")
     p.add_argument("op_key")

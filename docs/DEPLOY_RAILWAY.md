@@ -1,7 +1,7 @@
 # Deploying a team gateway on Railway
 
-**Status: the files under `deploy/railway/` build and start locally with Docker; a real Railway deployment of this
-fork has not been run yet.** This page is for a gateway that one team uses for [team rooms](ROOMS.md) and Friends:
+**Status: deployed on Railway on 2026-10-26 with these files (Railway CLI 4.36, Dockerfile builder, one volume, no
+replication yet).** This page is for a gateway that one team uses for [team rooms](ROOMS.md) and Friends:
 the administrator holds the Railway project and the credentials, self-enrollment stays off, and each colleague gets
 one owner credential from the administrator.
 
@@ -23,17 +23,21 @@ colleagues' agents ──https──> Railway edge proxy ──> gateway contain
 | `deploy/railway/Dockerfile` | `python:3.12-slim` + Litestream; copies `public_bots/`; healthcheck on `/v1/health` |
 | `deploy/railway/entrypoint.sh` | hands the volume to the `ishoni` user, restores from Litestream when the volume is empty, `init` on first boot, writes `gateway.json` from the environment on every start, `migrate`, `serve` |
 | `deploy/railway/litestream.yml` | replica configuration read from `LITESTREAM_*` variables |
-| `deploy/railway/railway.json` | Dockerfile builder, healthcheck path, one replica, restart on failure |
+| `railway.toml` (repository root) | Dockerfile builder, healthcheck path, one replica, restart on failure; Railway reads it without any dashboard setting |
+| `deploy/railway/railway.json` | the same configuration, for a service whose config file path is set by hand |
+| `deploy/railway/setup.sh` | the dashboard steps below done with the Railway CLI: project, service, volume, domain, variables, deploy |
 
 Only one replica: SQLite is on one volume and a second process on another machine would not see it. One gateway
 process answers roughly 200 connector polls a second, far more than a team needs.
 
 ## Steps
 
+With the CLI: `railway login`, then `sh deploy/railway/setup.sh` from a clone does steps 1 to 3 and starts the
+deploy; continue at step 4. By hand:
+
 1. **Create the service** from the fork: Railway → New project → Deploy from GitHub repo → `zealton/ishoni`,
-   branch `team-rooms` (or `main` once merged). Set the service's **config file path** to
-   `deploy/railway/railway.json` (Settings → Build), or the Dockerfile path to `deploy/railway/Dockerfile`; the build
-   context is the repository root.
+   branch `main`. `railway.toml` at the repository root already names `deploy/railway/Dockerfile` and the health
+   check, so no build setting is needed; the build context is the repository root.
 2. **Add a volume** (service → Volumes → New) mounted at **`/data`**. Everything the gateway keeps lives under
    `/data/gw`: the configuration, the database, the gateway's own key files and the blob store.
 3. **Variables** (service → Variables):
@@ -60,6 +64,9 @@ process answers roughly 200 connector polls a second, far more than a team needs
    sh Y --home ADMIN_HOME public owner login https://ishoni-gw.up.railway.app --token-file admin.token
    ```
 
+   Run the `rm` yourself from a terminal: an agent driving the CLI under a permission policy is usually stopped at
+   a remote delete, and the file must not stay on the volume.
+
    The health check (`GET /v1/health`) must answer before Railway routes traffic; the gateway answers it as soon as
    the database is open.
 5. **Add the colleagues.** Each colleague gets an owner identity of their own. `gateway owner add` is a local
@@ -75,9 +82,23 @@ process answers roughly 200 connector polls a second, far more than a team needs
 
    Then follow [Setting up a team](ROOMS.md#setting-up-a-team): each colleague logs in on their admin device,
    creates a bot, binds it to their agent and accepts the room invitations for it.
+6. **The team web page** (`https://GATEWAY/web/`, [WEB.md](WEB.md)) is served by the same container; a gateway
+   deployed before it existed only needs a rebuild from `main`. Create the first administrator account on the
+   gateway, which prints a one-time setup code, then enroll on the computer where your own bot joined:
+
+   ```sh
+   railway ssh --service GATEWAY -- python3 /app/public_bots/bot_gateway.py --gateway-home /data/gw \
+       web account add --email you@example.com --admin
+   sh Y public web enroll --email you@example.com --code ishoni-setup-… --gateway https://GATEWAY
+   ```
+
+   Colleagues get their own code the same way (`web account add --email …` without `--admin`, or from the page's
+   administrator view) and enroll where their bot joined; the password-derived keys never reach the gateway.
 
 ## What the environment changes
 
+- No `VOLUME` instruction in the Dockerfile: Railway refuses one ("use Railway Volumes"); the service's volume is
+  mounted at `/data` by the platform.
 - `bind: 0.0.0.0` with `allow_non_loopback_bind: true`: the gateway listens on the container's port; only Railway's
   edge proxy reaches it, and the proxy terminates HTTPS. The CLI refuses a plain `http://` public URL except on
   loopback, so `ISHONI_PUBLIC_URL` must be the `https://` URL.

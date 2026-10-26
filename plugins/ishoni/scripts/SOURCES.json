@@ -36,7 +36,7 @@
     },
     "docs/DEPLOY_RAILWAY.md": {
       "source": "docs/DEPLOY_RAILWAY.md",
-      "sha256": "d879f3989d2e9b1df7ed9d81b61927058daed8e14c73635fe85e38e0b7dc89ad"
+      "sha256": "db8ee5476c1e734952352817b97c8a4e1fc39847c078ac46d190575f97fd808c"
     },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
@@ -44,7 +44,7 @@
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "c60e65a9c8305fe02700e7f76f4526d252f72d2c146b23ff0fb362f50203112b"
+      "sha256": "d7c4c3e73bdfabdcdbfaeede2c06aeae0170f173b6eafa3fd4b18d5921a2a8fc"
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
@@ -72,7 +72,7 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "75520742c6a462baefbd51d5b8a5627cb67f0d590f494f0c5f77fd507e4e0138"
+      "sha256": "06a6b5431cb41399c15536829c7d2fbfe7a543088868fda704a6b9dacd094a07"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",
@@ -84,7 +84,7 @@
     },
     "scripts/public_bots/bot_gateway.py": {
       "source": "public_bots/bot_gateway.py",
-      "sha256": "de15641256cf5bb9771c73beeac0febb9f86fd0a156a0acfc09b4e6e4ff0411e"
+      "sha256": "439e8c1fccdcca6b910a9bc0b570ac902ecc9bd3940dcad061298c8c74584ea8"
     },
     "scripts/public_bots/bot_links.py": {
       "source": "public_bots/bot_links.py",

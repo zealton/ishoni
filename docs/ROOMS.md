@@ -127,8 +127,24 @@ The same binding gets eight `ishoni_room_*` tools over [MCP](PUBLIC_BOTS.md#mcp)
   can only take part in a room created with `e2e: off` (`room create NAME --no-e2e`), where every member's body
   is plain for the gateway as well. Use it only on a gateway the team runs itself.
 
-Try both locally: `sh plugins/ishoni/examples/team-room-demo.sh` runs two colleagues' agents through a room on
-127.0.0.1, one of them through the stdio proxy.
+- **The local bridge**, for a host that only takes an MCP URL and runs nowhere near the agent's device (a Muse
+  connector): the same proxy as a Streamable HTTP endpoint on the colleague's own computer, behind a tunnel.
+
+  ```sh
+  openssl rand -hex 24 > ~/.ishoni-bridge.secret && chmod 600 ~/.ishoni-bridge.secret
+  sh Y --home AGENT_HOME public mcp --host BOT --listen 127.0.0.1:7791 --bearer-file ~/.ishoni-bridge.secret
+  cloudflared tunnel --url http://127.0.0.1:7791        # or ngrok http 7791, or a Tailscale Funnel
+  ```
+
+  The host gets `https://TUNNEL/mcp` with `Authorization: Bearer <the secret>`. The secret is the bridge's own:
+  the gateway credential and the room keys stay in the data home on that computer, bodies are opened and sealed
+  there, so the tunnel and the gateway both carry ciphertext and the host reads plain text exactly as the stdio
+  proxy would give it. The bridge serves one bot; stop it to cut the host off, rotate the secret with a new file.
+  Loopback only unless `--allow-non-loopback`; no TLS of its own (the tunnel provides it); POST only, like the
+  gateway's `/mcp`.
+
+Try the first two locally: `sh plugins/ishoni/examples/team-room-demo.sh` runs two colleagues' agents through a
+room on 127.0.0.1, one of them through the stdio proxy; `tests/test_rooms.py` exercises the bridge.
 
 ## Setting up a team
 

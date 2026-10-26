@@ -8,6 +8,8 @@ updates a data item; a removed member reads nothing written after; bodies reach 
 active members. Real bot_gateway.py subprocesses with synthetic homes on loopback.
 """
 import itertools
+import os
+import urllib.error
 import json
 import subprocess
 import sys
@@ -295,6 +297,59 @@ class RoomCase(unittest.TestCase):
         seen = self.y("agent-a", "room", "sync", a, room)["messages"]
         self.assertEqual([("status", "B: exporter started", b)], [(m["kind"], m["text"], m["e2e"]["sealed_by"])
                                                                    for m in seen if m["seq"] == 2])
+
+    def test_the_http_bridge_serves_the_same_proxy_behind_its_own_bearer(self):
+        import urllib.request
+        room, a, b = self.team()
+        self.y("agent-a", "room", "post", a, room, "--text", "A: parser done", "--mention", b)
+        bearer = self.root / "bridge.secret"
+        bearer.write_text("bridge-secret-0123456789abcdef\n")
+        os.chmod(str(bearer), 0o600)
+        r, w = os.pipe()
+        proc = subprocess.Popen([sys.executable, str(PUBLIC / "bot_client.py"), "--home", str(self.homes["agent-b"]),
+                                 "mcp", "--host", b, "--listen", "127.0.0.1:0", "--bearer-file", str(bearer),
+                                 "--ready-fd", str(w)], pass_fds=(w,), stderr=subprocess.DEVNULL, env=plain_env(self.root))
+        os.close(w)
+        try:
+            port = json.loads(os.read(r, 200).decode("utf-8"))["port"]
+            url = "http://127.0.0.1:%d/mcp" % port
+
+            def call(msg, token="bridge-secret-0123456789abcdef", method="POST"):
+                req = urllib.request.Request(url, data=json.dumps(msg).encode("utf-8") if msg else None, method=method,
+                                             headers={"Content-Type": "application/json",
+                                                      "Authorization": "Bearer " + token})
+                try:
+                    with urllib.request.urlopen(req, timeout=30) as resp:
+                        return resp.status, json.loads(resp.read().decode("utf-8") or "null")
+                except urllib.error.HTTPError as e:
+                    return e.code, json.loads(e.read().decode("utf-8") or "null")
+
+            init = {"jsonrpc": "2.0", "id": 0, "method": "initialize",
+                    "params": {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "t", "version": "1"}}}
+            self.assertEqual(401, call(init, token="wrong-secret-0123456789abcdef")[0], "the bridge's own secret guards it")
+            self.assertEqual(405, call(None, method="GET")[0])
+            status, out = call(init)
+            self.assertEqual((200, 0), (status, out["id"]))
+            status, out = call({"jsonrpc": "2.0", "method": "notifications/initialized"})
+            self.assertEqual(202, status)
+            status, synced = call({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                                   "params": {"name": "ishoni_room_sync", "arguments": {"room": room}}})
+            self.assertEqual(["A: parser done"], [m["text"] for m in synced["result"]["structuredContent"]["messages"]],
+                             "sealed bodies are opened on this device before they go back over the bridge")
+            status, posted = call({"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                                   "params": {"name": "ishoni_room_post",
+                                              "arguments": {"room": room, "op_key": "bridge-post-0001",
+                                                            "text": "B: via the bridge", "kind": "status"}}})
+            self.assertEqual("posted", posted["result"]["structuredContent"]["state"])
+            stored = self.gw.sql("SELECT content FROM room_messages WHERE id=?",
+                                 (posted["result"]["structuredContent"]["message_id"],))
+            self.assertNotIn("via the bridge", stored[0]["content"], "the gateway holds ciphertext")
+            seen = self.y("agent-a", "room", "sync", a, room)["messages"]
+            self.assertIn("B: via the bridge", [m["text"] for m in seen])
+        finally:
+            os.close(r)
+            proc.terminate()
+            proc.wait(timeout=10)
 
     def test_a_remote_mcp_client_posts_plain_text_only_where_the_room_allows_it(self):
         room, a, b = self.team()

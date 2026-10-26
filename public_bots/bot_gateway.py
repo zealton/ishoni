@@ -5355,6 +5355,9 @@ def make_handler(api):
         def do_GET(self):
             self.dispatch()
 
+        def do_HEAD(self):
+            self.dispatch()                           # same headers as GET, no body (a proxy's or monitor's probe)
+
         def do_POST(self):
             self.dispatch()
 
@@ -5454,7 +5457,7 @@ def make_handler(api):
                     m = rx.match(path)
                     if m:
                         allowed = True
-                        if method == self.command:
+                        if method == self.command or (self.command == "HEAD" and method == "GET"):
                             match = (m, name, kinds)
                             break
                 if match is None:
