@@ -82,6 +82,18 @@ deploy; continue at step 4. By hand:
 
    Then follow [Setting up a team](ROOMS.md#setting-up-a-team): each colleague logs in on their admin device,
    creates a bot, binds it to their agent and accepts the room invitations for it.
+6. **The team web page** (`https://GATEWAY/web/`, [WEB.md](WEB.md)) is served by the same container; a gateway
+   deployed before it existed only needs a rebuild from `main`. Create the first administrator account on the
+   gateway, which prints a one-time setup code, then enroll on the computer where your own bot joined:
+
+   ```sh
+   railway ssh --service GATEWAY -- python3 /app/public_bots/bot_gateway.py --gateway-home /data/gw \
+       web account add --email you@example.com --admin
+   sh Y public web enroll --email you@example.com --code ishoni-setup-… --gateway https://GATEWAY
+   ```
+
+   Colleagues get their own code the same way (`web account add --email …` without `--admin`, or from the page's
+   administrator view) and enroll where their bot joined; the password-derived keys never reach the gateway.
 
 ## What the environment changes
 
