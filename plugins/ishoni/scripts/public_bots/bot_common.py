@@ -26,7 +26,7 @@ from pathlib import Path
 API_VERSION = 1
 SERVICE = "ishoni-bot-gateway"
 MAX_RESPONSE_BYTES = 24 * 1024 * 1024      # a job or message may carry 8 MiB of media (sealed: about 15 MB)
-ID_KINDS = ("bot", "act", "own", "wrk", "ver", "cnv", "msg", "chk", "dec", "eml", "room", "rmsg", "rdec", "web")
+ID_KINDS = ("bot", "act", "own", "wrk", "ver", "cnv", "msg", "chk", "dec", "eml", "room", "rmsg", "rdec", "web", "inv")
 ID_RE = re.compile(r"^(?:bot|act|own|wrk|ver|cnv|msg|chk|dec|eml|room|rmsg|rdec|web)_[a-z2-7]{16}\Z")
 # source: speak and follow as one bot (minted only through that bot's owner); connector: wake one native
 # binding's host, never read message bodies.

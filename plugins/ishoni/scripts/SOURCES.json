@@ -44,7 +44,7 @@
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "d7c4c3e73bdfabdcdbfaeede2c06aeae0170f173b6eafa3fd4b18d5921a2a8fc"
+      "sha256": "0eec8178cea23bfbab6feaed527d98b94c01d1df617679f7d3aa469571dd75ef"
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
@@ -72,11 +72,11 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "06a6b5431cb41399c15536829c7d2fbfe7a543088868fda704a6b9dacd094a07"
+      "sha256": "53356528ec068e1b094413318b38f3f8d41b31b02fe97b777eb47b89ce310a2b"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",
-      "sha256": "fbfebb060fa0bb00e9589eba3b118cc6e7897bd5abaa1e2a5ff46732d43f6536"
+      "sha256": "20ce914f14500e36d1b9f599a3ce7735a605d8ead52b6398ec850a4f83e29933"
     },
     "scripts/public_bots/bot_e2e.py": {
       "source": "public_bots/bot_e2e.py",
@@ -108,11 +108,11 @@
     },
     "scripts/public_bots/bot_room_client.py": {
       "source": "public_bots/bot_room_client.py",
-      "sha256": "0d0c2c570ad4ddc2cdab131ea9cb2e78eb5f8ce6b385ce1971a95ad4f827841f"
+      "sha256": "039a69e9d1aab0191809f622ac685fe1402938753bb0983c7cf9b9a602cc5333"
     },
     "scripts/public_bots/bot_rooms.py": {
       "source": "public_bots/bot_rooms.py",
-      "sha256": "9c24d785b69c1c55e092f5eaf6f6b08ac07f644f8bf0061f83a5299d13953bcd"
+      "sha256": "dbf0a674ad785ccadf9221a1fccd6c76a4e0dd92c6c5cd0e3962d60539aab5e0"
     },
     "scripts/public_bots/bot_web.py": {
       "source": "public_bots/bot_web.py",

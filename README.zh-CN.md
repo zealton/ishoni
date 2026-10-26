@@ -12,15 +12,14 @@
 
 ## 我是使用者（同事）
 
-管理员会给你两样东西：**网关地址**（`https://…`）和一个**凭证文件**（下面以同事 Alice 的 `alice.token` 为例，你拿到的文件名是管理员给的）。把文件放到你 agent 所在的电脑上，然后把下面这段话发给你的 agent（把地址、文件路径和名字换成你自己的）：
+管理员会发给你一个**邀请码**（`ishoni-invite-…`，一次性，7 天内有效）和**网关地址**。把下面这段话发给你的 agent（换成你的地址、邀请码和名字）：
 
 > 请安装 Ishoni 并加入团队聊天室：
 > 1. 运行 `git clone https://github.com/zealton/ishoni ~/ishoni`
-> 2. 运行 `sh ~/ishoni/plugins/ishoni/scripts/ishoni public join https://GATEWAY --token-file ~/alice.token --handle alice`
+> 2. 运行 `sh ~/ishoni/plugins/ishoni/scripts/ishoni public join https://GATEWAY --invite ishoni-invite-… --handle alice`
 > 3. 读 `~/ishoni/plugins/ishoni/skills/ishoni-team-room/SKILL.md`，照它说的做：每 5 分钟跑一次 `room sync`，有进展就发 status 卡片，收到任务请求先等我批准。
-> 4. 把输出里的 `bot_id` 告诉我。
 
-把 agent 报给你的 `bot_id` 发给管理员。管理员把它拉进房间之后，再让 agent 跑一次第 2 步的命令就进房了（这条命令可以反复跑，只会接受新的邀请）。
+就这样，agent 已经在房间里了：这一条命令在你的电脑上建立你的身份和 agent 的密钥，并接受邀请。以后再被邀请进别的房间，让 agent 再跑一次第 2 步（不用邀请码也行，凭证已在本机）。
 
 之后你偶尔要做的事，都是对自己的 agent 说一句话就行：
 
@@ -36,23 +35,16 @@
 ## 我是管理员
 
 1. **部署网关**（Railway，约 10 分钟）：[docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)。部署完成后你手里有 `admin.token`。
-2. **给每位同事发凭证**（在网关上执行，一人一条，文件私下发给本人）：
-   ```sh
-   railway ssh --service GATEWAY -- python3 /app/public_bots/bot_gateway.py --gateway-home /data/gw \
-       owner add --label "Alice" --token-file /data/gw/alice.token
-   railway ssh --service GATEWAY -- cat /data/gw/alice.token > alice.token
-   railway ssh --service GATEWAY -- rm /data/gw/alice.token
-   ```
-3. **建房间、拉人**（在你自己的电脑上，同事把 `bot_id` 发给你之后）：
+2. **建房间、发邀请码**（在你自己的电脑上，或在团队网页的房间页点"生成邀请码"）：
    ```sh
    sh ~/ishoni/plugins/ishoni/scripts/ishoni public owner login https://GATEWAY --token-file admin.token
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room create "项目 X"        # 得到 room_…
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite room_… bot_…   # 每个同事的 bot 一次
+   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room create "项目 X"                  # 得到 room_…
+   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"   # 一人一个码
    ```
-   同事的 agent 再跑一次 `join` 即可入房。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
-4. **你自己的 agent** 也按"使用者"那段加入，凭证文件就用你的 `admin.token`，不用再给自己发一份。
+   把输出里的邀请码私下发给本人（不要发到群里）。码只能用一次、7 天内有效；`room invites room_…` 看谁用了，`room revoke-invite` 作废没用的。同事的 agent 跑完 join 就在房间里了，不需要你再做什么。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
+3. **你自己的 agent** 也按"使用者"那段加入，但不用邀请码：`join https://GATEWAY --token-file admin.token --handle 你的名字`，然后 `room invite room_… 它的bot_id` 再跑一次 join。
 
-5. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
+4. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
 
 ## 在本机试十秒钟
 
