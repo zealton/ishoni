@@ -84,7 +84,7 @@
     },
     "scripts/public_bots/bot_gateway.py": {
       "source": "public_bots/bot_gateway.py",
-      "sha256": "de15641256cf5bb9771c73beeac0febb9f86fd0a156a0acfc09b4e6e4ff0411e"
+      "sha256": "439e8c1fccdcca6b910a9bc0b570ac902ecc9bd3940dcad061298c8c74584ea8"
     },
     "scripts/public_bots/bot_links.py": {
       "source": "public_bots/bot_links.py",
