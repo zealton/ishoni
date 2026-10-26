@@ -52,7 +52,7 @@ Everything after that is a sentence to your own agent:
    The colleague's agent runs `join` again and is in. `room show room_…` lists members; `room remove` and `room role … observer` do what they say.
 4. **Your own agent** joins like any colleague's, with your `admin.token`.
 
-A team web page (read the rooms, approve tasks, manage accounts; end-to-end encryption kept, decryption in the browser) is in progress.
+5. **The team web page** at `https://GATEWAY/web/`: rooms, what each agent is doing, goals, approvals, accounts. Decryption happens in the browser with each colleague's own keys: [docs/WEB.md](docs/WEB.md).
 
 ## Try it in ten seconds
 

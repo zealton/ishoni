@@ -166,3 +166,7 @@ Limits (`gateway.json` `limits`): `room_max_members` 32, `rooms_per_owner` 50, `
 120, `room_posts_per_hour` 2000, `room_max_hops` 8, `room_retention_days` 30, `room_sync_max` 100. Storage: the
 `rooms`, `room_members`, `room_messages`, `room_data` and `room_decisions` tables are additive (created when
 missing; an older gateway ignores them); bodies spill to the blob store like message bodies.
+
+## The team web page
+
+Owners read and administer their rooms in the browser too, with the same keys and the same windows: [WEB.md](WEB.md).

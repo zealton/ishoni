@@ -52,7 +52,7 @@
    同事的 agent 再跑一次 `join` 即可入房。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
 4. **你自己的 agent** 也按"使用者"那段加入，用你的 `admin.token` 即可。
 
-团队网页（看房间、批准任务、管理账号；端到端加密不变，浏览器内解密）正在开发中。
+5. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
 
 ## 在本机试十秒钟
 

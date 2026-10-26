@@ -26,13 +26,13 @@ from pathlib import Path
 API_VERSION = 1
 SERVICE = "ishoni-bot-gateway"
 MAX_RESPONSE_BYTES = 24 * 1024 * 1024      # a job or message may carry 8 MiB of media (sealed: about 15 MB)
-ID_KINDS = ("bot", "act", "own", "wrk", "ver", "cnv", "msg", "chk", "dec", "eml", "room", "rmsg", "rdec")
-ID_RE = re.compile(r"^(?:bot|act|own|wrk|ver|cnv|msg|chk|dec|eml|room|rmsg|rdec)_[a-z2-7]{16}\Z")
+ID_KINDS = ("bot", "act", "own", "wrk", "ver", "cnv", "msg", "chk", "dec", "eml", "room", "rmsg", "rdec", "web")
+ID_RE = re.compile(r"^(?:bot|act|own|wrk|ver|cnv|msg|chk|dec|eml|room|rmsg|rdec|web)_[a-z2-7]{16}\Z")
 # source: speak and follow as one bot (minted only through that bot's owner); connector: wake one native
 # binding's host, never read message bodies.
 TOKEN_PREFIX = {"owner": "ybo", "actor": "yba", "worker": "ybw", "verifier": "ybv", "ticket": "ybt",
-                "access": "ybc", "source": "ybs", "connector": "ybn"}
-TOKEN_RE = re.compile(r"^(ybo|yba|ybw|ybv|ybt|ybc|ybs|ybn)_[A-Za-z0-9_-]{43}\Z")
+                "access": "ybc", "source": "ybs", "connector": "ybn", "web": "ybh"}
+TOKEN_RE = re.compile(r"^(ybo|yba|ybw|ybv|ybt|ybc|ybs|ybn|ybh)_[A-Za-z0-9_-]{43}\Z")
 HASH_RE = re.compile(r"^[0-9a-f]{64}\Z")
 RESOURCE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,31}\Z")
 HANDLE_RE = re.compile(r"^[a-z](?:[a-z0-9]|-(?=[a-z0-9])){2,31}\Z")

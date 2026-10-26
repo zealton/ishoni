@@ -54,6 +54,7 @@ import bot_blobs as B  # noqa: E402
 import bot_common as C  # noqa: E402
 import bot_e2e as E  # noqa: E402
 import bot_rooms as R  # noqa: E402
+import bot_web as W  # noqa: E402
 import bot_mcp as M  # noqa: E402
 import bot_profile as P  # noqa: E402
 
@@ -62,7 +63,7 @@ DEFAULT_HOME = "~/.ishoni-gateway"
 DEFAULT_PORT = 7780
 SCHEMA_VERSION = "8"
 CONFIG_KEYS = {"v", "bind", "port", "public_base_url", "allow_non_loopback_bind", "trust_forwarded_for", "limits",
-               "enrollment", "mcp", "partners", "processes", "external_checkpoints"}
+               "enrollment", "mcp", "partners", "processes", "external_checkpoints", "web"}
 MAX_PROCESSES = 64
 # The MCP endpoint: the same API for MCP clients, under the same credentials. Browsers never need it, so a request
 # that carries an Origin header is refused unless the operator lists that origin.
@@ -159,6 +160,7 @@ LIMIT_DEFAULTS = {
     "quiet_wake_seconds": 300,                  # unused credential before a wake, for quiet-wake correlation
 }
 LIMIT_DEFAULTS.update(R.LIMIT_DEFAULTS)         # team rooms (bot_rooms.py)
+LIMIT_DEFAULTS.update(W.LIMIT_DEFAULTS)         # the team web page (bot_web.py)
 
 RESERVED_HANDLES = {
     "about", "account", "actor", "actors", "admin", "administrator", "api", "bot", "bots", "capability",
@@ -664,10 +666,15 @@ def load_config(home):
         if len(secret) < 32:
             raise ValueError("gateway.json: partners.%s: the secret needs at least 32 characters" % name)
         partners[name] = secret
+    web = dict(W.WEB_DEFAULTS)
+    raw = cfg.get("web") or {}
+    if not isinstance(raw, dict) or set(raw) - set(W.WEB_DEFAULTS) or not isinstance(raw.get("enabled", True), bool):
+        raise ValueError("gateway.json: web takes enabled (true/false)")
+    web.update(raw)
     return {"bind": bind, "port": port, "public_base_url": public, "limits": limits, "enrollment": enrollment,
             "allow_non_loopback_bind": cfg.get("allow_non_loopback_bind", False),
             "trust_forwarded_for": cfg.get("trust_forwarded_for", False), "mcp": mcp, "partners": partners,
-            "processes": processes, "external_checkpoints": cfg.get("external_checkpoints", False)}
+            "processes": processes, "external_checkpoints": cfg.get("external_checkpoints", False), "web": web}
 
 
 BODY_COLUMNS = ("content", "result", "draft")
@@ -731,6 +738,7 @@ class Store(object):
                 db.execute(statement)
             ensure_stats(db)
             R.ensure_tables(db)
+            W.ensure_tables(db)
         finally:
             db.close()
         self._idle, self._idle_lock = [], threading.Lock()
@@ -2279,9 +2287,10 @@ def note_wake(db, worker_id, now, at, intent_ts, seen_before_ts, route, quiet_se
 
 # ---------------------------------------------------------------- API
 R.G = sys.modules[__name__]           # bot_rooms uses this module's helpers (Fail, fields, take, ...)
+W.G = sys.modules[__name__]
 
 
-class Api(R.RoomsMixin):
+class Api(R.RoomsMixin, W.WebMixin):
     """Each handler runs inside one transaction and returns (status, body): a GET in a read transaction (run again
     in an IMMEDIATE one if it needs to write), everything else in an IMMEDIATE one. Raising Fail rolls the
     transaction back; returning an error tuple keeps writes such as a cancellation."""
@@ -2304,6 +2313,8 @@ class Api(R.RoomsMixin):
             return max(L["max_body_bytes"], P.AVATAR_MAX_BYTES * 4 // 3 + 4096)
         if name.startswith("room_"):
             return R.body_limit(db, L, name, params, subject) or L["max_body_bytes"]
+        if name.startswith("web_"):
+            return W.body_limit(L, name) or L["max_body_bytes"]
         if name in ("message_send", "owner_reply", "owner_send"):
             row = db.execute("SELECT b.*, c.actor_id AS conv_actor FROM conversations c JOIN bots b ON "
                              "b.id=c.bot_id WHERE c.id=? AND c.deleted_ts IS NULL", (params["cid"],)).fetchone()
@@ -2336,6 +2347,8 @@ class Api(R.RoomsMixin):
         kind = C.token_kind(token)
         if kind is None or kind not in kinds:
             return None
+        if kind == "web":
+            return W.authenticate(db, token, now)
         cred = db.execute("SELECT * FROM credentials WHERE hash=? AND kind=?",
                           (C.token_hash(token), kind)).fetchone()
         if cred is None or cred["revoked_ts"] is not None:
@@ -4899,7 +4912,7 @@ ROUTES = [(m, re.compile(p + r"\Z"), h, k) for m, p, h, k in [
     ("POST", r"/v1/connector/messages/(?P<mid>msg_[a-z2-7]{16})/wake", "connector_wake", ("connector",)),
     ("POST", r"/v1/connector/checks/(?P<chk>chk_[a-z2-7]{16})/wake", "connector_check_wake", ("connector",)),
     ("POST", r"/v1/capability/redeem", "capability_redeem", ("verifier",)),
-] + R.ROUTES]
+] + R.ROUTES + W.ROUTES]
 
 
 class Request(object):
@@ -5427,6 +5440,8 @@ def make_handler(api):
                 avatar = AVATAR_RE.match(path) if self.command == "GET" else None
                 if avatar is not None and not url.query:
                     return self.serve_avatar(avatar)
+                if self.command in ("GET", "HEAD") and (path == "/web" or path.startswith("/web/")):
+                    return self.serve_web(path)
                 share = SHARE_RE.match(path) if self.command == "GET" else None
                 if share is not None:
                     path, self._html = self.share_mode(share, url)
@@ -5468,7 +5483,7 @@ def make_handler(api):
                 elif req.token is not None and C.token_kind(req.token) is None:
                     raise Fail(401, "unauthorized")
                 else:
-                    limit = None
+                    limit = W.body_limit(limits, name) if name in W.ANONYMOUS_LARGE else None
                 req.body = self.read_body(limit) if body_needed else {}
                 self._timer.cancel()
 
@@ -5599,6 +5614,29 @@ def make_handler(api):
             self.send_header("Connection", "close")
             self.end_headers()
             self.wfile.write(data)
+            self.close_connection = True
+
+        def serve_web(self, path):
+            """The team page: a few static files, served only where gateway.json enables the web page."""
+            self._route = "web"
+            self._timer.cancel()
+            found = W.static_file(path) if cfg["web"]["enabled"] else None
+            if found is None:
+                raise Fail(404, "not_found")
+            kind, data = found
+            self.send_response(200)
+            self.send_header("Content-Type", kind)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "no-referrer")
+            if kind.startswith("text/html"):
+                self.send_header("X-Frame-Options", "DENY")
+                self.send_header("Content-Security-Policy", W.PAGE_CSP)
+            self.send_header("Connection", "close")
+            self.end_headers()
+            if self.command != "HEAD":
+                self.wfile.write(data)
             self.close_connection = True
 
         def reply_page(self, status, render, json_url=None):
@@ -5952,6 +5990,7 @@ def maintenance(store):
         db.execute("DELETE FROM mail_outbox WHERE expires_ts<?", (int(now) - 86400,))
         db.execute("DELETE FROM email_challenges WHERE expires_ts<?", (int(now) - 86400,))
         R.room_sweep(db, store.limits, now)
+        W.web_sweep(db, now)
 
 
 # ---------------------------------------------------------------- commands
@@ -6222,6 +6261,38 @@ def cmd_owner(home, a):
         write_token(token_file, token)
     print(json.dumps({"ok": True, "owner_id": owner_id, "owner_token_file": str(token_file),
                       "revoked_credentials": revoked}, indent=2))
+    return 0
+
+
+def cmd_web(home, a):
+    """Accounts of the team web page, from the machine that holds the database (no HTTP, no session)."""
+    os.umask(0o077)
+    try:
+        store = Store(home, load_config(home))
+    except ValueError as e:
+        die(str(e))
+    now = C.now_ts()
+    try:
+        with store.tx() as db:
+            if a.account_cmd == "list":
+                rows = db.execute("SELECT * FROM web_accounts ORDER BY created_ts, email").fetchall()
+                out = {"ok": True, "accounts": [W.account_view(x, full=True) for x in rows]}
+            else:
+                email = W.email_of(a.email)
+                if a.account_cmd == "add":
+                    row, code = W.create_account(db, store.limits, email, "admin" if a.admin else "member", now)
+                else:
+                    row = db.execute("SELECT * FROM web_accounts WHERE email=?", (email,)).fetchone()
+                    if row is None:
+                        die("no account with this email", 1)
+                    code = W.reset_account(db, row, now)
+                    row = db.execute("SELECT * FROM web_accounts WHERE id=?", (row["id"],)).fetchone()
+                out = {"ok": True, "account": W.account_view(row, full=True), "setup_code": code,
+                       "next": "hand the code to the colleague privately; they run: ishoni public web enroll "
+                               "%s --email %s --code CODE" % (store.cfg["public_base_url"], email)}
+    except Fail as f:
+        die("%s%s" % (f.code, ": " + f.detail if f.detail else ""), 1)
+    print(json.dumps(out, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -6551,6 +6622,18 @@ def main(argv=None):
     pr = os_.add_parser("rotate", help="revoke an owner's credentials and write a new one")
     pr.add_argument("owner_id")
     pr.add_argument("--token-file", required=True)
+    pw = sp.add_parser("web", help="accounts of the team web page (local only)")
+    ws = pw.add_subparsers(dest="web_cmd")
+    ws.required = True
+    pwa = ws.add_parser("account", help="add, list or reset web accounts")
+    was = pwa.add_subparsers(dest="account_cmd")
+    was.required = True
+    p = was.add_parser("add", help="a new account with a one-time setup code (printed once)")
+    p.add_argument("--email", required=True)
+    p.add_argument("--admin", action="store_true", help="an administrator: manages accounts from the page")
+    was.add_parser("list", help="every account, without secrets")
+    p = was.add_parser("reset", help="a fresh setup code; the account's vault and sessions are dropped")
+    p.add_argument("--email", required=True)
     sp.add_parser("migrate", help="upgrade a schema 1, 2 or 3 database to schema 4 (stop the gateway and back up first)")
     ps = sp.add_parser("serve", help="serve the HTTP API (loopback by default)")
     ps.add_argument("--port", type=int)
@@ -6566,7 +6649,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     home = resolve_home(a.gateway_home)
     return {"init": cmd_init, "owner": cmd_owner, "migrate": cmd_migrate, "serve": cmd_serve,
-            "mail-relay": cmd_mail_relay, "status": cmd_status}[a.cmd](home, a)
+            "mail-relay": cmd_mail_relay, "status": cmd_status, "web": cmd_web}[a.cmd](home, a)
 
 
 if __name__ == "__main__":
