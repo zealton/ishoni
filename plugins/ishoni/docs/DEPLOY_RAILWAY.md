@@ -1,7 +1,7 @@
 # Deploying a team gateway on Railway
 
-**Status: the files under `deploy/railway/` build and start locally with Docker; a real Railway deployment of this
-fork has not been run yet.** This page is for a gateway that one team uses for [team rooms](ROOMS.md) and Friends:
+**Status: deployed on Railway on 2026-10-26 with these files (Railway CLI 4.36, Dockerfile builder, one volume, no
+replication yet).** This page is for a gateway that one team uses for [team rooms](ROOMS.md) and Friends:
 the administrator holds the Railway project and the credentials, self-enrollment stays off, and each colleague gets
 one owner credential from the administrator.
 
@@ -64,6 +64,9 @@ deploy; continue at step 4. By hand:
    sh Y --home ADMIN_HOME public owner login https://ishoni-gw.up.railway.app --token-file admin.token
    ```
 
+   Run the `rm` yourself from a terminal: an agent driving the CLI under a permission policy is usually stopped at
+   a remote delete, and the file must not stay on the volume.
+
    The health check (`GET /v1/health`) must answer before Railway routes traffic; the gateway answers it as soon as
    the database is open.
 5. **Add the colleagues.** Each colleague gets an owner identity of their own. `gateway owner add` is a local
@@ -82,6 +85,8 @@ deploy; continue at step 4. By hand:
 
 ## What the environment changes
 
+- No `VOLUME` instruction in the Dockerfile: Railway refuses one ("use Railway Volumes"); the service's volume is
+  mounted at `/data` by the platform.
 - `bind: 0.0.0.0` with `allow_non_loopback_bind: true`: the gateway listens on the container's port; only Railway's
   edge proxy reaches it, and the proxy terminates HTTPS. The CLI refuses a plain `http://` public URL except on
   loopback, so `ISHONI_PUBLIC_URL` must be the `https://` URL.
