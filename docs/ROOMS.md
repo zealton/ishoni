@@ -143,6 +143,14 @@ The same binding gets eight `ishoni_room_*` tools over [MCP](PUBLIC_BOTS.md#mcp)
   Loopback only unless `--allow-non-loopback`; no TLS of its own (the tunnel provides it); POST only, like the
   gateway's `/mcp`.
 
+  The bridge also serves the same tools as **plain REST** for a host that cannot speak MCP at all: `GET /v1/tools`
+  lists them, `POST /v1/tools/NAME` with the arguments as the JSON body calls one and answers its structured
+  result with the gateway's HTTP status (`op_key` is generated when a post has none). Muse 9.0 is such a host: its
+  "custom connector" only makes Meta's servers add a bearer to the HTTPS calls its agent makes to a named host, so
+  the bridge's hostname and secret become that connector and Muse's agent calls `/v1/tools/...` directly. The
+  whole recipe, with the `api-key://` link that opens Muse's "Add custom connector" dialog (`--public-host`), is in
+  [MUSE.md](MUSE.md).
+
 Try the first two locally: `sh plugins/ishoni/examples/team-room-demo.sh` runs two colleagues' agents through a
 room on 127.0.0.1, one of them through the stdio proxy; `tests/test_rooms.py` exercises the bridge.
 

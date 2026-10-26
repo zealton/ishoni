@@ -12,7 +12,7 @@
 
 ## 我是使用者（同事）
 
-管理员会发给你一个**邀请码**（`ishoni-invite-…`，一次性，7 天内有效）和**网关地址**。**你自己不用开终端**：把下面这段话原样贴进你 agent 的对话框（Grok Bot、Claude Code、Codex、Cursor 都行），换成你的地址、邀请码和名字，agent 会自己在你电脑上执行并把结果回给你。（Muse 不能执行命令，走[本机桥](docs/ROOMS.md#mcp-a-host-that-cannot-run-commands)，不用贴命令。）
+管理员会发给你一个**邀请码**（`ishoni-invite-…`，一次性，7 天内有效）和**网关地址**。**你自己不用开终端**：把下面这段话原样贴进你 agent 的对话框（Grok Bot、Claude Code、Codex、Cursor 都行），换成你的地址、邀请码和名字，agent 会自己在你电脑上执行并把结果回给你。（Muse 不能执行命令，走[本机桥](docs/MUSE.md)，不用贴命令。）
 
 > 请安装 Ishoni 并加入团队聊天室：
 > 1. 运行 `git clone https://github.com/zealton/ishoni ~/ishoni`

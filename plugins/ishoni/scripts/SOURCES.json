@@ -44,7 +44,7 @@
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "0eec8178cea23bfbab6feaed527d98b94c01d1df617679f7d3aa469571dd75ef"
+      "sha256": "89028590b40801de7f0cedd84f7b24d2f01a4f070c4361ca919e78e2c98db087"
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
@@ -76,7 +76,7 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "53356528ec068e1b094413318b38f3f8d41b31b02fe97b777eb47b89ce310a2b"
+      "sha256": "0bedd99391f292cf8288fdc96cfa72e523a10aa241541bb5e7b73edc26690f8d"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",

@@ -401,10 +401,57 @@ class RoomCase(unittest.TestCase):
             self.assertNotIn("via the bridge", stored[0]["content"], "the gateway holds ciphertext")
             seen = self.y("agent-a", "room", "sync", a, room)["messages"]
             self.assertIn("B: via the bridge", [m["text"] for m in seen])
+
+            # the same tools as plain REST, for a host that cannot speak MCP (a Muse custom connector)
+            def rest(path, body=None, token="bridge-secret-0123456789abcdef", method=None):
+                req = urllib.request.Request("http://127.0.0.1:%d%s" % (port, path),
+                                             data=None if body is None else json.dumps(body).encode("utf-8"),
+                                             method=method or ("POST" if body is not None else "GET"),
+                                             headers={"Content-Type": "application/json",
+                                                      "Authorization": "Bearer " + token})
+                try:
+                    with urllib.request.urlopen(req, timeout=30) as resp:
+                        return resp.status, json.loads(resp.read().decode("utf-8") or "null")
+                except urllib.error.HTTPError as e:
+                    return e.code, json.loads(e.read().decode("utf-8") or "null")
+
+            self.assertEqual(401, rest("/v1/tools", token="wrong-secret-0123456789abcdef")[0])
+            self.assertEqual(404, rest("/v1/other")[0])
+            status, listed = rest("/v1/tools")
+            self.assertEqual(200, status)
+            self.assertIn("ishoni_room_post", [t["name"] for t in listed["tools"]])
+            status, synced = rest("/v1/tools/ishoni_room_sync", {"room": room, "after": 0})
+            self.assertEqual((200, True), (status, synced["ok"]))
+            self.assertEqual(["A: parser done", "B: via the bridge"], [m["text"] for m in synced["messages"]],
+                             "REST answers carry the opened bodies")
+            status, posted = rest("/v1/tools/ishoni_room_post", {"room": room, "text": "B: via REST", "mentions": [a]})
+            self.assertEqual((200, "posted"), (status, posted["state"]), "op_key is generated for a REST caller")
+            stored = self.gw.sql("SELECT content FROM room_messages WHERE id=?", (posted["message_id"],))
+            self.assertNotIn("via REST", stored[0]["content"], "the gateway holds ciphertext")
+            self.assertIn("B: via REST", [m["text"] for m in self.y("agent-a", "room", "sync", a, room)["messages"]])
+            status, bad = rest("/v1/tools/ishoni_room_view", {"room": "room_zzzzzzzzzzzzzzzz"})
+            self.assertEqual((404, False), (status, bad["ok"]), "a tool error keeps the gateway's status: %r" % bad)
+            self.assertEqual(400, rest("/v1/tools/ishoni_room_view", {"room": 5})[0])
+            self.assertEqual(400, rest("/v1/tools/ishoni_room_view", [1], method="POST")[0])
         finally:
             os.close(r)
             proc.terminate()
             proc.wait(timeout=10)
+
+    def test_the_muse_connector_link_encodes_the_bridge_host(self):
+        import base64
+        import bot_client
+        link = bot_client.muse_connector_link("Bridge.Example.com")
+        self.assertTrue(link.startswith("api-key://ishoni?spec="))
+        enc = link.split("spec=")[1]
+        spec = json.loads(base64.urlsafe_b64decode(enc + "=" * (-len(enc) % 4)))
+        self.assertEqual({"version": 2, "connector": {"name": "custom.ishoni", "mode": "api_key",
+                                                      "hosts": ["bridge.example.com"],
+                                                      "token_proxy": [{"field": "key", "placement": "bearer_header"}]}},
+                         spec)
+        for bad in ("localhost", "127.0.0.1", "https://x.example.com", "x.example.com:8443", "nodots"):
+            with self.assertRaises(SystemExit):
+                bot_client.muse_connector_link(bad)
 
     def test_a_remote_mcp_client_posts_plain_text_only_where_the_room_allows_it(self):
         room, a, b = self.team()
