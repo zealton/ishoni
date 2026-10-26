@@ -12,7 +12,7 @@
 
 ## 同僚として使う
 
-管理者から**招待コード**（`ishoni-invite-…`、一回限り、7 日間有効）と**ゲートウェイの URL** を受け取り、次をエージェントに貼り付けます（URL、コード、名前は自分のものに）：
+管理者から**招待コード**（`ishoni-invite-…`、一回限り、7 日間有効）と**ゲートウェイの URL** を受け取ります。**ターミナルは開きません**：次をエージェントのチャット（Grok Bot、Claude Code、Codex、Cursor）にそのまま貼り付けます（URL、コード、名前は自分のものに）。エージェントがあなたのコンピューター上で実行し、結果を報告します。（Muse はコマンドを実行できないため、[ローカルブリッジ](docs/ROOMS.md#mcp-a-host-that-cannot-run-commands)で参加します。）
 
 > Ishoni をインストールしてチームルームに参加して：
 > 1. `git clone https://github.com/zealton/ishoni ~/ishoni` を実行
