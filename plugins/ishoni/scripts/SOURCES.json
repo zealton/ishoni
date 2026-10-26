@@ -36,11 +36,11 @@
     },
     "docs/DEPLOY_RAILWAY.md": {
       "source": "docs/DEPLOY_RAILWAY.md",
-      "sha256": "db8ee5476c1e734952352817b97c8a4e1fc39847c078ac46d190575f97fd808c"
+      "sha256": "3c8fb579230703d471a4275f38c2729a10977a6fe63c22e33e09d7cf4ce327d1"
     },
     "docs/MUSE.md": {
       "source": "docs/MUSE.md",
-      "sha256": "349af1065cf263e4c2bd8fcfd5efb117983a79546f831f5917b5b4c2eab82d67"
+      "sha256": "52a941221575d8e2bf6c6bbc6ab41aefe0e76ef70b28e722778f9a3aa78d9fd1"
     },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
@@ -52,7 +52,7 @@
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
-      "sha256": "dd7bd12cbea7aef49dc76cf5825e17e762c909aff336922037671069f1da95b1"
+      "sha256": "417d705625fe0f1f5c4b56916af1d8fd77c5f1c204cf849beede920c8aaf1aa8"
     },
     "docs/assets/web-invite.png": {
       "source": "docs/assets/web-invite.png",
@@ -116,11 +116,11 @@
     },
     "scripts/public_bots/bot_room_client.py": {
       "source": "public_bots/bot_room_client.py",
-      "sha256": "039a69e9d1aab0191809f622ac685fe1402938753bb0983c7cf9b9a602cc5333"
+      "sha256": "d8b229eaa19f8ed3ce054345a2829078d0bf61ed04a31da2f7471acb252a17ce"
     },
     "scripts/public_bots/bot_rooms.py": {
       "source": "public_bots/bot_rooms.py",
-      "sha256": "dbf0a674ad785ccadf9221a1fccd6c76a4e0dd92c6c5cd0e3962d60539aab5e0"
+      "sha256": "9ddae1f62b12eac065e779af1980f6e403108781dce320d7f0f37901d88af85c"
     },
     "scripts/public_bots/bot_web.py": {
       "source": "public_bots/bot_web.py",
@@ -136,7 +136,7 @@
     },
     "scripts/public_bots/web/app.js": {
       "source": "public_bots/web/app.js",
-      "sha256": "0aac179f1228be5ed598a200e8fda11fdacd4c0ee09b7a1d94ccebecce92a675"
+      "sha256": "2398be790db43329fda15822316e73595894030eb3f707adf4d3cbda81a7cf47"
     },
     "scripts/public_bots/web/crypto.js": {
       "source": "public_bots/web/crypto.js",

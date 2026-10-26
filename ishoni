@@ -1,0 +1,12 @@
+#!/bin/sh
+# Ishoni, from a checkout: `sh ~/ishoni/ishoni join ...`. Runs the bundled launcher in plugins/ishoni/scripts.
+self=$0
+while [ -L "$self" ]; do
+  link=$(readlink "$self") || break
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname -- "$self")/$link ;;
+  esac
+done
+here=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd -P) || exit 2
+exec sh "$here/plugins/ishoni/scripts/ishoni" "$@"

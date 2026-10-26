@@ -7,6 +7,19 @@ opt-in: the stable update channel, plugin pages and the repository marketplace n
 
 ### Ishoni (this fork)
 
+- **One command line for the whole team.** `install.sh` (one `curl | sh` line) puts a checkout in `~/ishoni` with
+  the launcher `~/ishoni/ishoni`. Colleague: `ishoni join URL CODE --name NAME` (identity, bot, end-to-end key,
+  native binding, room; a taken handle gets a numeric suffix); `ishoni room ...` is `public room ...`.
+  Administrator: `ishoni admin deploy --email E` (Railway project, volume, domain, variables, deploy, health wait,
+  the credential fetched into `~/.ishoni/admin.token` and deleted from the volume, owner login, web account and
+  enrollment), `admin login`, `admin create NAME` (room, the administrator's own agent in it, web vault refreshed),
+  `admin invite ROOM NAME [--muse]` (the code and the exact lines to send), `admin rooms|members|invites|revoke|
+  remove|account|sync`. Muse: `ishoni join ... --agent muse` or `ishoni muse up` keeps the local bridge and its
+  tunnel (cloudflared, downloaded when missing; or Tailscale Funnel; or a host you expose) running as a background
+  process from a bridge-only data home (`~/.ishoni/muse/home`, never the owner credential), and prints the
+  connector link, the bridge key and the note for Muse; `muse status|link|down|logs`, `--autostart` for
+  launchd/systemd. Invite codes everywhere (CLI, gateway answer, web page) now show the new two lines.
+
 - `ishoni public join URL --token-file F --handle NAME`: one command on a colleague's own device that logs in,
   creates the bot with its end-to-end key, binds the device as the bot's host and accepts the room invitations
   waiting for it; safe to repeat.

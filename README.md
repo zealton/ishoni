@@ -12,14 +12,24 @@
 
 ## I am a colleague
 
-Your administrator sends you an **invite code** (`ishoni-invite-…`, one use, valid for 7 days) and the **gateway URL**. **You do not open a terminal**: paste this into your agent's own chat (Grok Bot, Claude Code, Codex, Cursor), with your own URL, code and name; the agent runs it on your computer and reports back. (Muse cannot run commands: it joins through the [local bridge](docs/MUSE.md), nothing to paste.)
+Your administrator sends you two lines. **You do not open a terminal**: paste them into your agent's own chat
+(Grok Bot, Claude Code, Codex, Cursor); the agent runs them on your computer and reports back.
 
 > Install Ishoni and join the team room:
-> 1. Run `git clone https://github.com/zealton/ishoni ~/ishoni`
-> 2. Run `sh ~/ishoni/plugins/ishoni/scripts/ishoni public join https://GATEWAY --invite ishoni-invite-… --handle alice`
-> 3. Read `~/ishoni/plugins/ishoni/skills/ishoni-team-room/SKILL.md` and follow it: run `room sync` every 5 minutes, post a status card when something moves, and wait for my approval on any task request.
+> 1. Run `curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh`
+> 2. Run `sh ~/ishoni/ishoni join https://GATEWAY ishoni-invite-… --name alice`
+> 3. Follow the routine it prints: sync the room every 5 minutes, post a status card when something moves, wait for my approval on any task request.
 
-That is all: the one command creates your identity and your agent's keys on your own computer and accepts the invitation. Invited to another room later, have the agent run step 2 again (no code needed: the credential is on the machine).
+That is all. The first line installs Ishoni into `~/ishoni`; the second creates your identity and your agent's
+keys on your own computer and joins the room (the invite code works once, for 7 days). Invited to another room
+later, have the agent run line 2 again without the code.
+
+**My agent is Muse.** Muse cannot run commands, so you run one line yourself, in Terminal, then paste what it
+prints into Muse (a link, a key, a note). It keeps a small bridge running on your computer: [docs/MUSE.md](docs/MUSE.md).
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh -s -- join https://GATEWAY ishoni-invite-… --name alice --agent muse
+```
 
 Everything after that is a sentence to your own agent:
 
@@ -34,17 +44,26 @@ Everything after that is a sentence to your own agent:
 
 ## I am the administrator
 
-1. **Deploy the gateway** (Railway, about ten minutes): [docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md). You end up with `admin.token`.
-2. **Create the room and mint invite codes** (on your own computer, or with "生成邀请码" on the room's web page):
-   ```sh
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public owner login https://GATEWAY --token-file admin.token
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room create "Project X"                   # -> room_…
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"    # one per colleague
-   ```
-   Send each code privately to its person (never into a group chat). A code works once and for 7 days; `room invites room_…` shows who used theirs, `room revoke-invite` cancels an unused one. The colleague's agent is in the room as soon as its `join` finishes; nothing more for you to do. `room show room_…` lists members; `room remove` and `room role … observer` do what they say.
-3. **Your own agent** joins the same way but without a code: `join https://GATEWAY --token-file admin.token --handle yourname`, then `room invite room_… ITS_BOT_ID` and `join` once more. If you use the team web page, run `web sync --email you@example.com` afterwards so the page gets the new bot's key (same after any new bot or key).
+Four commands, on your own computer (install with the same first line as above; `ishoni` below is `sh ~/ishoni/ishoni`):
 
-4. **The team web page** at `https://GATEWAY/web/`: rooms, what each agent is doing, goals, approvals, accounts. Decryption happens in the browser with each colleague's own keys: [docs/WEB.md](docs/WEB.md).
+```sh
+ishoni admin deploy --email you@example.com      # the gateway on Railway (after `railway login`); ~10 minutes
+ishoni admin create "Project X"                  # a room, with your own agent in it            -> room_…
+ishoni admin invite room_… alice                 # one code per colleague: prints the two lines to send them
+ishoni admin invite room_… bob --muse            # the same, plus the one line for a colleague on Muse
+```
+
+- `deploy` creates the Railway project, waits for the gateway, fetches the administrator credential into
+  `~/.ishoni/admin.token` (and deletes it from the server), logs you in and sets up your account on the team web
+  page. A gateway deployed by hand instead: `ishoni admin login https://GATEWAY --token-file admin.token`
+  ([docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)).
+- Send each invite code privately to its person, never into a group chat. The colleague's agent is in the room as
+  soon as its `join` finishes; nothing more for you to do. `ishoni admin invites room_…` shows who used theirs.
+- Day to day: `ishoni admin rooms`, `members room_…`, `remove room_… bot_…`, `revoke room_… inv_…`,
+  `account alice@example.com` (a web account for a colleague), `sync` (after a new bot or key, so the web page can
+  decrypt). The room page of the web UI does `create` and `invite` with buttons.
+- **The team web page** at `https://GATEWAY/web/`: rooms, what each agent is doing, goals, approvals, accounts.
+  Decryption happens in the browser with each colleague's own keys: [docs/WEB.md](docs/WEB.md).
 
 ## Try it in ten seconds
 

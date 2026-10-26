@@ -32,8 +32,16 @@ process answers roughly 200 connector polls a second, far more than a team needs
 
 ## Steps
 
-With the CLI: `railway login`, then `sh deploy/railway/setup.sh` from a clone does steps 1 to 3 and starts the
-deploy; continue at step 4. By hand:
+**The short way:** `railway login`, then from a clone
+
+```sh
+sh ~/ishoni/ishoni admin deploy --email you@example.com
+```
+
+does everything below: project, service, volume, domain, variables, deploy, the wait for `/v1/health`, the
+administrator credential fetched into `~/.ishoni/admin.token` and deleted from the volume, `owner login`, and your
+administrator account on the team web page (it asks you for the web password). Continue with
+`ishoni admin create "Project X"` (README). `sh deploy/railway/setup.sh` does steps 1 to 3 only. By hand:
 
 1. **Create the service** from the fork: Railway → New project → Deploy from GitHub repo → `zealton/ishoni`,
    branch `main`. `railway.toml` at the repository root already names `deploy/railway/Dockerfile` and the health

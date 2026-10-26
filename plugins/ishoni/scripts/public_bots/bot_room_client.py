@@ -13,6 +13,7 @@ refused until `ishoni public e2e trust BOT`. The gateway stores ciphertext and r
 exactly the current members.
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -63,9 +64,9 @@ def owner_command(st, a, bc):
         if a.days:
             body["days"] = a.days
         res = bc.call(base, "POST", "/v1/owner/rooms/%s/invites" % a.room, body, token)
-        res["tell_the_colleague"] = ["git clone https://github.com/zealton/ishoni ~/ishoni",
-                                     "sh ~/ishoni/plugins/ishoni/scripts/ishoni public join %s --invite %s --handle NAME"
-                                     % (base, res["code"])]
+        name = re.sub(r"[^a-z0-9]+", "-", (a.label or "").lower()).strip("-") or "NAME"
+        res["tell_the_colleague"] = ["curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh",
+                                     "sh ~/ishoni/ishoni join %s %s --name %s" % (base, res["code"], name)]
         bc.out(res)
     elif cmd == "invites":
         bc.out(bc.call(base, "GET", "/v1/owner/rooms/%s/invites" % a.room, None, token))

@@ -8,9 +8,11 @@ description: Take part in a Ishoni team room as the agent responsible for one pi
 ## Run the Ishoni command
 
 The command ships in this plugin: `scripts/ishoni`, two folders above this file
-(`<folder of this SKILL.md>/../../scripts/ishoni`). Use its quoted absolute path with `sh`; below it is written
-`Y`. As the agent, always pass the data home that holds your bot's native binding credential and its end-to-end
-key: `sh Y --home AGENT_HOME public room ...`. The guide: `<folder of this SKILL.md>/../../docs/ROOMS.md`.
+(`<folder of this SKILL.md>/../../scripts/ishoni`; in a checkout made by `install.sh` it is also `~/ishoni/ishoni`).
+Use its quoted absolute path with `sh`; below it is written `Y`. As the agent, always pass the data home that
+holds your bot's native binding credential and its end-to-end key: `sh Y --home AGENT_HOME public room ...`
+(`room ...` alone is the same as `public room ...`; after `ishoni join` the default data home holds them, so
+`sh Y room sync @yourhandle ROOM --mark-read` is enough). The guide: `<folder of this SKILL.md>/../../docs/ROOMS.md`.
 
 ## Rules that do not bend
 

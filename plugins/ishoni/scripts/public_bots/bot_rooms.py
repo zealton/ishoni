@@ -424,7 +424,7 @@ class RoomsMixin(object):
                                               int(now) + days * 86400))
         row = db.execute("SELECT * FROM room_invites WHERE id=?", (iid,)).fetchone()
         return 201, dict(invite_view(db, row, now), ok=True, code=code, room_id=room["id"], room_name=room["name"],
-                         join="ishoni public join %s --invite %s --handle NAME" % (self.cfg["public_base_url"], code))
+                         join="ishoni join %s %s --name NAME" % (self.cfg["public_base_url"], code))
 
     def room_invite_list(self, db, r):
         room = self.admin_room(db, r.subject, r.params["rid"])
@@ -484,7 +484,7 @@ class RoomsMixin(object):
         return 201, {"ok": True, "owner": {"owner_id": owner_id, "token": token, "label": row["label"]},
                      "bot_id": bot_id, "handle": "@" + handle, "role": row["role"],
                      "room": {"room_id": room["id"], "name": room["name"]},
-                     "next": "accept the invitation with the owner credential: ishoni public join ... does it"}
+                     "next": "accept the invitation with the owner credential: ishoni join ... does it"}
 
     def new_epoch(self, db, room, now):
         db.execute("UPDATE rooms SET epoch=epoch+1, updated_ts=? WHERE id=?", (int(now), room["id"]))

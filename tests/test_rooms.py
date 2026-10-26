@@ -78,7 +78,7 @@ class RoomCase(unittest.TestCase):
         minted = self.y("admin", "room", "invite-code", room, "--label", "Erin")
         self.assertTrue(minted["code"].startswith("ishoni-invite-"))
         self.assertEqual(("pending", "member"), (minted["state"], minted["role"]))
-        self.assertIn("--invite " + minted["code"], minted["tell_the_colleague"][1])
+        self.assertEqual("sh ~/ishoni/ishoni join %s %s --name erin" % (self.gw.url, minted["code"]), minted["tell_the_colleague"][1])
         home = self.root / ("colleague-e-%d" % self.n)
         self.homes["colleague-e"] = home
         handle = "erin-%d" % self.n
