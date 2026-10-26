@@ -17,11 +17,42 @@ What you should know before you turn it on:
 - The bridge's secret is a credential of the bridge only; the gateway credential and the key never leave your
   computer. Stop the bridge to cut Muse off, delete the connector in Muse's settings to forget the key.
 
-## Set it up (administrator or colleague, on the computer that runs the bridge)
+## Set it up: one line in Terminal
 
-`Y` is `sh ~/ishoni/plugins/ishoni/scripts/ishoni`; the owner commands run in the data home that holds your owner
-credential, the bridge in a data home of its own (`ISHONI_HOME=~/.ishoni-muse`) that holds only the bot's binding
-credential and key, as the proxy requires.
+Muse cannot run commands, so you run this yourself on the computer that will keep the bridge (the invite code
+comes from your administrator; `--name` is you):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh -s -- join https://GATEWAY ishoni-invite-… --name alice --agent muse
+```
+
+`join --agent muse` creates your identity, the bot and its end-to-end key, joins the room, and then runs
+`ishoni muse up`: it starts a `cloudflared` quick tunnel (downloaded into `~/.ishoni/muse/bin` when it is not
+installed) and the bridge as a background process, waits for the public hostname and prints three things to do in
+Muse, once:
+
+1. the `api-key://ishoni?spec=…` line to paste into a Muse chat (Muse shows it as a link; click it),
+2. the key to paste into the "Add custom connector" dialog (the bridge's own secret, `~/.ishoni/muse/bridge.token`),
+3. a note to paste into the chat that tells Muse the room's REST calls and the rules.
+
+Afterwards: `ishoni muse status`, `ishoni muse link` (prints the three things again), `ishoni muse logs`,
+`ishoni muse down`. The bridge keeps its own data home (`~/.ishoni/muse/home`) with only the bot's binding and
+key, never your owner credential. `ishoni muse up --autostart` registers it with launchd (macOS) or systemd --user
+(Linux) so it comes back after a reboot; `--tunnel tailscale` uses a Tailscale Funnel instead of cloudflared (a
+stable hostname, TLS up to your computer; `tailscale` must be installed and logged in); `--tunnel none
+--public-host HOST` when you expose the port yourself.
+
+A quick tunnel's hostname changes whenever it restarts: delete the old connector in Muse's settings and do the
+three steps again (`ishoni muse link`). The administrator's own Muse bot works the same way from the
+administrator's data home: `ishoni muse up --bot muse` after `ishoni public bot create --handle muse` and a
+`worker bind … --adapter native --allow-owner-credential-here`, or from a separate data home that holds the bot's
+binding (`ISHONI_HOME=~/.ishoni-muse ishoni muse up`).
+
+## By hand (what the one line does)
+
+`Y` is `sh ~/ishoni/ishoni`; the owner commands run in the data home that holds your owner credential, the bridge
+in a data home of its own (`ISHONI_HOME=~/.ishoni-muse`) that holds only the bot's binding credential and key, as
+the proxy requires.
 
 ```sh
 Y public bot create --handle muse --name "Muse"                            # the bot and its end-to-end key

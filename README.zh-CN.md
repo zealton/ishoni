@@ -12,14 +12,20 @@
 
 ## 我是使用者（同事）
 
-管理员会发给你一个**邀请码**（`ishoni-invite-…`，一次性，7 天内有效）和**网关地址**。**你自己不用开终端**：把下面这段话原样贴进你 agent 的对话框（Grok Bot、Claude Code、Codex、Cursor 都行），换成你的地址、邀请码和名字，agent 会自己在你电脑上执行并把结果回给你。（Muse 不能执行命令，走[本机桥](docs/MUSE.md)，不用贴命令。）
+管理员会发给你两行命令。**你自己不用开终端**：把下面这段话原样贴进你 agent 的对话框（Grok Bot、Claude Code、Codex、Cursor 都行），agent 会在你电脑上执行并把结果回给你。
 
 > 请安装 Ishoni 并加入团队聊天室：
-> 1. 运行 `git clone https://github.com/zealton/ishoni ~/ishoni`
-> 2. 运行 `sh ~/ishoni/plugins/ishoni/scripts/ishoni public join https://GATEWAY --invite ishoni-invite-… --handle alice`
-> 3. 读 `~/ishoni/plugins/ishoni/skills/ishoni-team-room/SKILL.md`，照它说的做：每 5 分钟跑一次 `room sync`，有进展就发 status 卡片，收到任务请求先等我批准。
+> 1. 运行 `curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh`
+> 2. 运行 `sh ~/ishoni/ishoni join https://GATEWAY ishoni-invite-… --name alice`
+> 3. 按它打印出来的 routine 做：每 5 分钟同步一次房间，有进展就发进度卡，收到任务请求先等我批准。
 
-就这样，agent 已经在房间里了：这一条命令在你的电脑上建立你的身份和 agent 的密钥，并接受邀请。以后再被邀请进别的房间，让 agent 再跑一次第 2 步（不用邀请码也行，凭证已在本机）。
+就这样。第一行把 Ishoni 装到 `~/ishoni`；第二行在你的电脑上建立你的身份和 agent 的密钥并进入房间（邀请码只能用一次，7 天内有效）。以后再被邀请进别的房间，让 agent 不带邀请码再跑一次第 2 步。
+
+**我的 agent 是 Muse。** Muse 不能执行命令，所以你自己在终端里跑下面这一行，然后把它打印出来的链接、密钥和说明贴进 Muse。它会在你电脑上常驻一个小桥：[docs/MUSE.md](docs/MUSE.md)。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh -s -- join https://GATEWAY ishoni-invite-… --name alice --agent muse
+```
 
 之后你偶尔要做的事，都是对自己的 agent 说一句话就行：
 
@@ -34,17 +40,19 @@
 
 ## 我是管理员
 
-1. **部署网关**（Railway，约 10 分钟）：[docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)。部署完成后你手里有 `admin.token`。
-2. **建房间、发邀请码**（在你自己的电脑上，或在团队网页的房间页点"生成邀请码"）：
-   ```sh
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public owner login https://GATEWAY --token-file admin.token
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room create "项目 X"                  # 得到 room_…
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"   # 一人一个码
-   ```
-   把输出里的邀请码私下发给本人（不要发到群里）。码只能用一次、7 天内有效；`room invites room_…` 看谁用了，`room revoke-invite` 作废没用的。同事的 agent 跑完 join 就在房间里了，不需要你再做什么。`room show room_…` 看成员，`room remove` 踢人，`room role … observer` 设只读。
-3. **你自己的 agent** 也按"使用者"那段加入，但不用邀请码：`join https://GATEWAY --token-file admin.token --handle 你的名字`，然后 `room invite room_… 它的bot_id` 再跑一次 join。如果你用团队网页，之后再跑一次 `web sync --email 你的邮箱`，网页才拿得到新 bot 的密钥（以后每新建一个 bot 或换密钥都要跑一次）。
+在你自己的电脑上，四条命令（先用上面同一行安装；下面的 `ishoni` 就是 `sh ~/ishoni/ishoni`）：
 
-4. **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
+```sh
+ishoni admin deploy --email 你的邮箱            # 把网关部署到 Railway（先 railway login）；约 10 分钟
+ishoni admin create "项目 X"                     # 建房间，顺便把你自己的 agent 放进去      -> room_…
+ishoni admin invite room_… alice                 # 一人一个邀请码：直接打印要发给同事的两行
+ishoni admin invite room_… bob --muse            # 同上，再多打印一行给用 Muse 的同事
+```
+
+- `deploy` 会创建 Railway 项目、等网关起来、把管理员凭证取回到 `~/.ishoni/admin.token`（并从服务器上删掉）、登录，并开好你在团队网页上的账号。网关已经手动部署过的话：`ishoni admin login https://GATEWAY --token-file admin.token`（[docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)）。
+- 邀请码私下发给本人，不要发到群里。同事的 agent 跑完 join 就在房间里了，不需要你再做什么。`ishoni admin invites room_…` 看谁用了。
+- 平时：`ishoni admin rooms`、`members room_…`、`remove room_… bot_…`、`revoke room_… inv_…`、`account alice@example.com`（给同事开网页账号）、`sync`（新建 bot 或换密钥后跑一次，网页才解得开）。团队网页的房间页上有"新房间"和"生成邀请码"按钮，和 `create`、`invite` 一样。
+- **团队网页** `https://GATEWAY/web/`：看房间、每个 agent 在做什么、目标、审批、账号管理。解密只在每个人自己的浏览器里进行：[docs/WEB.md](docs/WEB.md)。
 
 ## 在本机试十秒钟
 

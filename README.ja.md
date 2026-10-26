@@ -12,30 +12,38 @@
 
 ## 同僚として使う
 
-管理者から**招待コード**（`ishoni-invite-…`、一回限り、7 日間有効）と**ゲートウェイの URL** を受け取ります。**ターミナルは開きません**：次をエージェントのチャット（Grok Bot、Claude Code、Codex、Cursor）にそのまま貼り付けます（URL、コード、名前は自分のものに）。エージェントがあなたのコンピューター上で実行し、結果を報告します。（Muse はコマンドを実行できないため、[ローカルブリッジ](docs/MUSE.md)で参加します。）
+管理者から二行のコマンドを受け取ります。**ターミナルは開きません**：次をエージェントのチャット（Grok Bot、Claude Code、Codex、Cursor）にそのまま貼り付けます。エージェントがあなたのコンピューター上で実行し、結果を報告します。
 
 > Ishoni をインストールしてチームルームに参加して：
-> 1. `git clone https://github.com/zealton/ishoni ~/ishoni` を実行
-> 2. `sh ~/ishoni/plugins/ishoni/scripts/ishoni public join https://GATEWAY --invite ishoni-invite-… --handle alice` を実行
-> 3. `~/ishoni/plugins/ishoni/skills/ishoni-team-room/SKILL.md` を読んでその通りに動く：5 分ごとに `room sync`、進捗があれば status カード、タスク依頼は私の承認を待つ
+> 1. `curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh` を実行
+> 2. `sh ~/ishoni/ishoni join https://GATEWAY ishoni-invite-… --name alice` を実行
+> 3. 表示されるルーチンに従う：5 分ごとにルームを同期、進捗があれば status カード、タスク依頼は私の承認を待つ
 
-これで完了です。この一つのコマンドが、あなたのコンピューター上で身分とエージェントの鍵を作り、招待を受け入れます。後で別のルームに招待されたら、手順 2 をもう一度実行します（コードは不要、認証情報は手元にあります）。
+これで完了です。一行目が Ishoni を `~/ishoni` に入れ、二行目があなたのコンピューター上で身分とエージェントの鍵を作ってルームに入ります（招待コードは一回限り、7 日間有効）。後で別のルームに招待されたら、コードなしで手順 2 をもう一度。
+
+**エージェントが Muse の場合**：Muse はコマンドを実行できないので、次の一行を自分でターミナルで実行し、表示されるリンク・キー・説明文を Muse に貼り付けます。小さなブリッジがあなたのコンピューターで動き続けます：[docs/MUSE.md](docs/MUSE.md)。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh -s -- join https://GATEWAY ishoni-invite-… --name alice --agent muse
+```
 
 **安全性**：同僚のエージェントはルームに文字を書けるだけで、あなたのコンピューターやエージェントに触れる経路はありません。あなたのエージェント宛てのタスク依頼は、あなたが承認するまで本文が隠されます。本文は各デバイスで暗号化され、ゲートウェイは暗号文だけを保存します。詳細は [docs/ROOMS.md](docs/ROOMS.md)。
 
 ## 管理者として使う
 
-1. **ゲートウェイを配備**（Railway、約 10 分）：[docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)。`admin.token` が手元に残ります。
-2. **ルームを作って招待コードを発行**（自分のコンピューターで。チームの Web ページのルーム画面からも発行できます）：
-   ```sh
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public owner login https://GATEWAY --token-file admin.token
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room create "Project X"
-   sh ~/ishoni/plugins/ishoni/scripts/ishoni public room invite-code room_… --label "Alice"   # 一人一つ
-   ```
-   コードは本人にだけ渡します。一回限り、7 日間有効。`room invites room_…` で使用状況、`room revoke-invite` で取り消し。同僚のエージェントは `join` が終わった時点でルームに入っています。
-3. **自分のエージェント**はコードなしで：`join https://GATEWAY --token-file admin.token --handle 自分の名前`、その後 `room invite room_… そのbot_id` と再度 `join`。チーム Web ページを使うなら、その後 `web sync --email 自分のメール` を実行して新しいボットの鍵をページに渡します（ボットや鍵を新しく作るたびに必要）。
+自分のコンピューターで四つのコマンド（インストールは上と同じ一行目。以下の `ishoni` は `sh ~/ishoni/ishoni`）：
 
-4. **チームの Web ページ** `https://GATEWAY/web/`：ルーム、各エージェントの現状、目標、承認、アカウント。復号は各自のブラウザー内で行われます：[docs/WEB.md](docs/WEB.md)。
+```sh
+ishoni admin deploy --email you@example.com      # Railway にゲートウェイを配備（先に railway login）；約 10 分
+ishoni admin create "Project X"                  # ルームを作り、自分のエージェントを入れる        -> room_…
+ishoni admin invite room_… alice                 # 一人一つの招待コード：同僚に送る二行を表示
+ishoni admin invite room_… bob --muse            # 同じく、Muse を使う同僚向けの一行も表示
+```
+
+- `deploy` は Railway プロジェクトを作り、ゲートウェイの起動を待ち、管理者の認証情報を `~/.ishoni/admin.token` に取得して（サーバーからは削除）、ログインし、チーム Web ページのアカウントを作ります。手で配備済みなら：`ishoni admin login https://GATEWAY --token-file admin.token`（[docs/DEPLOY_RAILWAY.md](docs/DEPLOY_RAILWAY.md)）。
+- 招待コードは本人にだけ渡します。同僚のエージェントは `join` が終わった時点でルームに入っています。`ishoni admin invites room_…` で使用状況を確認。
+- 日常：`ishoni admin rooms`、`members room_…`、`remove room_… bot_…`、`revoke room_… inv_…`、`account alice@example.com`（同僚の Web アカウント）、`sync`（ボットや鍵を新しく作った後に実行し、Web ページが復号できるように）。Web ページのルーム画面にも `create` と `invite` に当たるボタンがあります。
+- **チームの Web ページ** `https://GATEWAY/web/`：ルーム、各エージェントの現状、目標、承認、アカウント。復号は各自のブラウザー内で行われます：[docs/WEB.md](docs/WEB.md)。
 
 ## 手元で試す
 

@@ -39,8 +39,8 @@ Consequences you should know:
 - **No password recovery.** The vault opens only with the password. An administrator can *reset* your account: a
   new setup code, and you enroll again from a device that holds the keys. Nothing is lost, since the keys live on
   your devices.
-- **New bot or rotated key?** Run `ishoni public web sync --email you@example.com` on the admin device to upload a
-  fresh vault under the same password.
+- **New bot or rotated key?** Run `ishoni admin sync` (or `ishoni public web sync --email you@example.com`) on the
+  admin device to upload a fresh vault under the same password; `ishoni admin create` does it by itself.
 - A message whose sender's key your device has not pinned yet shows "首次见到的密钥" (first-seen key): the page
   trusts the key the gateway shows the first time in a session and refuses a change after that. Pinning on the
   admin device (`room sync` once there, then `web sync`) removes the note.
@@ -53,7 +53,7 @@ Consequences you should know:
 An administrator creates your account and hands you a setup code. On the computer where you ran `join`:
 
 ```sh
-sh ~/ishoni/plugins/ishoni/scripts/ishoni public web enroll --email you@example.com --code ishoni-setup-… --gateway https://GATEWAY
+sh ~/ishoni/ishoni public web enroll --email you@example.com --code ishoni-setup-… --gateway https://GATEWAY
 ```
 
 Then open `https://GATEWAY/web/`, log in with the email and the password you chose. You see:
@@ -88,14 +88,15 @@ edits the list from the page ("编辑目标"). Other agents ask that bot with a 
   the exact command to send the colleague; disable and enable; reset (new setup code, the old vault and sessions
   are dropped); change the role. The last active administrator cannot be disabled or demoted.
 - **Rooms**: "＋ 新房间" creates a room. "＋ 生成邀请码" mints a one-time invite code for a colleague (name, role,
-  validity) and shows, once, the two lines the colleague pastes to their agent (`git clone …` and
-  `ishoni public join GATEWAY --invite CODE --handle NAME`): that creates their identity, bot and keys on their
-  own computer and joins the room; the gateway keeps only the code's hash. Pending codes can be revoked.
+  validity) and shows, once, the two lines the colleague pastes to their agent (the `install.sh` line and
+  `ishoni join GATEWAY CODE --name NAME`, the same as `ishoni admin invite`): that creates their identity, bot and
+  keys on their own computer and joins the room; the gateway keeps only the code's hash. Pending codes can be revoked.
 
   ![An invite code and the two lines to paste](assets/web-invite.png)
  "按 bot id
   邀请" is the older flow for a bot that already exists. Click a member to make it read-only or remove it.
-- The first administrator account is created on the gateway itself:
+- The first administrator account is created on the gateway itself (`ishoni admin deploy --email …` does it;
+  `ishoni admin account EMAIL` creates the next ones from your computer):
 
   ```sh
   railway ssh --service GATEWAY -- python3 /app/public_bots/bot_gateway.py --gateway-home /data/gw \

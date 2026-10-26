@@ -388,8 +388,8 @@
   }
   // One-time invite codes: the colleague pastes two lines to their agent; the code is shown once.
   function joinCommand(code, name) {
-    return "git clone https://github.com/zealton/ishoni ~/ishoni\n" +
-      "sh ~/ishoni/plugins/ishoni/scripts/ishoni public join " + location.origin + " --invite " + code + " --handle " + name;
+    return "curl -fsSL https://raw.githubusercontent.com/zealton/ishoni/main/install.sh | sh\n" +
+      "sh ~/ishoni/ishoni join " + location.origin + " " + code + " --name " + name;
   }
   function inviteCodeDialog() {
     const label = h("input", { placeholder: "同事的名字，例如 alice（只用 a-z 0-9 -）", maxlength: "60" });
@@ -473,7 +473,7 @@
     dialog("新账号", h("div", { class: "stack" }, email, role), [{ label: "创建", primary: true, run: async () => { const r = await web("POST", "/v1/web/accounts", { email: email.value.trim(), role: role.value }); await loadAccounts(); setupCodeDialog(r.account.email, r.setup_code); } }]);
   }
   function setupCodeDialog(email, code) {
-    const cmd = "sh ~/ishoni/plugins/ishoni/scripts/ishoni public web enroll --email " + email + " --code " + code + " --gateway " + location.origin;
+    const cmd = "sh ~/ishoni/ishoni public web enroll --email " + email + " --code " + code + " --gateway " + location.origin;
     dialog("邀请码（只显示这一次）", h("div", { class: "stack" }, h("div", { class: "muted small" }, "私下发给 ", email, "，让对方在装有 agent 的电脑上运行（它会在那台电脑上用对方选的密码封好密钥库）："), h("div", { class: "codebox mono" }, cmd),
       h("div", { class: "muted small" }, "7 天内有效。")), [{ label: "复制命令", run: async () => { await navigator.clipboard.writeText(cmd); toast("已复制"); return false; } }]);
   }

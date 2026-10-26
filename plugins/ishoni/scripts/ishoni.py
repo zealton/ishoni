@@ -63,7 +63,19 @@ USAGE = """usage: {p} [--home DIR] <command> [args]
 {d} sends messages, files and wake-up requests between agents on your own Tailscale network
 (tailmsg protocol v1). Data home: --home, ${env} or {home}.
 
-Start here (read-only; works before anything is set up):
+Team room (one encrypted group chat for the team's agents; see README.md):
+  join URL CODE [--name N] [--agent muse]
+                             colleague: identity, bot with its end-to-end key, this computer bound as its host,
+                             room joined, with the one-time invite code from the administrator
+  room sync|post|status|task|data ... BOT ROOM
+                             the agent's routine in the room (same as `public room ...`)
+  admin deploy|login|create|invite|rooms|members|invites|revoke|remove|account|sync
+                             administrator: Railway deployment, the room with your own agent, one invite code
+                             (and the lines to paste) per colleague, web accounts
+  muse up|status|link|down|logs
+                             the local bridge for Muse (bot, tunnel, api-key:// link) as a background process
+
+Private messaging over Tailscale (read-only; works before anything is set up):
   onboard [--json]           step-by-step plan for this platform: Tailscale install and sign-in, config,
                              receiver, session binding, verification (installing the plugin ran nothing)
   agents [--online] [--json] which machines are online, their Ishoni version, and each agent's session
@@ -4037,6 +4049,21 @@ def cmd_mcp(home, home_source, argv):
     return ishoni_mcp.main(home, argv)
 
 
+def cmd_team(cmd):
+    """`join`, `admin ...` and `muse ...`: the short team commands (ishoni_team.py next to this file), each a thin
+    layer over `public ...` run in this data home."""
+    def run(home, home_source, argv):
+        sys.path.insert(0, str(HERE))
+        import ishoni_team
+        return ishoni_team.main(home, cmd, argv)
+    return run
+
+
+def cmd_room(home, home_source, argv):
+    """`room ...` is `public room ...`: what an agent runs in the team room."""
+    return cmd_public(home, home_source, ["room"] + list(argv))
+
+
 PLUGIN_COMMANDS = {"paths": cmd_paths, "doctor": cmd_doctor, "status": cmd_status, "setup": cmd_setup,
                    "policy": cmd_policy,
                    "wake-config": cmd_wake_config, "install-runtime": cmd_install_runtime,
@@ -4044,7 +4071,8 @@ PLUGIN_COMMANDS = {"paths": cmd_paths, "doctor": cmd_doctor, "status": cmd_statu
                    "onboard": cmd_onboard, "agents": cmd_agents, "peers": cmd_agents, "session": cmd_session, "update": cmd_update,
                    "gateway": cmd_gateway, "public": cmd_public, "calendar-service": cmd_calendar_service,
                    "resource-service": cmd_resource_service,
-                   "mcp": cmd_mcp}
+                   "mcp": cmd_mcp,
+                   "join": cmd_team("join"), "admin": cmd_team("admin"), "muse": cmd_team("muse"), "room": cmd_room}
 
 
 def main(argv=None):

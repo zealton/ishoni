@@ -54,5 +54,6 @@ Next, once the deploy log shows "serving on":
   curl -s $DOMAIN/v1/health
   railway ssh --service $SERVICE -- cat /data/gw/owner.token > admin.token && chmod 600 admin.token
   railway ssh --service $SERVICE -- rm /data/gw/owner.token
-  sh plugins/ishoni/scripts/ishoni public owner login $DOMAIN --token-file admin.token
+  sh ishoni admin login $DOMAIN --token-file admin.token
+(or run `sh ishoni admin deploy` instead of this script: it does all of the above)
 MSG
