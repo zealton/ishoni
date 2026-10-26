@@ -76,7 +76,7 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "0bedd99391f292cf8288fdc96cfa72e523a10aa241541bb5e7b73edc26690f8d"
+      "sha256": "7dacee1602200e2c16599e4aae3fdeb802c338511cb520b41af017939dc6b2a4"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",

@@ -207,6 +207,12 @@ class State(object):
         return self.load("credentials.json")
 
 
+def ref_matches(ref, bot_id, handle):
+    """`ref` names a stored credential by bot id or handle, with or without the @ the gateway reports."""
+    wanted = (ref or "").strip().lstrip("@")
+    return bool(wanted) and wanted in (bot_id, (handle or "").lstrip("@"))
+
+
 def gateway_with(creds, role, explicit=None, bot=None):
     if explicit:
         return norm_url(explicit)
@@ -214,7 +220,7 @@ def gateway_with(creds, role, explicit=None, bot=None):
     for base, entry in sorted(creds["gateways"].items()):
         if role in ("worker", "connector"):
             pool = entry.get(role + "s") or {}
-            if any(bot in (bid, w.get("handle")) for bid, w in pool.items()):
+            if any(ref_matches(bot, bid, w.get("handle")) for bid, w in pool.items()):
                 found.append(base)
         elif role == "owner":
             if (entry.get("owner") or {}).get("token"):
@@ -2733,7 +2739,7 @@ def worker_session(st, a):
     base = gateway_with(creds, "worker", getattr(a, "gateway", None), a.bot)
     workers = (creds["gateways"].get(base) or {}).get("workers") or {}
     for bot_id, w in workers.items():
-        if a.bot in (bot_id, w.get("handle")):
+        if ref_matches(a.bot, bot_id, w.get("handle")):
             return base, bot_id, w["token"]
     die("no worker credential for %s at %s" % (a.bot, base))
 

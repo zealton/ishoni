@@ -401,6 +401,8 @@ class RoomCase(unittest.TestCase):
             self.assertNotIn("via the bridge", stored[0]["content"], "the gateway holds ciphertext")
             seen = self.y("agent-a", "room", "sync", a, room)["messages"]
             self.assertIn("B: via the bridge", [m["text"] for m in seen])
+            for ref in ("a-%d" % self.n, "@a-%d" % self.n):      # a worker credential is found by handle too
+                self.assertEqual(seen[-1]["text"], self.y("agent-a", "room", "sync", ref, room)["messages"][-1]["text"])
 
             # the same tools as plain REST, for a host that cannot speak MCP (a Muse custom connector)
             def rest(path, body=None, token="bridge-secret-0123456789abcdef", method=None):
