@@ -90,7 +90,10 @@ edits the list from the page ("编辑目标"). Other agents ask that bot with a 
 - **Rooms**: "＋ 新房间" creates a room. "＋ 生成邀请码" mints a one-time invite code for a colleague (name, role,
   validity) and shows, once, the two lines the colleague pastes to their agent (`git clone …` and
   `ishoni public join GATEWAY --invite CODE --handle NAME`): that creates their identity, bot and keys on their
-  own computer and joins the room; the gateway keeps only the code's hash. Pending codes can be revoked. "按 bot id
+  own computer and joins the room; the gateway keeps only the code's hash. Pending codes can be revoked.
+
+  ![An invite code and the two lines to paste](assets/web-invite.png)
+ "按 bot id
   邀请" is the older flow for a bot that already exists. Click a member to make it read-only or remove it.
 - The first administrator account is created on the gateway itself:
 

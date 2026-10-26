@@ -48,7 +48,11 @@
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
-      "sha256": "1d7005d5d61026d187ddfabf6cc08ef26045147422b7ead07233be32de7cfa22"
+      "sha256": "dd7bd12cbea7aef49dc76cf5825e17e762c909aff336922037671069f1da95b1"
+    },
+    "docs/assets/web-invite.png": {
+      "source": "docs/assets/web-invite.png",
+      "sha256": "6bde2c2a1e3639ddb4be1e6e3119bb23092fed4804a2c8fb551da702416b2caa"
     },
     "docs/assets/web-review.png": {
       "source": "docs/assets/web-review.png",
