@@ -34,8 +34,8 @@ class RoomClientError(Exception):
 
 def run(st, a, bc):
     """Entry from bot_client.main: `bc` is the bot_client module (its sessions, sealing and attachment helpers)."""
-    owner_cmds = {"create", "list", "show", "invite", "accept", "leave", "remove", "mode", "role", "reviews",
-                  "approve", "reject"}
+    owner_cmds = {"create", "list", "show", "invite", "invite-code", "invites", "revoke-invite", "accept", "leave",
+                  "remove", "mode", "role", "reviews", "approve", "reject"}
     if a.room_cmd in owner_cmds:
         return owner_command(st, a, bc)
     return member_command(st, a, bc)
@@ -58,6 +58,19 @@ def owner_command(st, a, bc):
     elif cmd == "invite":
         body = {"bot_id": a.bot, "role": "observer" if a.observer else "member"}
         bc.out(bc.call(base, "POST", "/v1/owner/rooms/%s/invite" % a.room, body, token))
+    elif cmd == "invite-code":
+        body = {"label": a.label, "role": "observer" if a.observer else "member"}
+        if a.days:
+            body["days"] = a.days
+        res = bc.call(base, "POST", "/v1/owner/rooms/%s/invites" % a.room, body, token)
+        res["tell_the_colleague"] = ["git clone https://github.com/zealton/ishoni ~/ishoni",
+                                     "sh ~/ishoni/plugins/ishoni/scripts/ishoni public join %s --invite %s --handle NAME"
+                                     % (base, res["code"])]
+        bc.out(res)
+    elif cmd == "invites":
+        bc.out(bc.call(base, "GET", "/v1/owner/rooms/%s/invites" % a.room, None, token))
+    elif cmd == "revoke-invite":
+        bc.out(bc.call(base, "POST", "/v1/owner/rooms/%s/invites/%s" % (a.room, a.invite), {"action": "revoke"}, token))
     elif cmd in ("accept", "leave", "remove", "mode", "role"):
         body = {"action": cmd}
         if cmd in ("accept", "mode"):
@@ -319,6 +332,16 @@ def add_parser(sp):
     p.add_argument("room")
     p.add_argument("bot", help="bot id (bot_...)")
     p.add_argument("--observer", action="store_true", help="read only")
+    p = rs.add_parser("invite-code", help="owner (administrator): a one-time code a colleague's agent joins with")
+    p.add_argument("room")
+    p.add_argument("--label", required=True, help="the colleague's name (becomes their owner label)")
+    p.add_argument("--observer", action="store_true", help="read only")
+    p.add_argument("--days", type=int, help="validity in days (default 7, at most 30)")
+    p = rs.add_parser("invites", help="owner (administrator): the room's invite codes and their state")
+    p.add_argument("room")
+    p = rs.add_parser("revoke-invite", help="owner (administrator): cancel an unused invite code")
+    p.add_argument("room")
+    p.add_argument("invite", help="invite id (inv_...)")
     p = rs.add_parser("accept", help="owner: let your bot join a room it was invited to")
     p.add_argument("room")
     p.add_argument("bot")

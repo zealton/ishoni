@@ -70,6 +70,61 @@ class RoomCase(unittest.TestCase):
         self.y("owner-b", "room", "accept", room, b)
         return room, a, b
 
+    def test_an_invite_code_takes_a_colleague_into_the_room_in_one_command(self):
+        """The administrator mints a one-time code for a named colleague; `join --invite` on the colleague's own
+        device makes the owner identity, the bot with its key, the binding and the membership. Rerunning is
+        harmless, a spent or wrong code is refused, codes can be listed and revoked."""
+        room = self.y("admin", "room", "create", "Project %d" % self.n)["room_id"]
+        minted = self.y("admin", "room", "invite-code", room, "--label", "Erin")
+        self.assertTrue(minted["code"].startswith("ishoni-invite-"))
+        self.assertEqual(("pending", "member"), (minted["state"], minted["role"]))
+        self.assertIn("--invite " + minted["code"], minted["tell_the_colleague"][1])
+        home = self.root / ("colleague-e-%d" % self.n)
+        self.homes["colleague-e"] = home
+        handle = "erin-%d" % self.n
+        first = self.y("colleague-e", "join", self.gw.url, "--invite", minted["code"], "--handle", handle)
+        self.assertEqual((True, True, "@" + handle), (first["created"], first["bound_this_device"], first["handle"]))
+        self.assertTrue(first["e2e"]["key"], "the bot got an end-to-end key")
+        self.assertEqual([room], [r["room_id"] for r in first["joined_now"]], "the invitation was accepted")
+        self.assertEqual([room], [r["room_id"] for r in first["rooms"]])
+        bot = first["bot_id"]
+        members = {m["bot_id"]: m for m in self.y("admin", "room", "show", room)["members"]}
+        self.assertEqual(("active", "member"), (members[bot]["state"], members[bot]["role"]))
+        self.assertEqual("Erin", self.gw.sql("SELECT label FROM owners WHERE id=(SELECT owner_id FROM bots WHERE id=?)",
+                                             (bot,))[0]["label"])
+        again = self.y("colleague-e", "join", self.gw.url, "--invite", minted["code"], "--handle", handle)
+        self.assertEqual((False, False, [], [room]), (again["created"], again["bound_this_device"],
+                                                     again["joined_now"], [r["room_id"] for r in again["rooms"]]),
+                         "a rerun with the spent code is a no-op on the same device")
+        plain = self.y("colleague-e", "join", self.gw.url, "--handle", handle)
+        self.assertEqual(bot, plain["bot_id"], "later runs need no code: the credential is in the data home")
+        other = self.root / ("colleague-x-%d" % self.n)
+        self.homes["colleague-x"] = other
+        err, _ = self.y("colleague-x", "join", self.gw.url, "--invite", minted["code"], "--handle", "x-%d" % self.n,
+                        expect=2)
+        self.assertEqual("invalid_invite", err["error"], "a spent code opens nothing on another device")
+        err, _ = self.y("colleague-x", "join", self.gw.url, "--invite", "ishoni-invite-" + "x" * 32, "--handle",
+                        "x-%d" % self.n, expect=2)
+        self.assertEqual("invalid_invite", err["error"])
+        self.assertNotIn(minted["code"], json.dumps(self.gw.sql("SELECT * FROM room_invites")),
+                         "the gateway keeps only the code's hash")
+        second = self.y("admin", "room", "invite-code", room, "--label", "Finn", "--observer", "--days", "1")
+        listed = {i["invite_id"]: i for i in self.y("admin", "room", "invites", room)["invites"]}
+        self.assertEqual(("used", bot, "@" + handle), (listed[minted["invite_id"]]["state"],
+                                                        listed[minted["invite_id"]]["bot_id"],
+                                                        listed[minted["invite_id"]]["handle"]))
+        self.assertEqual(("pending", "observer"), (listed[second["invite_id"]]["state"], listed[second["invite_id"]]["role"]))
+        revoked = self.y("admin", "room", "revoke-invite", room, second["invite_id"])
+        self.assertEqual("revoked", revoked["state"])
+        err, _ = self.y("colleague-x", "join", self.gw.url, "--invite", second["code"], "--handle", "x-%d" % self.n,
+                        expect=2)
+        self.assertEqual("invalid_invite", err["error"], "a revoked code is spent")
+        status, obj = C.api_call(self.gw.url, "POST", "/v1/owner/rooms/%s/invites" % room, {"label": "Z"})
+        self.assertEqual(401, status, "minting needs the administrator's owner credential")
+        erin_token = json.loads((home / "public" / "credentials.json").read_text())["gateways"][self.gw.url]["owner"]["token"]
+        status, obj = C.api_call(self.gw.url, "POST", "/v1/owner/rooms/%s/invites" % room, {"label": "Z"}, erin_token)
+        self.assertEqual(404, status, "a member's owner cannot mint for a room it does not administer")
+
     def test_join_does_the_whole_colleague_setup_in_one_command(self):
         """A colleague gets an owner credential file from the administrator and runs `join` on their own device:
         bot, key, native binding and every waiting invitation, idempotently."""
