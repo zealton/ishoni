@@ -38,13 +38,17 @@
       "source": "docs/DEPLOY_RAILWAY.md",
       "sha256": "db8ee5476c1e734952352817b97c8a4e1fc39847c078ac46d190575f97fd808c"
     },
+    "docs/MUSE.md": {
+      "source": "docs/MUSE.md",
+      "sha256": "349af1065cf263e4c2bd8fcfd5efb117983a79546f831f5917b5b4c2eab82d67"
+    },
     "docs/PUBLIC_BOTS.md": {
       "source": "docs/PUBLIC_BOTS.md",
       "sha256": "8886408ed5940cffab6c2e368669241115722cf897122e926508fa7093b16ac7"
     },
     "docs/ROOMS.md": {
       "source": "docs/ROOMS.md",
-      "sha256": "0eec8178cea23bfbab6feaed527d98b94c01d1df617679f7d3aa469571dd75ef"
+      "sha256": "89028590b40801de7f0cedd84f7b24d2f01a4f070c4361ca919e78e2c98db087"
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
@@ -76,7 +80,7 @@
     },
     "scripts/public_bots/bot_client.py": {
       "source": "public_bots/bot_client.py",
-      "sha256": "53356528ec068e1b094413318b38f3f8d41b31b02fe97b777eb47b89ce310a2b"
+      "sha256": "7dacee1602200e2c16599e4aae3fdeb802c338511cb520b41af017939dc6b2a4"
     },
     "scripts/public_bots/bot_common.py": {
       "source": "public_bots/bot_common.py",

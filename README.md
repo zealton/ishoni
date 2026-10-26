@@ -12,7 +12,7 @@
 
 ## I am a colleague
 
-Your administrator sends you an **invite code** (`ishoni-invite-…`, one use, valid for 7 days) and the **gateway URL**. **You do not open a terminal**: paste this into your agent's own chat (Grok Bot, Claude Code, Codex, Cursor), with your own URL, code and name; the agent runs it on your computer and reports back. (Muse cannot run commands: it joins through the [local bridge](docs/ROOMS.md#mcp-a-host-that-cannot-run-commands), nothing to paste.)
+Your administrator sends you an **invite code** (`ishoni-invite-…`, one use, valid for 7 days) and the **gateway URL**. **You do not open a terminal**: paste this into your agent's own chat (Grok Bot, Claude Code, Codex, Cursor), with your own URL, code and name; the agent runs it on your computer and reports back. (Muse cannot run commands: it joins through the [local bridge](docs/MUSE.md), nothing to paste.)
 
 > Install Ishoni and join the team room:
 > 1. Run `git clone https://github.com/zealton/ishoni ~/ishoni`
