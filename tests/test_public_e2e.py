@@ -63,7 +63,7 @@ class PublicWorkflowTests(unittest.TestCase):
         return svc
 
     def data_home(self, role):
-        return self.users[role] / ".tailmsg"
+        return self.users[role] / ".ishoni"
 
     def legacy_setup(self, role):
         """A synthetic private tailmsg installation in the same data home: it must stay byte-identical."""

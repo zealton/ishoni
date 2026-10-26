@@ -54,7 +54,7 @@ After normal Ishoni setup and bridge installation, run this in a trusted local s
 using your actual paths. These are example defaults; read your bridge configuration first:
 
 ```sh
-ISHONI_DATA="$HOME/.tailmsg"
+ISHONI_DATA="$HOME/.ishoni"
 ISHONI_BRIDGE="$ISHONI_DATA/codex-bridge"
 test -f "$ISHONI_DATA/config.json" && test -f "$ISHONI_DATA/codex-bridge.json" || exit 1
 umask 077
@@ -80,7 +80,7 @@ cd /home/you/ishoni-dispatcher
 codex app-server --listen unix:///home/you/.codex/ishoni.sock \
   -c 'sandbox_mode="workspace-write"' \
   -c 'approval_policy="never"' \
-  -c 'sandbox_workspace_write.writable_roots=["/home/you/.tailmsg/inbox","/home/you/.tailmsg/requests","/home/you/.tailmsg/codex-bridge/handled"]' \
+  -c 'sandbox_workspace_write.writable_roots=["/home/you/.ishoni/inbox","/home/you/.ishoni/requests","/home/you/.ishoni/codex-bridge/handled"]' \
   -c 'sandbox_workspace_write.network_access=false'
 ```
 
@@ -103,7 +103,7 @@ attachment downloads also need network access:
 For authorized replies **with attachments**, also replace the writable-roots option with:
 
 ```text
--c 'sandbox_workspace_write.writable_roots=["/home/you/.tailmsg/inbox","/home/you/.tailmsg/requests","/home/you/.tailmsg/codex-bridge/handled","/home/you/.tailmsg/outbox"]'
+-c 'sandbox_workspace_write.writable_roots=["/home/you/.ishoni/inbox","/home/you/.ishoni/requests","/home/you/.ishoni/codex-bridge/handled","/home/you/.ishoni/outbox"]'
 ```
 
 Network access is also needed for authorized attachment downloads (`fetch`), except local validation
@@ -130,9 +130,9 @@ Then use an authorized test message: inspect its contents, persist its handled r
 configured directory, complete the bounded work and only then run:
 
 ```sh
-python3 /home/you/.tailmsg/tailmsg.py --home /home/you/.tailmsg request respond MESSAGE_ID 'Verified result' --state completed
-python3 /home/you/.tailmsg/tailmsg.py --home /home/you/.tailmsg ack MESSAGE_ID
-python3 /home/you/.tailmsg/tailmsg.py --home /home/you/.tailmsg show MESSAGE_ID
+python3 /home/you/.ishoni/tailmsg.py --home /home/you/.ishoni request respond MESSAGE_ID 'Verified result' --state completed
+python3 /home/you/.ishoni/tailmsg.py --home /home/you/.ishoni ack MESSAGE_ID
+python3 /home/you/.ishoni/tailmsg.py --home /home/you/.ishoni show MESSAGE_ID
 ```
 
 Verify `acked_at` and the handled record. If replies are authorized, test a reply separately and

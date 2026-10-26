@@ -85,7 +85,7 @@ sh "$Y" agents --online                                  # versions, agents, ses
 sh "$Y" update check                                     # official stable releases (--channel preview: prereleases)
 ```
 
-Data home: `--home DIR` (before the command), else `$TAILMSG_HOME`, else `~/.tailmsg`. Existing
+Data home: `--home DIR` (before the command), else `$ISHONI_HOME` (or `$TAILMSG_HOME`), else `~/.ishoni`; an existing `~/.tailmsg` is kept. Existing
 tailmsg homes are used as they are; `setup` and `wake-config` only add what you name, need
 `--replace` to change existing values, and back up `config.json` on every write.
 

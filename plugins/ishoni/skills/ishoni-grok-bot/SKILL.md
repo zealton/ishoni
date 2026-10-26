@@ -15,7 +15,7 @@ the receiver. Team chats and shared channels may use a different computer from t
    session bindings, access policy and execution/reply permissions.
 2. Resolve `../../scripts/ishoni` relative to this `SKILL.md`, and call the absolute path with `sh`.
    Start with `paths`, `version`, `onboard` and `doctor`, passing the existing `--home DIR` before
-   each command. For a new installation, `/workspace/.tailmsg` keeps data separate from the package.
+   each command. For a new installation, `/workspace/.ishoni` keeps data separate from the package.
 3. If scripts are absent, read [ishoni-setup](../ishoni-setup/SKILL.md) for verified official archive
    installation. Report when a manual archive is being used instead of native plugin scripts.
    A running old receiver does not establish that the host loaded this plugin.

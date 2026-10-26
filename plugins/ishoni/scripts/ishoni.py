@@ -3,7 +3,7 @@
 
 Ishoni speaks the tailmsg protocol v1. This file locates the bundled tailmsg.py next to itself, so it
 works from any plugin install or cache path (including paths with spaces) and from any working
-directory. All state lives in the tailmsg data home (--home, $TAILMSG_HOME or ~/.tailmsg), never in
+directory. All state lives in the data home (--home, $ISHONI_HOME or ~/.ishoni; an older ~/.tailmsg is kept), never in
 the plugin directory, so existing tailmsg setups keep working unchanged.
 
 Safety contract: read-only unless a command is given --apply. Nothing here starts, stops or restarts
@@ -37,8 +37,10 @@ sys.dont_write_bytecode = True   # keep installed plugin directories pristine (n
 
 PRODUCT = "ishoni"
 DISPLAY = "Ishoni"
-HOME_ENV = "TAILMSG_HOME"        # shared with tailmsg so an existing ~/.tailmsg keeps working
-DEFAULT_HOME = "~/.tailmsg"
+HOME_ENV = "ISHONI_HOME"
+DEFAULT_HOME = "~/.ishoni"
+LEGACY_HOME_ENV = "TAILMSG_HOME"  # still honored, and an existing ~/.tailmsg keeps being used (see resolve_home)
+LEGACY_HOME = "~/.tailmsg"
 PYTHON_ENV = "ISHONI_PYTHON"     # interpreter for the bundled tailmsg.py (default: the one running this file)
 MIN_PYTHON = (3, 8)
 HERE = Path(__file__).resolve().parent
@@ -171,11 +173,17 @@ def core():
 
 
 def resolve_home(arg):
+    """--home, then $ISHONI_HOME, then $TAILMSG_HOME (the upstream name), then ~/.ishoni; a computer set up before
+    the rename keeps its ~/.tailmsg as long as no ~/.ishoni exists beside it, so nothing moves on upgrade."""
     if arg:
         return Path(arg).expanduser().absolute(), "--home"
-    if os.environ.get(HOME_ENV):
-        return Path(os.environ[HOME_ENV]).expanduser().absolute(), "$" + HOME_ENV
-    return Path(DEFAULT_HOME).expanduser().absolute(), "default"
+    for env in (HOME_ENV, LEGACY_HOME_ENV):
+        if os.environ.get(env):
+            return Path(os.environ[env]).expanduser().absolute(), "$" + env
+    home, legacy = Path(DEFAULT_HOME).expanduser().absolute(), Path(LEGACY_HOME).expanduser().absolute()
+    if not home.exists() and legacy.exists():
+        return legacy, "default (existing %s)" % LEGACY_HOME
+    return home, "default"
 
 
 def read_config(home):

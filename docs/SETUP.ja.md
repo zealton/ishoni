@@ -15,7 +15,7 @@ Y="/absolute/path/to/ishoni/scripts/ishoni"     # インストール済みプラ
 sh "$Y" onboard
 ```
 
-Windows では `py -3 "C:\path\to\ishoni\scripts\ishoni.py" onboard`。既定以外のデータディレクトリはコマンドの前に指定します：`sh "$Y" --home /workspace/.tailmsg onboard`。
+Windows では `py -3 "C:\path\to\ishoni\scripts\ishoni.py" onboard`。既定以外のデータディレクトリはコマンドの前に指定します：`sh "$Y" --home /workspace/.ishoni onboard`。
 
 ## 役割分担
 

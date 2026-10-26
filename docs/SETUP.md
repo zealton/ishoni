@@ -24,7 +24,7 @@ sh "$Y" onboard
 ```
 
 On Windows: `py -3 "C:\path\to\ishoni\scripts\ishoni.py" onboard`. A non-default data home goes
-before the command: `sh "$Y" --home /workspace/.tailmsg onboard`.
+before the command: `sh "$Y" --home /workspace/.ishoni onboard`.
 
 ## Who does what
 

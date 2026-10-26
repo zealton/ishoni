@@ -21,7 +21,7 @@ def tearDownModule():
 class PolicyCliTests(unittest.TestCase):
     def setUp(self):
         self.user = PKG.new_home("policy " + self.id().rsplit(".", 1)[-1])
-        self.home = self.user / ".tailmsg"
+        self.home = self.user / ".ishoni"
 
     def write_config(self, raw):
         self.home.mkdir(parents=True, exist_ok=True)
@@ -84,7 +84,7 @@ class PolicyCliTests(unittest.TestCase):
         self.assertEqual(old_bytes, Path(out["backup"]).read_bytes())
         self.assertEqual(0o600, stat.S_IMODE(Path(out["backup"]).stat().st_mode))
         after = snapshot(self.user)
-        for name in (".tailmsg/sessions.json", ".tailmsg/codex-bridge.json"):
+        for name in (".ishoni/sessions.json", ".ishoni/codex-bridge.json"):
             self.assertEqual(before[name], after[name])
         r, out = self.run_json("policy", "set", "--mode", "tailnet", "--apply")
         self.assertEqual("none", out["action"])

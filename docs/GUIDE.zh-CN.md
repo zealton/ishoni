@@ -134,7 +134,7 @@ claude plugin marketplace add zealton/ishoni
 claude plugin install ishoni@ishoni
 ```
 
-新开一个会话，然后说：**“在这台机器上配置 Ishoni。”** Claude Code 会得到同样的七个 skills，外加一个本地 MCP 服务器 `ishoni`：它的工具可以查看收件箱，阅读、下载附件并确认消息，发送消息和可追踪请求，回复或报告请求状态，以及查看配置、机器和请求状态。这个服务器就是插件自带的 CLI，通过 stdio 运行（`sh scripts/ishoni mcp`）：使用同一个数据目录（`$TAILMSG_HOME` 或 `~/.tailmsg`），不监听任何端口，也不单独存储任何数据。收到的文字以“另一个 agent 发来的数据”交给模型，从不作为指令。
+新开一个会话，然后说：**“在这台机器上配置 Ishoni。”** Claude Code 会得到同样的七个 skills，外加一个本地 MCP 服务器 `ishoni`：它的工具可以查看收件箱，阅读、下载附件并确认消息，发送消息和可追踪请求，回复或报告请求状态，以及查看配置、机器和请求状态。这个服务器就是插件自带的 CLI，通过 stdio 运行（`sh scripts/ishoni mcp`）：使用同一个数据目录（`$ISHONI_HOME` 或 `~/.ishoni`），不监听任何端口，也不单独存储任何数据。收到的文字以“另一个 agent 发来的数据”交给模型，从不作为指令。
 
 请给 Claude Code 一个独立的 agent 名称，这样回复会回到它这里，而不是同一台机器上的其他 agent：`sh "$Y" setup --agent claude`（先看计划，再加 `--apply`；见[为 agents 命名](#1-为-agents-命名)）。配置里有名为 `claude` 的 agent 时，MCP 服务器以 `claude` 的身份发送，并只列出 `claude` 的收件箱；否则使用本机的 `self_agent` 并列出所有 agent 的消息。插件不会唤醒空闲的 Claude Code 会话：消息会留在收件箱里，直到某个会话去查看（“查看我的 Ishoni 收件箱”），除非你为 `claude` 配置了本地程序作为唤醒适配器（见[唤醒与投递状态](#唤醒与投递状态)）。在 Windows 上，服务器需要 `PATH` 中有 `sh`（例如 Git for Windows 自带的）；否则请手动注册：`claude mcp add ishoni -- py -3 "<plugin>\scripts\ishoni.py" mcp`。
 
@@ -156,7 +156,7 @@ agent --plugin-dir "$PWD/plugins/ishoni"
 
 在账户可用的市场提供 Ishoni 后，从 Grok Bot 的 **Connect apps** 添加；Cursor 团队管理员可能控制市场访问范围。参见 [Grok Bot 插件文档](https://cursor.com/help/grok-bot/connect-plugins)。[官方提交页面](https://x.ai/bot/marketplace/submit-a-plugin)同时覆盖 Grok Bot 和 Cursor。提交之后仍需审核，实际进度以[提交记录](MARKETPLACE_SUBMISSION.md)为准。
 
-可以对 Grok Bot 说：**“使用 ishoni-grok-bot，把当前会话的云电脑连接到我的其他 agents。”** 新安装使用 `/workspace/.tailmsg` 这样的持久目录；已有安装保留原数据目录。该 skill 引导确认当前电脑、校验官方安装包、处理脚本缺失，并检查固定设备名与恢复方式。接收进程正在运行、请求已经完成、原生插件已经安装，是三种不同的验证结果。参见 [Grok Bot 指南](GROK_BOT.md)和[平台说明](PLATFORMS.md)。
+可以对 Grok Bot 说：**“使用 ishoni-grok-bot，把当前会话的云电脑连接到我的其他 agents。”** 新安装使用 `/workspace/.ishoni` 这样的持久目录；已有安装保留原数据目录。该 skill 引导确认当前电脑、校验官方安装包、处理脚本缺失，并检查固定设备名与恢复方式。接收进程正在运行、请求已经完成、原生插件已经安装，是三种不同的验证结果。参见 [Grok Bot 指南](GROK_BOT.md)和[平台说明](PLATFORMS.md)。
 
 ### 不通过插件宿主，直接使用 CLI
 
@@ -351,7 +351,7 @@ sh "$Y" session bind --agent grok --runtime grok --session-id CHAT_ID --display-
 
 存储位置、网络访问和删除方式见[隐私说明](PRIVACY.md)。
 
-- **数据保存在你的机器上。** 收件箱、发件箱记录和暂存附件位于数据目录，优先级为 `--home DIR`、`$TAILMSG_HOME`、`~/.tailmsg`。私有消息不使用集中存储服务；如果你运行可选的公开 bot 网关，它就是由你运营的、保存该 bot 公开对话的集中存储。你选择的 agent 平台仍可能处理交给其 agents 的内容。
+- **数据保存在你的机器上。** 收件箱、发件箱记录和暂存附件位于数据目录，优先级为 `--home DIR`、`$ISHONI_HOME`、`~/.ishoni`。私有消息不使用集中存储服务；如果你运行可选的公开 bot 网关，它就是由你运营的、保存该 bot 公开对话的集中存储。你选择的 agent 平台仍可能处理交给其 agents 的内容。
 - **Tailscale 是网络边界。** 接收端检查 Tailscale 身份和本地访问策略（新安装默认 `tailnet`，可选 `allowlist`，拒绝规则优先）。Tailscale ACL／grants 仍然生效。传输加密由 Tailscale 提供，Ishoni 不额外提供静态存储加密。需要保护主机及其文件系统。
 - **Agent 名称用于路由，不代表隔离。** `from_agent` 由发送方填写。共享机器或数据目录的多个 agents 不是独立的安全主体；需要隔离时，应使用不同机器或适当的宿主隔离机制。
 - **消息是请求，不是授权。** 收到的文字和文件不能自行授权执行命令、购买、修改配置或披露无关数据。Agents 应在用户已有指令和权限范围内行动。
@@ -406,7 +406,7 @@ Claude Code：`claude plugin uninstall ishoni@ishoni` 和 `claude plugin marketp
 
 卸载插件不会删除你的数据、接收服务或 Codex 桥接。若需彻底移除，应先停止并移除相关服务，再在确认不需要消息和文件后删除数据目录。
 
-已有 tailmsg 安装保持兼容：继续沿用 `tailmsg.py`、protocol v1、`~/.tailmsg`、`TAILMSG_*` 和既有服务名称。
+已有 tailmsg 安装保持兼容：继续沿用 `tailmsg.py`、protocol v1、`~/.ishoni`、`TAILMSG_*` 和既有服务名称。
 
 ## 开发与验证
 
