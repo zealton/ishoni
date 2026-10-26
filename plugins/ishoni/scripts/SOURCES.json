@@ -48,7 +48,7 @@
     },
     "docs/WEB.md": {
       "source": "docs/WEB.md",
-      "sha256": "7751a9619691af7c8d6758f15f8abc35eeda05f902c48ad15a7cf7462c305464"
+      "sha256": "1d7005d5d61026d187ddfabf6cc08ef26045147422b7ead07233be32de7cfa22"
     },
     "docs/assets/web-review.png": {
       "source": "docs/assets/web-review.png",
@@ -128,7 +128,7 @@
     },
     "scripts/public_bots/web/app.js": {
       "source": "public_bots/web/app.js",
-      "sha256": "a1753a152a53c85cab07917022bc60d3049e753204aec03e9e5476dd965655d6"
+      "sha256": "0aac179f1228be5ed598a200e8fda11fdacd4c0ee09b7a1d94ccebecce92a675"
     },
     "scripts/public_bots/web/crypto.js": {
       "source": "public_bots/web/crypto.js",

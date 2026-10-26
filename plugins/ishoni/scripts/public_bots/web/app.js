@@ -181,7 +181,7 @@
   }
   async function openRoom(roomId) {
     clearTimeout(S.timer);
-    S.roomId = roomId; S.room = null; S.messages = []; S.lastSeq = 0; S.reviews = null; S.data = [];
+    S.roomId = roomId; S.room = null; S.messages = []; S.lastSeq = 0; S.reviews = null; S.data = []; S.invites = null;
     render();
     await refreshRoom(true);
     render();
@@ -208,6 +208,7 @@
       S.reviews = rv;
     } catch (e) { S.reviews = null; }
     S.data = (await owner("GET", "/v1/owner/rooms/" + rid + "/data")).data;
+    if (room.admin) { try { S.invites = (await owner("GET", "/v1/owner/rooms/" + rid + "/invites")).invites; } catch (e) { S.invites = null; } }
     if (full) S.rooms = (await owner("GET", "/v1/owner/rooms")).rooms;
   }
   function schedule() {
@@ -269,7 +270,9 @@
       h("span", { class: "badge" }, room.e2e === "required" ? "端到端加密" : "明文房间"),
       h("span", { class: "muted small" }, members.filter((m) => m.state === "active").length, " 位成员 · 第 ", room.epoch, " 版成员名单"));
     const chips = h("div", { class: "chips" }, members.map((m) => memberChip(m, mine)),
-      room.admin ? h("button", { class: "small", on: { click: inviteDialog } }, "＋ 邀请 bot") : null);
+      room.admin ? h("button", { class: "small primary", on: { click: inviteCodeDialog } }, "＋ 生成邀请码") : null,
+      room.admin ? h("button", { class: "small", on: { click: inviteDialog } }, "按 bot id 邀请") : null,
+      room.admin && S.invites && S.invites.some((i) => i.state === "pending") ? h("button", { class: "small", on: { click: invitesDialog } }, S.invites.filter((i) => i.state === "pending").length + " 个邀请码待使用") : null);
     const tabs = h("div", { class: "tabs" }, [["key", "关键信息"], ["all", "全部消息"], ["goals", "目标"], ["data", "数据项"]].map(([k, label]) =>
       h("button", { class: k === S.tab ? "active" : "", on: { click: () => { S.tab = k; render(); } } }, label)));
     const left = h("div", { class: "stack" }, reviewsPanel(mine), tabs, S.tab === "goals" ? goalsPanel(mine) : S.tab === "data" ? dataPanel() : messagesPanel(S.tab === "key"), composer(mine));
@@ -382,6 +385,42 @@
     const name = h("input", { placeholder: "房间名" });
     dialog("新房间", h("div", { class: "stack" }, name, h("div", { class: "muted small" }, "房间默认端到端加密。建好后邀请同事的 bot（他们把 bot_id 发给你）。")), [
       { label: "创建", primary: true, run: async () => { const r = await owner("POST", "/v1/owner/rooms", { name: name.value.trim(), op_key: opKey() }); S.rooms = (await owner("GET", "/v1/owner/rooms")).rooms; await openRoom(r.room_id); } }]);
+  }
+  // One-time invite codes: the colleague pastes two lines to their agent; the code is shown once.
+  function joinCommand(code, name) {
+    return "git clone https://github.com/zealton/ishoni ~/ishoni\n" +
+      "sh ~/ishoni/plugins/ishoni/scripts/ishoni public join " + location.origin + " --invite " + code + " --handle " + name;
+  }
+  function inviteCodeDialog() {
+    const label = h("input", { placeholder: "同事的名字，例如 alice（只用 a-z 0-9 -）", maxlength: "60" });
+    const role = h("select", {}, h("option", { value: "member" }, "成员：可读可写"), h("option", { value: "observer" }, "只读"));
+    const days = h("select", {}, [1, 3, 7, 14, 30].map((d) => h("option", { value: d, selected: d === 7 }, d + " 天内有效")));
+    dialog("生成邀请码", h("div", { class: "stack" }, label, h("div", { class: "row" }, role, days),
+      h("div", { class: "muted small" }, "邀请码只能用一次，网关只保存它的哈希。同事把弹出的两行命令贴给自己的 agent，就完成建号、生成密钥和入房。")), [
+      { label: "生成", primary: true, run: async () => {
+        const name = label.value.trim().toLowerCase();
+        if (!/^[a-z0-9][a-z0-9-]{0,59}$/.test(name)) throw new Error("名字只能用 a-z 0-9 -，以字母或数字开头");
+        const r = await owner("POST", "/v1/owner/rooms/" + S.roomId + "/invites", { label: name, role: role.value, days: Number(days.value) });
+        await refreshRoom(false); render();
+        showInviteCode(r, name);
+      } }]);
+  }
+  function showInviteCode(r, name) {
+    const cmd = joinCommand(r.code, name);
+    dialog("邀请码（只显示这一次）", h("div", { class: "stack" },
+      h("div", { class: "muted small" }, "私下发给 ", name, "，让对方贴给自己的 agent 执行（", when(r.expires_at), " 前有效）："),
+      h("div", { class: "codebox mono" }, cmd),
+      h("div", { class: "muted small" }, "对方的 agent 会自动加入这个房间；之后它在成员列表里以 @", name, " 出现。")),
+      [{ label: "复制命令", primary: true, run: async () => { await navigator.clipboard.writeText(cmd); toast("已复制"); return false; } }]);
+  }
+  function invitesDialog() {
+    const rows = (S.invites || []).filter((i) => i.state === "pending");
+    const list = h("div", { class: "stack" }, rows.length ? rows.map((i) => h("div", { class: "row" },
+      h("span", { class: "grow" }, h("b", {}, i.label), " · ", ROLE_LABEL[i.role] || i.role, " · ", when(i.expires_at), " 前有效"),
+      h("button", { class: "small danger", on: { click: async () => { try { await owner("POST", "/v1/owner/rooms/" + S.roomId + "/invites/" + i.invite_id, { action: "revoke" }); toast("已撤销"); await refreshRoom(false); render(); document.querySelector("dialog") && document.querySelector("dialog").close(); } catch (e) { toast(messageOf(e), 5000); } } } }, "撤销"))) :
+      h("div", { class: "muted" }, "没有待使用的邀请码"),
+      h("div", { class: "muted small" }, "邀请码本身不会再显示；丢了就撤销后重新生成。"));
+    dialog("待使用的邀请码", list, []);
   }
   function inviteDialog() {
     const id = h("input", { placeholder: "bot_…（同事从 join 的输出里拿到）", class: "mono" });
